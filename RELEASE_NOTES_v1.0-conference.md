@@ -7,12 +7,14 @@ This release packages the conference-ready GPU-NFBench artifact.
 - 1,191-row canonical v2 GPU numerical-failure benchmark.
 - 419 human adjudication updates applied to the expanded benchmark.
 - 50-row human-adjudicated root-cause subset.
-- 200-row evidence-coded root-cause extension with provenance labels.
+- 250-row evidence-coded root-cause extension with provenance labels.
 - Deterministic baselines, leave-one-repository-out, chronological, and abstention evaluations.
 - Fine-tuned FLAN-T5-base standalone LLM outputs.
 - Local zero-shot Llama 3.2 3B baseline on the same 123-row held-out split.
 - Cross-repository weakness analysis.
 - 12-case error appendix.
+- Reproducibility guide for artifact reviewers.
+- External-repository candidate pool for future benchmark expansion.
 - IEEE-format manuscript PDF and LaTeX source.
 - Data card, artifact index, and citation metadata.
 

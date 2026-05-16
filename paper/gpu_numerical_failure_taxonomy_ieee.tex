@@ -51,9 +51,9 @@ mode reaches 89.3\% accuracy at 68.3\% coverage. A 119-row blind audit achieved
 80.7\% Person A/B agreement and Cohen's $\kappa=0.721$; follow-on adjudication
 applied 419 human label updates, changing 211 primary labels and producing the
 canonical v2 benchmark used in the final experiments. We also provide a
-200-row root-cause evidence-coded extension, including a 50-row
+250-row root-cause evidence-coded extension, including a 50-row
 human-adjudicated subset, and an appendix of concrete boundary errors. These
-results position \bench as a practical foundation for GPU-bug triage, dataset
+results position \bench{} as a practical foundation for GPU-bug triage, dataset
 construction, and future work on root-cause prediction for numerical failures
 in ML systems.
 \end{abstract}
@@ -111,7 +111,7 @@ The contributions are:
     \item We release a benchmark packet, data card, ablation tables, error
     analysis, linked-fix evidence, a completed blind audit, a 419-row
     adjudication update, a 50-row human-adjudicated root-cause subset, and a
-    200-row evidence-coded root-cause extension.
+    250-row evidence-coded root-cause extension.
 \end{itemize}
 
 \section{Background and Motivation}
@@ -556,12 +556,12 @@ retrieved 488 changed-file rows from linked PRs. We additionally adjudicated a
 50-row root-cause subset with five fix-oriented labels: compiler/backend/runtime
 behavior, dtype or type semantics, numerical algorithm or tolerance,
 performance/resource behavior, and non-bug feature/documentation/support cases.
-To expand coverage without overstating provenance, we also provide a 200-row
+To expand coverage without overstating provenance, we also provide a 250-row
 evidence-coded root-cause extension. It contains the 50 human-adjudicated rows,
-55 linked-fix evidence-coded rows, and 95 issue-evidence rows. Its largest
-groups are non-bug/support cases (62), numerical algorithm or tolerance cases
-(52), and dtype/type semantics cases (47). The paper treats this as
-root-cause supervision and provenance for future work, not as 200
+55 linked-fix evidence-coded rows, and 145 issue-evidence rows. Its largest
+groups are numerical algorithm or tolerance cases (74), non-bug/support cases
+(69), and dtype/type semantics cases (50). The paper treats this as
+root-cause supervision and provenance for future work, not as 250
 human-adjudicated root-cause labels.
 
 \section{Discussion}
@@ -590,7 +590,7 @@ agreement provides a high-confidence review queue.
 
 \subsection{Practical Use Cases}
 
-\bench can support three workflows. First, maintainers can prioritize issues
+\bench{} can support three workflows. First, maintainers can prioritize issues
 by separating likely numerical defects from performance or API reports. Second,
 researchers can sample issue clusters for root-cause analysis, such as dtype
 promotion failures or precision-tolerance mismatches. Third, future debugging
@@ -627,7 +627,7 @@ does not prove the actual root cause unless linked fix evidence is available.
 
 \section{Conclusion}
 
-This paper presents \bench, a 1,191-row human-labeled benchmark for GPU
+This paper presents \bench{}, a 1,191-row human-labeled benchmark for GPU
 numerical failure reports. The expanded benchmark shows that reliable
 full-coverage triage is possible when weak keyword labels are replaced with
 human gold labels: a standalone FLAN-T5-base model reaches 80.5\% held-out
@@ -646,14 +646,16 @@ The artifact contains the processed benchmark, expanded gold labels,
 taxonomy-normalization report, model-training scripts, fine-tuning files,
 evaluation tables, generated reports, qualitative examples, linked-fix evidence,
 a data card, completed blind audit files, v2 adjudication files, LLM fine-tuning
-files, the 50-row human-adjudicated root-cause subset, the 200-row
+files, the 50-row human-adjudicated root-cause subset, the 250-row
 evidence-coded root-cause extension, cross-repository weakness analysis, local
-LLM baseline outputs, and a 12-case error appendix. The data card documents
-intended use, non-use cases, label provenance, and known limitations. The
-release metadata includes a Zenodo-ready \texttt{.zenodo.json} and
-\texttt{CITATION.cff}; after GitHub authentication is restored, the artifact
-should be published as a tagged GitHub release and archived on Zenodo to obtain
-a DOI.
+LLM baseline outputs, a 12-case error appendix, a reproducibility checklist,
+and an external-repository candidate pool for future benchmark expansion. The
+data card documents intended use, non-use cases, label provenance, and known
+limitations. The artifact is released at
+\url{https://github.com/jubs-2431/gpu-nfbench/releases/tag/v1.0-conference}.
+The release metadata includes a Zenodo-ready \texttt{.zenodo.json} and
+\texttt{CITATION.cff}; the DOI should be inserted after the tagged GitHub
+release is archived through Zenodo.
 
 \begin{thebibliography}{9}
 

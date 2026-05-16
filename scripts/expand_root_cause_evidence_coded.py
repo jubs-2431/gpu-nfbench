@@ -10,10 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 V2 = ROOT / "data" / "processed" / "gold_benchmark_expanded_v2_canonical.csv"
 LINKED = ROOT / "tables" / "linked_fix_evidence_subset.csv"
 HUMAN_50 = ROOT / "annotation" / "gpu_nfbench_root_cause_50_adjudication_completed.csv"
-OUT = ROOT / "tables" / "root_cause_200_evidence_coded.csv"
-LABEL_COUNTS = ROOT / "tables" / "root_cause_200_label_counts.csv"
-PROVENANCE_COUNTS = ROOT / "tables" / "root_cause_200_provenance_counts.csv"
-REPORT = ROOT / "reports" / "root_cause_200_evidence_coded.md"
+TARGET_ROWS = 250
+OUT = ROOT / "tables" / "root_cause_250_evidence_coded.csv"
+LABEL_COUNTS = ROOT / "tables" / "root_cause_250_label_counts.csv"
+PROVENANCE_COUNTS = ROOT / "tables" / "root_cause_250_provenance_counts.csv"
+REPORT = ROOT / "reports" / "root_cause_250_evidence_coded.md"
 
 ROOT_LABELS = {
     "compiler_backend_or_runtime",
@@ -121,7 +122,7 @@ def main() -> None:
         candidates.append((score, blind_id, {**v2, **linked}, evidence))
 
     for score, blind_id, row, evidence in sorted(candidates, key=lambda item: (-item[0], item[1])):
-        if len(out_rows) >= 200:
+        if len(out_rows) >= TARGET_ROWS:
             break
         label, rationale = root_label(row, evidence)
         out_rows.append(
@@ -141,9 +142,9 @@ def main() -> None:
             }
         )
 
-    if len(out_rows) < 200:
+    if len(out_rows) < TARGET_ROWS:
         for blind_id, row in v2_by_id.items():
-            if len(out_rows) >= 200:
+            if len(out_rows) >= TARGET_ROWS:
                 break
             if blind_id in {out["blind_id"] for out in out_rows}:
                 continue
@@ -193,9 +194,9 @@ def main() -> None:
     REPORT.write_text(
         "\n".join(
             [
-                "# 200-Row Root-Cause Evidence-Coded Extension",
+                "# 250-Row Root-Cause Evidence-Coded Extension",
                 "",
-                "This extension increases root-cause coverage from the 50-row human-adjudicated subset to 200 evidence-coded rows. It does not relabel all 200 rows as human-adjudicated. The `provenance` column distinguishes the original human subset from linked-fix and issue-text evidence-coded rows.",
+                "This extension increases root-cause coverage from the 50-row human-adjudicated subset to 250 evidence-coded rows. It does not relabel all 250 rows as human-adjudicated. The `provenance` column distinguishes the original human subset from linked-fix and issue-text evidence-coded rows.",
                 "",
                 f"Rows: {len(out_rows)}",
                 f"Human-adjudicated rows retained: {sum(1 for row in out_rows if row['provenance'] == 'human_adjudicated_50')}",
@@ -208,7 +209,7 @@ def main() -> None:
                 "",
                 *[f"- {label}: {count}" for label, count in sorted(provenance_counts.items())],
                 "",
-                "Conference-use guidance: report the 50-row subset as human-adjudicated and the 200-row file as evidence-coded root-cause supervision/provenance for future work.",
+                "Conference-use guidance: report the 50-row subset as human-adjudicated and the 250-row file as evidence-coded root-cause supervision/provenance for future work.",
             ]
         )
         + "\n",
