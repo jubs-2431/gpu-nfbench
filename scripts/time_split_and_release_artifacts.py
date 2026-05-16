@@ -239,6 +239,8 @@ def release_bundle() -> None:
     for rel in [
         "ARTIFACT_DATA_CARD.md",
         "REPRODUCIBILITY.md",
+        "HPEC_2026_SUBMISSION_ABSTRACT.txt",
+        "HPEC_2026_SUBMISSION_CHECKLIST.md",
         "CITATION.cff",
         ".zenodo.json",
         "RELEASE_NOTES_v1.0-conference.md",
@@ -320,7 +322,9 @@ def release_bundle() -> None:
         "reports/linked_fix_root_cause_summary.md",
         "reports/standalone_llm_training_summary.md",
         "paper/GPU-NFBench_IEEE_Manuscript.pdf",
+        "paper/GPU-NFBench_HPEC2026_Manuscript.pdf",
         "paper/gpu_numerical_failure_taxonomy_ieee.tex",
+        "paper/gpu_nfbench_hpec_2026.tex",
     ]:
         src = ROOT / rel
         dst = RELEASE_DIR / rel
