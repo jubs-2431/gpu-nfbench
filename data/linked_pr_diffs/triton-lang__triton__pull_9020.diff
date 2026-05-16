@@ -1,0 +1,351 @@
+diff --git a/lib/Dialect/TritonGPU/Transforms/RemoveLayoutConversions.cpp b/lib/Dialect/TritonGPU/Transforms/RemoveLayoutConversions.cpp
+index 6ae261254331..a84044116f8d 100644
+--- a/lib/Dialect/TritonGPU/Transforms/RemoveLayoutConversions.cpp
++++ b/lib/Dialect/TritonGPU/Transforms/RemoveLayoutConversions.cpp
+@@ -132,20 +132,30 @@ class LayoutRematerialization {
+   void hoistConvertOnTopOfExtOrBroadcast(ConvertLayoutOp convertOp);
+   void hoistConvertIntoConditionals();
+   void hoistConvertIntoConditionals(ConvertLayoutOp convertOp);
+-  void rewriteSlice(SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
+-                    ConvertLayoutOp convertOp, IRMapping &mapping);
+-  void rewriteSlice(SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
+-                    ConvertLayoutOp convertOp);
+-
+-  LogicalResult
+-  getConvertBackwardSlice(OpOperand &root, Attribute rootEncoding,
+-                          SetVector<Value> &slice,
+-                          DenseMap<Value, Attribute> &layout,
+-                          std::function<bool(Operation *)> stopPropagation);
++  void rewriteSlice(
++      SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
++      const DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
++      ConvertLayoutOp convertOp, IRMapping &mapping);
++  void rewriteSlice(
++      SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
++      const DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
++      ConvertLayoutOp convertOp);
++
++  /// Invokes the utility function getConvertBackwardSlice with a callback for
++  /// checking whether a rematerialization for a particular value already
++  /// exists. Any value that has an existing rematerialization for all of its
++  /// uses will have that rematerialization inserted in \p existingRemats, and
++  /// will not have its operands traversed for inclusion in \p slice.
++  LogicalResult getConvertBackwardSlice(
++      OpOperand &root, Attribute rootEncoding, SetVector<Value> &slice,
++      DenseMap<Value, Attribute> &layout,
++      DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
++      std::function<bool(Operation *)> stopPropagation);
+ 
+   LogicalResult getRematerializableSlice(
+       OpOperand &root, Attribute rootEncoding, SetVector<Value> &slice,
+       DenseMap<Value, Attribute> &layout,
++      DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
+       std::function<bool(Operation *)> stopPropagation = nullptr);
+ 
+ private:
+@@ -670,10 +680,10 @@ void LayoutRematerialization::updateRematMapping(
+   }
+ }
+ 
+-void LayoutRematerialization::rewriteSlice(SetVector<Value> &slice,
+-                                           DenseMap<Value, Attribute> &layout,
+-                                           ConvertLayoutOp convertOp,
+-                                           IRMapping &mapping) {
++void LayoutRematerialization::rewriteSlice(
++    SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
++    const DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
++    ConvertLayoutOp convertOp, IRMapping &mapping) {
+   SetVector<Operation *> opsToRewrite;
+   // Keep track of yield operands that need to be duplicated.
+   DenseMap<Operation *, SmallVector<int>> yieldOperandsMap;
+@@ -684,8 +694,10 @@ void LayoutRematerialization::rewriteSlice(SetVector<Value> &slice,
+   for (Value v : slice) {
+     auto layoutIt = layout.find(v);
+     assert(layoutIt != layout.end());
+-    // If we already have a remat value for this value, use it.
+-    if (Value remat = getRematValue(v, layoutIt->second)) {
++    // If we found a valid rematerialization for this value while constructing
++    // the slice, use that.
++    if (Value remat = existingRemats.lookup({v, layoutIt->second})) {
++      assert(getRematValue(v, layoutIt->second) == remat && "remat mismatch");
+       mapping.map(v, remat);
+       valuesWithExistingRemat.insert(v);
+       continue;
+@@ -836,20 +848,20 @@ void LayoutRematerialization::rewriteSlice(SetVector<Value> &slice,
+     opToDelete.insert(op);
+ }
+ 
+-void LayoutRematerialization::rewriteSlice(SetVector<Value> &slice,
+-                                           DenseMap<Value, Attribute> &layout,
+-                                           ConvertLayoutOp convertOp) {
++void LayoutRematerialization::rewriteSlice(
++    SetVector<Value> &slice, DenseMap<Value, Attribute> &layout,
++    const DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
++    ConvertLayoutOp convertOp) {
+   IRMapping mapping;
+-  rewriteSlice(slice, layout, convertOp, mapping);
++  rewriteSlice(slice, layout, existingRemats, convertOp, mapping);
+ }
+ 
+ LogicalResult LayoutRematerialization::getConvertBackwardSlice(
+     OpOperand &root, Attribute rootEncoding, SetVector<Value> &slice,
+     DenseMap<Value, Attribute> &layout,
++    DenseMap<std::pair<Value, Attribute>, Value> &existingRemats,
+     std::function<bool(Operation *)> stopPropagation) {
+-  // Allow re-using existing conversions for a value. Check dominance of any
+-  // reusable materializations against the root value. This is sufficient
+-  // because the conversions are processed in post-order.
++  // Allow re-using existing conversions for a value if it dominates the use.
+   auto getExistingConversion = [&](OpOperand &value, Attribute encoding) {
+     Value remat = getRematValue(value.get(), encoding);
+     if (!remat)
+@@ -858,6 +870,7 @@ LogicalResult LayoutRematerialization::getConvertBackwardSlice(
+     // dominates the current use of value.
+     Operation *user = value.getOwner();
+     if (domInfo.properlyDominates(remat, user)) {
++      existingRemats.try_emplace({value.get(), encoding}, remat);
+       return remat;
+     }
+     // FIXME: If the current user is a conversion, then we know it will become
+@@ -871,6 +884,10 @@ LogicalResult LayoutRematerialization::getConvertBackwardSlice(
+     //   }
+     //   return remat;
+     // }
++
++    // There is an existing rematerialization, but it doesn't dominate all the
++    // uses we care about, so ensure it isn't used.
++    existingRemats[{value.get(), encoding}] = Value();
+     return Value();
+   };
+ 
+@@ -881,13 +898,15 @@ LogicalResult LayoutRematerialization::getConvertBackwardSlice(
+ LogicalResult LayoutRematerialization::getRematerializableSlice(
+     OpOperand &root, Attribute rootEncoding, SetVector<Value> &sliceArg,
+     DenseMap<Value, Attribute> &layoutArg,
++    DenseMap<std::pair<Value, Attribute>, Value> &existingRematsArg,
+     std::function<bool(Operation *)> stopPropagation) {
+   // Operate on copies of the input, we do not want to modify them unless we
+   // have succeeded.
+   auto slice = sliceArg;
+   auto layout = layoutArg;
+-  LogicalResult result = getConvertBackwardSlice(root, rootEncoding, slice,
+-                                                 layout, stopPropagation);
++  auto existingRemats = existingRematsArg;
++  LogicalResult result = getConvertBackwardSlice(
++      root, rootEncoding, slice, layout, existingRemats, stopPropagation);
+   if (result.failed() || slice.empty())
+     return failure();
+ 
+@@ -900,6 +919,7 @@ LogicalResult LayoutRematerialization::getRematerializableSlice(
+   }
+   sliceArg = std::move(slice);
+   layoutArg = std::move(layout);
++  existingRematsArg = std::move(existingRemats);
+   return success();
+ }
+ 
+@@ -1125,8 +1145,10 @@ void LayoutRematerialization::backwardRematerialization(
+   // rematerialized.
+   SetVector<Value> slice;
+   DenseMap<Value, Attribute> layout;
++  DenseMap<std::pair<Value, Attribute>, Value> existingRemats;
+   LogicalResult result = getRematerializableSlice(
+-      convertOp.getSrcMutable(), targetType.getEncoding(), slice, layout);
++      convertOp.getSrcMutable(), targetType.getEncoding(), slice, layout,
++      existingRemats);
+   if (result.failed()) {
+     LDBG("  getRematerializableSlice failed");
+     return;
+@@ -1145,7 +1167,7 @@ void LayoutRematerialization::backwardRematerialization(
+   });
+ 
+   // 3. Rewrite the slice.
+-  rewriteSlice(slice, layout, convertOp);
++  rewriteSlice(slice, layout, existingRemats, convertOp);
+ }
+ 
+ void LayoutRematerialization::hoistConvertDotOperand() {
+@@ -1217,9 +1239,11 @@ void LayoutRematerialization::hoistConvertDotOperand(
+ 
+   SetVector<Value> slice;
+   DenseMap<Value, Attribute> layout;
++  DenseMap<std::pair<Value, Attribute>, Value> existingRemats;
+   // Set-up the conversion "cache"
+   LogicalResult result = getConvertBackwardSlice(
+-      convertOp.getSrcMutable(), targetType.getEncoding(), slice, layout, stop);
++      convertOp.getSrcMutable(), targetType.getEncoding(), slice, layout,
++      existingRemats, stop);
+   if (result.failed())
+     return;
+ 
+@@ -1269,7 +1293,7 @@ void LayoutRematerialization::hoistConvertDotOperand(
+       DBGS() << "    " << v << '\n';
+   });
+ 
+-  rewriteSlice(innerSlice, layout, convertOp, mapping);
++  rewriteSlice(innerSlice, layout, existingRemats, convertOp, mapping);
+ }
+ 
+ // For convert left we try to hoist them above type extension to reduce the cost
+@@ -1296,9 +1320,10 @@ void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
+   // 1. Take a backward slice of all the tensor dependencies.
+   SetVector<Value> slice;
+   DenseMap<Value, Attribute> layout;
++  DenseMap<std::pair<Value, Attribute>, Value> existingRemats;
+   LogicalResult result = getRematerializableSlice(
+       convertOp.getSrcMutable(), targetType.getEncoding(), slice, layout,
+-      isExtOrBroadcastOp);
++      existingRemats, isExtOrBroadcastOp);
+   if (result.failed())
+     return;
+ 
+@@ -1317,7 +1342,7 @@ void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
+     // If we can rematerialize the rest of the ext slice we can ignore this ext
+     // as it won't need a convert.
+     if (succeeded(getRematerializableSlice(op->getOpOperand(0), srcEncoding,
+-                                           slice, layout)))
++                                           slice, layout, existingRemats)))
+       continue;
+ 
+     // Only apply it if there is a single ext op otherwise we would have to
+@@ -1354,7 +1379,7 @@ void LayoutRematerialization::hoistConvertOnTopOfExtOrBroadcast(
+   mapping.map(extOrBroadcastOp->getResult(0), newExtOrBroadcast->getResult(0));
+   slice.remove(extOrBroadcastOp->getResult(0));
+   // 3. Rewrite the slice.
+-  rewriteSlice(slice, layout, convertOp, mapping);
++  rewriteSlice(slice, layout, existingRemats, convertOp, mapping);
+ }
+ 
+ void LayoutRematerialization::hoistConvertIntoConditionals(
+@@ -1363,10 +1388,11 @@ void LayoutRematerialization::hoistConvertIntoConditionals(
+   // stopping at conditionals. This subslice is used to initialize the analysis.
+   SetVector<Value> slice;
+   DenseMap<Value, Attribute> layout;
++  DenseMap<std::pair<Value, Attribute>, Value> existingRemats;
+   auto isIfOp = [](Operation *op) { return isa<scf::IfOp>(op); };
+   if (failed(getRematerializableSlice(convertOp.getSrcMutable(),
+                                       convertOp.getType().getEncoding(), slice,
+-                                      layout, isIfOp)))
++                                      layout, existingRemats, isIfOp)))
+     return;
+ 
+   // These are the conditional edges above which conversions should be hoisted.
+@@ -1400,17 +1426,19 @@ void LayoutRematerialization::hoistConvertIntoConditionals(
+ 
+     auto newSlice = slice;
+     auto newLayout = layout;
++    auto newExistingRemats = existingRemats;
+ 
+     LogicalResult thenResult = getRematerializableSlice(
+-        thenRes, rootLayout, newSlice, newLayout, isIfOp);
++        thenRes, rootLayout, newSlice, newLayout, newExistingRemats, isIfOp);
+     LogicalResult elseResult = getRematerializableSlice(
+-        elseRes, rootLayout, newSlice, newLayout, isIfOp);
++        elseRes, rootLayout, newSlice, newLayout, newExistingRemats, isIfOp);
+ 
+     // If propagation across both edges of this conditional succeeded, then we
+     // don't need to hoist across it. Merge into the current slice.
+     if (succeeded(thenResult) && succeeded(elseResult)) {
+       slice = std::move(newSlice);
+       layout = std::move(newLayout);
++      existingRemats = std::move(newExistingRemats);
+       continue;
+     }
+ 
+@@ -1431,6 +1459,7 @@ void LayoutRematerialization::hoistConvertIntoConditionals(
+ 
+     slice = std::move(newSlice);
+     layout = std::move(newLayout);
++    existingRemats = std::move(newExistingRemats);
+     // The layout conversion can be rematerialized along one edge but not the
+     // other. We can hoist the conversion into the other branch. Push this
+     // into the subslice list for analysis.
+@@ -1465,7 +1494,7 @@ void LayoutRematerialization::hoistConvertIntoConditionals(
+     OpBuilder b(edge->getOwner());
+     hoistRemat(b, edge->get(), layout.at(result));
+   }
+-  rewriteSlice(slice, layout, convertOp, mapping);
++  rewriteSlice(slice, layout, existingRemats, convertOp, mapping);
+ }
+ 
+ bool backwardRematerialization(ModuleOp module) {
+diff --git a/test/TritonGPU/combine.mlir b/test/TritonGPU/combine.mlir
+index d7a26992dafe..af79c9da0238 100644
+--- a/test/TritonGPU/combine.mlir
++++ b/test/TritonGPU/combine.mlir
+@@ -4056,3 +4056,75 @@ module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 4 : i32, "ttg.thr
+     tt.return %3 : tensor<32xf32, #ttg.slice<{dim = 0, parent = #ttg.slice<{dim = 0, parent = #blocked1}>}>>
+   }
+ }
++
++// -----
++
++// There was previously a bug where one of the layout conversions would be
++// incorrectly reused during backward rematerialization as an operand to an
++// instruction that preceded it.
++#blocked = #ttg.blocked<{sizePerThread = [2], threadsPerWarp = [32], warpsPerCTA = [4], order = [0]}>
++#blocked1 = #ttg.blocked<{sizePerThread = [1], threadsPerWarp = [32], warpsPerCTA = [4], order = [0]}>
++module attributes {"ttg.num-ctas" = 1 : i32, "ttg.num-warps" = 4 : i32, ttg.target = "cuda:100", "ttg.threads-per-warp" = 32 : i32} {
++  tt.func public @kernel(%arg0: !tt.ptr<f32>) -> (tensor<8xf32, #blocked>, tensor<8xf32, #blocked>, tensor<8xf32, #blocked>) attributes {noinline = false} {
++    %0 = tt.make_range {end = 8 : i32, start = 0 : i32} : tensor<8xi32, #blocked1>
++    %1 = tt.splat %arg0 : !tt.ptr<f32> -> tensor<8x!tt.ptr<f32>, #blocked1>
++    %2 = tt.addptr %1, %0 : tensor<8x!tt.ptr<f32>, #blocked1>, tensor<8xi32, #blocked1>
++    %3 = tt.load %2 : tensor<8x!tt.ptr<f32>, #blocked1>
++    %4 = math.exp %3 : tensor<8xf32, #blocked1>
++    %5 = math.exp %4 : tensor<8xf32, #blocked1>
++    %6 = math.exp %5 : tensor<8xf32, #blocked1>
++    %7 = math.exp %6 : tensor<8xf32, #blocked1>
++    %8 = math.exp %7 : tensor<8xf32, #blocked1>
++    %9 = math.exp %8 : tensor<8xf32, #blocked1>
++    %10 = math.exp %9 : tensor<8xf32, #blocked1>
++    %11 = math.exp %10 : tensor<8xf32, #blocked1>
++    %12 = math.exp %11 : tensor<8xf32, #blocked1>
++    %13 = math.exp %12 : tensor<8xf32, #blocked1>
++    %14 = math.exp %13 : tensor<8xf32, #blocked1>
++    %15 = math.exp %14 : tensor<8xf32, #blocked1>
++    %16 = math.exp %15 : tensor<8xf32, #blocked1>
++    %17 = math.exp %16 : tensor<8xf32, #blocked1>
++    %18 = math.exp %17 : tensor<8xf32, #blocked1>
++    %19 = math.exp %18 : tensor<8xf32, #blocked1>
++    %20 = math.exp %19 : tensor<8xf32, #blocked1>
++    // %21 is too expensive to rematerialize, so we just record a mapping
++    // %19 -> %21 for future rematerializations.
++    %21 = ttg.convert_layout %19 : tensor<8xf32, #blocked1> -> tensor<8xf32, #blocked>
++    // %22 is just below the cost threshold, so we rematerialize the whole chain ending in %18.
++    %22 = ttg.convert_layout %18 : tensor<8xf32, #blocked1> -> tensor<8xf32, #blocked>
++    // Now that %18 is rematerialized in blocked1, the chain ending %20 is cheap
++    // enough to rematerialize. However, when rematerializing %19 as part of
++    // this chain, we must not consider %21, as it does not dominate %20.
++    %23 = ttg.convert_layout %20 : tensor<8xf32, #blocked1> -> tensor<8xf32, #blocked>
++    tt.return %21, %22, %23 : tensor<8xf32, #blocked>, tensor<8xf32, #blocked>, tensor<8xf32, #blocked>
++  }
++}
++
++// CHECK-NOT: ttg.convert_layout
++
++// -----
++
++// Test that we correctly process existing rematerializations when hoisting
++// converts on top of ext/broadcast ops.
++
++#blocked = #ttg.blocked<{sizePerThread = [1, 8], threadsPerWarp = [4, 8], warpsPerCTA = [4, 1], order = [1, 0]}>
++#blocked1 = #ttg.blocked<{sizePerThread = [4, 4], threadsPerWarp = [2, 16], warpsPerCTA = [4, 1], order = [1, 0]}>
++module attributes {"ttg.num-warps" = 4 : i32} {
++  tt.func @test_hoist_cvt_existing_remat(%arg0: tensor<128x64xi32, #blocked>) -> (tensor<128x64xi64, #blocked1>, tensor<128x64xi64, #blocked1>) {
++    %0 = tt.make_range {end = 128 : i32, start = 0 : i32} : tensor<128xi32, #ttg.slice<{dim = 1, parent = #blocked}>>
++    %1 = tt.expand_dims %0 {axis = 1 : i32} : tensor<128xi32, #ttg.slice<{dim = 1, parent = #blocked}>> -> tensor<128x1xi32, #blocked>
++    // TODO: We should be able to reuse the first conversion so there is just 1.
++    // CHECK: ttg.convert_layout %arg0
++    // CHECK-NOT: ttg.convert_layout
++    %2 = arith.extsi %arg0 : tensor<128x64xi32, #blocked> to tensor<128x64xi64, #blocked>
++    %3 = arith.extsi %1 : tensor<128x1xi32, #blocked> to tensor<128x1xi64, #blocked>
++    %4 = tt.broadcast %3 : tensor<128x1xi64, #blocked> -> tensor<128x64xi64, #blocked>
++    %5 = arith.muli %2, %4 : tensor<128x64xi64, #blocked>
++    %6 = ttg.convert_layout %5 : tensor<128x64xi64, #blocked> -> tensor<128x64xi64, #blocked1>
++    %7 = arith.extsi %1 : tensor<128x1xi32, #blocked> to tensor<128x1xi64, #blocked>
++    %8 = tt.broadcast %7 : tensor<128x1xi64, #blocked> -> tensor<128x64xi64, #blocked>
++    %9 = arith.muli %2, %8 : tensor<128x64xi64, #blocked>
++    %10 = ttg.convert_layout %9 : tensor<128x64xi64, #blocked> -> tensor<128x64xi64, #blocked1>
++    tt.return %6, %10 : tensor<128x64xi64, #blocked1>, tensor<128x64xi64, #blocked1>
++  }
++}

@@ -1,0 +1,21 @@
+{
+  "primary_labels": [
+    "crash_compile",
+    "dtype_casting",
+    "nan_inf",
+    "not_numerical_failure",
+    "overflow_underflow",
+    "performance_only",
+    "precision_tolerance"
+  ],
+  "secondary_labels": [
+    "memory_mask_bounds",
+    "compiler_codegen",
+    "async_race_ordering",
+    "hardware_backend",
+    "reduction_accumulation",
+    "api_semantics",
+    "environment_configuration",
+    "unknown"
+  ]
+}

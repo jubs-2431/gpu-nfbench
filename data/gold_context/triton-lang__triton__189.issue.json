@@ -1,0 +1,12 @@
+{
+  "body": "Hi, I'm running your square mm tutorial/bench_matmul.py on an RTX2080 (compute capability 7.5) with CUDA 11.4 and pytorch 1.9 and both the triton-1.0.1.dev20210802 wheel and triton-1.0.0 (pip). I get roughly half the TFLOPs from from Triton vs CUBLAS. \r\nFor the softmax tutorial I see the expected outperformance of Triton.\r\nthanks.\r\n\r\nmatmul-square-nn:\r\n         M     cuBLAS     Triton  CUTLASS\r\n0    512.0  16.384000   6.909891      NaN\r\n1    768.0  28.948417  15.798857      NaN\r\n2   1024.0  29.228599  15.632161      NaN\r\n3   1280.0  35.281829  16.388097      NaN\r\n4   1536.0  40.905258  23.600336      NaN\r\n5   1792.0  38.781708  19.718289      NaN\r\n6   2048.0  41.979116  21.509251      NaN\r\n7   2304.0  40.128716  23.282526      NaN\r\n8   2560.0  39.766991  22.594238      NaN\r\n9   2816.0  40.091195  22.432408      NaN\r\n10  3072.0  47.434208  24.280919      NaN\r\n11  3328.0  42.087097  23.059814      NaN\r\n12  3584.0  43.395461  23.450199      NaN\r\n13  3840.0  44.456862  24.021342      NaN\r\n14  4096.0  46.487361  23.773495      NaN\r\n15  4352.0  45.007942  21.663536      NaN\r\n16  4480.0  44.281429  23.805984      NaN\r\n17  4736.0  44.714373  24.007716      NaN\r\n18  4992.0  44.933972  24.113050      NaN\r\n19  5248.0  46.043116  22.751770      NaN\r\n20  5504.0  45.356638  23.978917      NaN\r\n21  5760.0  45.166731  23.875121      NaN\r\n22  6016.0  44.986523  23.995386      NaN\r\n23  6272.0  44.936866  23.735443      NaN\r\n24  6528.0  45.392516  23.870419      NaN\r\n25  6784.0  45.753316  23.779448      NaN\r\n26  7040.0  45.605717  23.826782      NaN\r\n27  7296.0  45.360904  24.030071      NaN\r\n28  7552.0  44.805316  23.973715      NaN\r\n29  7808.0  45.230768  23.980246      NaN\r\n30  8064.0  41.971233  24.024032      NaN\r\n31  8192.0  46.473655  24.004187      NaN",
+  "closed_at": null,
+  "comments": 10,
+  "created_at": "2021-08-05T23:19:40Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/189",
+  "labels": [],
+  "number": 189,
+  "state": "open",
+  "title": "Low RTX20 tensor core performance",
+  "updated_at": "2022-07-03T13:47:05Z"
+}

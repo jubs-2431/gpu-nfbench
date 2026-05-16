@@ -1,0 +1,5 @@
+model_or_mode,answered_rows,coverage,accuracy,macro_f1
+full_ensemble,1191,1.000,0.768,0.753
+no_candidate_label_ensemble,1191,1.000,0.761,0.748
+linear_only_vote,1191,1.000,0.757,0.745
+candidate_plus_svm,1191,1.000,0.765,0.751

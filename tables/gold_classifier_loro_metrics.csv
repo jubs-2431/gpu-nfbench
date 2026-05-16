@@ -1,0 +1,7 @@
+model,evaluation,accuracy,macro_f1
+candidate_weak_label,leave_one_repository_out,0.414,0.306
+bm25_knn,leave_one_repository_out,0.277,0.145
+naive_bayes,leave_one_repository_out,0.393,0.228
+tfidf_logistic,leave_one_repository_out,0.503,0.247
+tfidf_linear_svm,leave_one_repository_out,0.461,0.241
+bigram_tfidf_logistic,leave_one_repository_out,0.487,0.227

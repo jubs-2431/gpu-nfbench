@@ -1,0 +1,102 @@
+[
+  {
+    "comments_json": "data/expansion_issue_context/pytorch__pytorch__175409.comments.json",
+    "events_json": "data/expansion_issue_context/pytorch__pytorch__175409.events.json",
+    "expansion_id": "EGNF1000-0001-826741eb",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/pytorch__pytorch__175409.issue.json",
+    "number": "175409",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/175409"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/jax-ml__jax__17688.comments.json",
+    "events_json": "data/expansion_issue_context/jax-ml__jax__17688.events.json",
+    "expansion_id": "EGNF1000-0002-1b0c5bb2",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/jax-ml__jax__17688.issue.json",
+    "number": "17688",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/17688"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/jax-ml__jax__34917.comments.json",
+    "events_json": "data/expansion_issue_context/jax-ml__jax__34917.events.json",
+    "expansion_id": "EGNF1000-0003-eb21dbc8",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/jax-ml__jax__34917.issue.json",
+    "number": "34917",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/34917"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/jax-ml__jax__8746.comments.json",
+    "events_json": "data/expansion_issue_context/jax-ml__jax__8746.events.json",
+    "expansion_id": "EGNF1000-0004-8fe6db28",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/jax-ml__jax__8746.issue.json",
+    "number": "8746",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/8746"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/pytorch__pytorch__167411.comments.json",
+    "events_json": "data/expansion_issue_context/pytorch__pytorch__167411.events.json",
+    "expansion_id": "EGNF1000-0005-5aa71e10",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/pytorch__pytorch__167411.issue.json",
+    "number": "167411",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/167411"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/pytorch__pytorch__173054.comments.json",
+    "events_json": "data/expansion_issue_context/pytorch__pytorch__173054.events.json",
+    "expansion_id": "EGNF1000-0006-eaab8dd2",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/pytorch__pytorch__173054.issue.json",
+    "number": "173054",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/173054"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/triton-lang__triton__1808.comments.json",
+    "events_json": "data/expansion_issue_context/triton-lang__triton__1808.events.json",
+    "expansion_id": "EGNF1000-0007-c9f0f664",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/triton-lang__triton__1808.issue.json",
+    "number": "1808",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1808"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/triton-lang__triton__8407.comments.json",
+    "events_json": "data/expansion_issue_context/triton-lang__triton__8407.events.json",
+    "expansion_id": "EGNF1000-0008-27d07bc0",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/triton-lang__triton__8407.issue.json",
+    "number": "8407",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/8407"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/jax-ml__jax__23007.comments.json",
+    "events_json": "data/expansion_issue_context/jax-ml__jax__23007.events.json",
+    "expansion_id": "EGNF1000-0009-39f6b041",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/jax-ml__jax__23007.issue.json",
+    "number": "23007",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/23007"
+  },
+  {
+    "comments_json": "data/expansion_issue_context/cupy__cupy__8404.comments.json",
+    "events_json": "data/expansion_issue_context/cupy__cupy__8404.events.json",
+    "expansion_id": "EGNF1000-0010-2e91f962",
+    "fetch_error": "",
+    "issue_json": "data/expansion_issue_context/cupy__cupy__8404.issue.json",
+    "number": "8404",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8404"
+  }
+]

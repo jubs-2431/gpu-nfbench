@@ -1,0 +1,2 @@
+prediction_file,evaluated_rows,accuracy,macro_f1
+evaluation/llm_baseline_predictions_gemini31_flash_lite_batched_merged.csv,191,0.220,0.203

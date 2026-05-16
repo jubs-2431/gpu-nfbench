@@ -1,0 +1,15 @@
+{
+  "body": "I think this is kinda follow-up of #3529? \r\n- Slack?\r\n- Mailing list?\r\n- GitHub issue tracker?\r\n- any other channels I am not aware of? \ud83d\ude42",
+  "closed_at": "2021-04-05T09:21:13Z",
+  "comments": 2,
+  "created_at": "2020-07-30T17:28:25Z",
+  "html_url": "https://github.com/cupy/cupy/issues/3696",
+  "labels": [
+    "cat:document",
+    "prio:medium"
+  ],
+  "number": 3696,
+  "state": "closed",
+  "title": "Document places for seeking for help and/or discussions",
+  "updated_at": "2021-04-05T09:21:13Z"
+}

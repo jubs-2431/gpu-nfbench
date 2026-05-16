@@ -1,0 +1,1564 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,retrieved_example_ids,retrieved_example_labels,weak_candidate_primary,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+GNF-0001-f56f80f3,llama3.2:3b,fold_safe_rag_generated,,0,5.04,GNF-0167-13076e98|GNF-0022-a403f994|GNF-0034-77cd048a|GNF-0013-bd88dbb3|GNF-0056-d1d1b50f|GNF-0140-0369d89c|GNF-0163-93b2beac|GNF-0061-039345f1,nan_inf|dtype_casting|dtype_casting|nan_inf|overflow_underflow|overflow_underflow|precision_tolerance|not_numerical_failure,precision_tolerance,precision_tolerance,unknown,unclear,low,Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits."",
+  ""confidence"": ""low""
+}",
+GNF-0002-16e149fe,llama3.2:3b,fold_safe_rag_generated,,0,6.60,GNF-0132-01bc7af7|GNF-0118-6cddc10b|GNF-0172-1596bb30|GNF-0140-0369d89c|GNF-0111-4b909a91|GNF-0094-5130df2b|GNF-0073-9d1db2bf|GNF-0044-58d8c7b3,dtype_casting|nan_inf|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|crash_compile|not_numerical_failure,dtype_casting,dtype_casting,compiler_codegen,yes,high,"if your model is in fp8 from the start (loaded from disk in fp8), re-quantizing it to an integer datatype introduces further error.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""if your model is in fp8 from the start (loaded from disk in fp8), re-quantizing it to an integer datatype introduces further error."",
+  ""confidence"": ""high""
+}",
+GNF-0003-eaa63fac,llama3.2:3b,fold_safe_rag_generated,,0,8.37,GNF-0076-60dcd2da|GNF-0037-7af727c1|GNF-0027-933bf558|GNF-0018-86e41701|GNF-0098-a1e24269|GNF-0079-ec781ba7|GNF-0026-8ee693c5|GNF-0129-c9f64c60,not_numerical_failure|not_numerical_failure|dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|performance_only|nan_inf,performance_only,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""async_race_ordering""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""compute-sanitizer --tool=racecheck python -m pytest -v python/cudf/cudf/tests/text/test_text_methods.py::test_jaccard_index_random_strings -x --pdb ========= COMPUTE-SANITIZER ================================================================ test session starts ================================================================ platform linux -- Python 3.10.12, pytest-7.4.0, pluggy-1.2.0 -- /home/wence/Documents/src/rapids/compose/etc/conda/cuda_11.8/envs/rapids/bin/python cachedir: .pytest_cache benchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000) hypothesis profile 'default' -> database=",
+GNF-0004-e5162a33,llama3.2:3b,fold_safe_rag_generated,,0,4.78,GNF-0035-1d6522c2|GNF-0101-ca19a99c|GNF-0124-5e35db0b|GNF-0005-80aeca70|GNF-0084-8e030aa9|GNF-0032-76c19db8|GNF-0041-2e844e08|GNF-0015-04273d95,precision_tolerance|not_numerical_failure|overflow_underflow|overflow_underflow|nan_inf|dtype_casting|dtype_casting|nan_inf,dtype_casting,dtype_casting,hardware_backend,unclear,low,cc @lezcano TIL that we allow in most operations to specify an `out=` with a less precise dtype than that of the result.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""cc @lezcano TIL that we allow in most operations to specify an `out=` with a less precise dtype than that of the result."",
+  ""confidence"": ""low""
+}",
+GNF-0005-80aeca70,llama3.2:3b,fold_safe_rag_generated,,0,5.22,GNF-0133-3e76eecf|GNF-0158-41ca2b85|GNF-0067-0064f2a6|GNF-0089-074c6391|GNF-0088-bbebe2a7|GNF-0060-3368e422|GNF-0051-53841ba4|GNF-0023-93595bc9,overflow_underflow|dtype_casting|nan_inf|dtype_casting|nan_inf|overflow_underflow|not_numerical_failure|crash_compile,overflow_underflow,nan_inf,unknown,yes,high,"float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded."",
+  ""confidence"": ""high""
+}",
+GNF-0006-82eaa858,llama3.2:3b,fold_safe_rag_generated,,0,4.64,GNF-0180-3e16cf7e|GNF-0052-c0b07407|GNF-0042-938c1ba1|GNF-0026-8ee693c5|GNF-0028-64f6040c|GNF-0142-fd6a822f|GNF-0156-b72349bc|GNF-0126-2958d273,dtype_casting|dtype_casting|overflow_underflow|performance_only|nan_inf|overflow_underflow|not_numerical_failure|nan_inf,precision_tolerance,dtype_casting,hardware_backend,yes,high,Unsupported conversion from f64 to f16 in pallas despite not using fp16,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Unsupported conversion from f64 to f16 in pallas despite not using fp16"",
+  ""confidence"": ""high""
+}",
+GNF-0007-5a435abf,llama3.2:3b,fold_safe_rag_generated,,0,5.26,GNF-0030-a4314978|GNF-0163-93b2beac|GNF-0063-a5f90bd9|GNF-0057-44d428bb|GNF-0040-5f558cf9|GNF-0061-039345f1|GNF-0022-a403f994|GNF-0124-5e35db0b,nan_inf|precision_tolerance|not_numerical_failure|precision_tolerance|dtype_casting|not_numerical_failure|dtype_casting|overflow_underflow,precision_tolerance,precision_tolerance,unknown,yes,high,"The issue occurs when two randint calls are called inside the compiled function:the output of the first randint already differs between eager and compiled mode, even though the second randint result is not returned.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue occurs when two randint calls are called inside the compiled function:the output of the first randint already differs between eager and compiled mode, even though the second randint result is not returned."",
+  ""confidence"": ""high""
+}",
+GNF-0008-4625af98,llama3.2:3b,fold_safe_rag_generated,,0,5.20,GNF-0108-049dae8c|GNF-0072-9fba4417|GNF-0054-d98d7afd|GNF-0161-43f5b312|GNF-0129-c9f64c60|GNF-0028-64f6040c|GNF-0188-931dcb6c|GNF-0160-b61a834c,not_numerical_failure|overflow_underflow|not_numerical_failure|dtype_casting|nan_inf|nan_inf|overflow_underflow|dtype_casting,precision_tolerance,nan_inf,unknown,yes,high,cudf csv writer seems to be truncating the sub-second level data incase of `datetime64` dtypes.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cudf csv writer seems to be truncating the sub-second level data incase of `datetime64` dtypes."",
+  ""confidence"": ""high""
+}",
+GNF-0009-f786b33b,llama3.2:3b,fold_safe_rag_generated,,0,4.15,GNF-0025-d23b5aed|GNF-0071-ca4885e3|GNF-0068-abb65bf7|GNF-0101-ca19a99c|GNF-0070-0db7eac0|GNF-0178-7e3074ef|GNF-0012-d3d20064|GNF-0174-e7b5adf3,nan_inf|dtype_casting|dtype_casting|not_numerical_failure|nan_inf|not_numerical_failure|performance_only|overflow_underflow,precision_tolerance,precision_tolerance,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": """",
+  ""confidence"": ""low""
+}",
+GNF-0010-ff390b39,llama3.2:3b,fold_safe_rag_generated,,0,5.36,GNF-0124-5e35db0b|GNF-0139-08c1b395|GNF-0015-04273d95|GNF-0095-e46f2dc5|GNF-0084-8e030aa9|GNF-0160-b61a834c|GNF-0087-b5fe68e9|GNF-0051-53841ba4,overflow_underflow|overflow_underflow|nan_inf|precision_tolerance|nan_inf|dtype_casting|dtype_casting|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,Value 'sm_89' is not defined for option 'gpu-name',"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Value 'sm_89' is not defined for option 'gpu-name'"",
+  ""confidence"": ""high""
+}",
+GNF-0011-0a961578,llama3.2:3b,fold_safe_rag_generated,,0,5.39,GNF-0044-58d8c7b3|GNF-0028-64f6040c|GNF-0088-bbebe2a7|GNF-0133-3e76eecf|GNF-0158-41ca2b85|GNF-0089-074c6391|GNF-0005-80aeca70|GNF-0051-53841ba4,not_numerical_failure|nan_inf|nan_inf|overflow_underflow|dtype_casting|dtype_casting|overflow_underflow|not_numerical_failure,overflow_underflow,overflow_underflow,unknown,yes,high,"cp.sum(X, axis=1) operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cp.sum(X, axis=1) operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32"",
+  ""confidence"": ""high""
+}",
+GNF-0012-d3d20064,llama3.2:3b,fold_safe_rag_generated,,0,5.22,GNF-0187-2664d182|GNF-0183-0f27bf2e|GNF-0097-60602b2b|GNF-0073-9d1db2bf|GNF-0063-a5f90bd9|GNF-0031-dff9514d|GNF-0065-e81a8790|GNF-0103-f835a9bf,overflow_underflow|not_numerical_failure|dtype_casting|crash_compile|not_numerical_failure|dtype_casting|precision_tolerance|precision_tolerance,performance_only,precision_tolerance,unknown,yes,high,"atomic intrinsics (ideally applicable to NumPy arrays, an intrinsic atomic `arr[i] += x` operation) in order to make such implementations that work without a GPU.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""atomic intrinsics (ideally applicable to NumPy arrays, an intrinsic atomic `arr[i] += x` operation) in order to make such implementations that work without a GPU."",
+  ""confidence"": ""high""
+}",
+GNF-0013-bd88dbb3,llama3.2:3b,fold_safe_rag_generated,,0,5.35,GNF-0016-7e125a4d|GNF-0132-01bc7af7|GNF-0164-cdeaf26a|GNF-0092-350f027f|GNF-0179-0d2d153d|GNF-0140-0369d89c|GNF-0073-9d1db2bf|GNF-0133-3e76eecf,dtype_casting|dtype_casting|nan_inf|nan_inf|performance_only|overflow_underflow|crash_compile|overflow_underflow,nan_inf,nan_inf,unknown,yes,high,"I believe it's not a bug. Try: ` X_block_ptr = tl.advance(X_block_ptr, (block_size, 0))` I am already using that.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""padding_option""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I believe it's not a bug. Try: ` X_block_ptr = tl.advance(X_block_ptr, (block_size, 0))` I am already using that."",
+  ""confidence"": ""high"" }",
+GNF-0014-9fb698b0,llama3.2:3b,fold_safe_rag_generated,,0,5.30,GNF-0057-44d428bb|GNF-0138-73610007|GNF-0163-93b2beac|GNF-0073-9d1db2bf|GNF-0066-103332ec|GNF-0029-5f61e128|GNF-0109-5b3bb56e|GNF-0140-0369d89c,precision_tolerance|dtype_casting|precision_tolerance|crash_compile|dtype_casting|not_numerical_failure|overflow_underflow|overflow_underflow,dtype_casting,precision_tolerance,unknown,yes,high,Could this simply reuse the formula enabled for `scaled_dot_product_attention`?,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Could this simply reuse the formula enabled for `scaled_dot_product_attention`?"",
+  ""confidence"": ""high""
+}",
+GNF-0015-04273d95,llama3.2:3b,fold_safe_rag_generated,,0,5.85,GNF-0139-08c1b395|GNF-0177-39a0d983|GNF-0024-543e6651|GNF-0160-b61a834c|GNF-0087-b5fe68e9|GNF-0108-049dae8c|GNF-0095-e46f2dc5|GNF-0084-8e030aa9,overflow_underflow|overflow_underflow|nan_inf|dtype_casting|dtype_casting|not_numerical_failure|precision_tolerance|nan_inf,precision_tolerance,nan_inf,unknown,yes,low,Seeing as bfloat16 works I suspect that you might just be running out of range since float16\'s max normal value is 65504,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Seeing as bfloat16 works I suspect that you might just be running out of range since float16\\'s max normal value is 65504"",
+  ""confidence"": ""low""
+}",
+GNF-0016-7e125a4d,llama3.2:3b,fold_safe_rag_generated,,0,4.24,GNF-0033-1f6d8975|GNF-0099-8e08d802|GNF-0013-bd88dbb3|GNF-0019-965637d3|GNF-0140-0369d89c|GNF-0056-d1d1b50f|GNF-0101-ca19a99c|GNF-0073-9d1db2bf,dtype_casting|dtype_casting|nan_inf|nan_inf|overflow_underflow|overflow_underflow|not_numerical_failure|crash_compile,dtype_casting,dtype_casting,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": """",
+  ""confidence"": ""low""
+}",
+GNF-0017-f27cd16b,llama3.2:3b,fold_safe_rag_generated,,0,4.42,GNF-0031-dff9514d|GNF-0116-96b537db|GNF-0025-d23b5aed|GNF-0101-ca19a99c|GNF-0082-a3d486ce|GNF-0163-93b2beac|GNF-0191-cd071cce|GNF-0103-f835a9bf,dtype_casting|dtype_casting|nan_inf|not_numerical_failure|overflow_underflow|precision_tolerance|overflow_underflow|precision_tolerance,dtype_casting,dtype_casting,unknown,unclear,low,"Thanks for the report, I can reproduce. Seems like this it not managing to do what the docs suggest!","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Thanks for the report, I can reproduce. Seems like this it not managing to do what the docs suggest!"",
+  ""confidence"": ""low""
+}",
+GNF-0018-86e41701,llama3.2:3b,fold_safe_rag_generated,,0,6.52,GNF-0098-a1e24269|GNF-0051-53841ba4|GNF-0116-96b537db|GNF-0041-2e844e08|GNF-0060-3368e422|GNF-0043-75ac4cd1|GNF-0062-3cbef3ba|GNF-0037-7af727c1,overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|overflow_underflow|nan_inf|nan_inf|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,I can only reproduce the segfault under valgrind using py3.9: ````bash $ valgrind --tool=memcheck --suppressions=../../valgrind-python-3.9.supp --log-file=raw.log -- python3 -m pytest -v pandas/tests/window/...````,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I can only reproduce the segfault under valgrind using py3.9: ````bash $ valgrind --tool=memcheck --suppressions=../../valgrind-python-3.9.supp --log-file=raw.log -- python3 -m pytest -v pandas/tests/window/...````"",
+  ""confidence"": ""high""
+}",
+GNF-0019-965637d3,llama3.2:3b,fold_safe_rag_generated,,0,4.86,GNF-0131-4b657811|GNF-0016-7e125a4d|GNF-0025-d23b5aed|GNF-0109-5b3bb56e|GNF-0073-9d1db2bf|GNF-0140-0369d89c|GNF-0167-13076e98|GNF-0093-6cb318e0,dtype_casting|dtype_casting|nan_inf|overflow_underflow|crash_compile|overflow_underflow|nan_inf|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,the TMA loaded smem contains nan values under a very specific and unusual condition.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the TMA loaded smem contains nan values under a very specific and unusual condition."",
+  ""confidence"": ""high""
+}",
+GNF-0020-322072f7,llama3.2:3b,fold_safe_rag_generated,,0,5.50,GNF-0186-6c92b3b9|GNF-0051-53841ba4|GNF-0039-1a4af8a4|GNF-0158-41ca2b85|GNF-0096-cc3502f6|GNF-0109-5b3bb56e|GNF-0044-58d8c7b3|GNF-0121-d1cf86e9,overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|precision_tolerance|overflow_underflow|not_numerical_failure|precision_tolerance,crash_compile,precision_tolerance,unknown,yes,high,Any chance you can build from the latest main branch and confirm?,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Any chance you can build from the latest main branch and confirm?"",
+  ""confidence"": ""high""
+}",
+GNF-0021-ebaa6477,llama3.2:3b,fold_safe_rag_generated,,0,5.11,GNF-0052-c0b07407|GNF-0123-b044c5aa|GNF-0042-938c1ba1|GNF-0060-3368e422|GNF-0028-64f6040c|GNF-0093-6cb318e0|GNF-0108-049dae8c|GNF-0126-2958d273,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure|nan_inf,nan_inf,nan_inf,unknown,yes,high,Output: [[nan nan] [nan nan]] [[nan nan] [nan inf]],"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Output: [[nan nan] [nan nan]] [[nan nan] [nan inf]]"",
+  ""confidence"": ""high""
+}",
+GNF-0022-a403f994,llama3.2:3b,fold_safe_rag_generated,,0,5.35,GNF-0007-5a435abf|GNF-0030-a4314978|GNF-0131-4b657811|GNF-0057-44d428bb|GNF-0019-965637d3|GNF-0064-6c864f3b|GNF-0163-93b2beac|GNF-0109-5b3bb56e,dtype_casting|nan_inf|dtype_casting|precision_tolerance|nan_inf|overflow_underflow|precision_tolerance|overflow_underflow,dtype_casting,precision_tolerance,reduction_accumulation,yes,high,"To resolve this, we can integrate the heuristic routing directly into Inductor's scheduler and update the Triton lowering for the register-tiled path.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""reduction_accumulation""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""To resolve this, we can integrate the heuristic routing directly into Inductor's scheduler and update the Triton lowering for the register-tiled path."",
+  ""confidence"": ""high""
+}",
+GNF-0023-93595bc9,llama3.2:3b,fold_safe_rag_generated,,0,5.22,GNF-0157-7be66b56|GNF-0136-a301f54e|GNF-0158-41ca2b85|GNF-0133-3e76eecf|GNF-0137-1f5e2c55|GNF-0128-c6e2544c|GNF-0088-bbebe2a7|GNF-0029-5f61e128,dtype_casting|overflow_underflow|dtype_casting|overflow_underflow|performance_only|nan_inf|nan_inf|not_numerical_failure,dtype_casting,nan_inf,unknown,yes,high,"TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx"",
+  ""confidence"": ""high""
+}",
+GNF-0024-543e6651,llama3.2:3b,fold_safe_rag_generated,,0,4.76,GNF-0188-931dcb6c|GNF-0160-b61a834c|GNF-0108-049dae8c|GNF-0015-04273d95|GNF-0139-08c1b395|GNF-0095-e46f2dc5|GNF-0084-8e030aa9|GNF-0087-b5fe68e9,overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|overflow_underflow|precision_tolerance|nan_inf|dtype_casting,nan_inf,nan_inf,unknown,yes,high,torch.std_mean returns nan when input is an array containing only inf.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""torch.std_mean returns nan when input is an array containing only inf."",
+  ""confidence"": ""high""
+}",
+GNF-0025-d23b5aed,llama3.2:3b,fold_safe_rag_generated,,0,5.62,GNF-0009-f786b33b|GNF-0116-96b537db|GNF-0060-3368e422|GNF-0073-9d1db2bf|GNF-0070-0db7eac0|GNF-0109-5b3bb56e|GNF-0012-d3d20064|GNF-0062-3cbef3ba,dtype_casting|dtype_casting|overflow_underflow|crash_compile|nan_inf|overflow_underflow|performance_only|nan_inf,nan_inf,nan_inf,unknown,yes,low,"generated_jit is deprecated, because @overload is a better solution - can you rewrite nan_of_type using @overload instead (see https://numba.readthedocs.io/en/latest/extending/high-level.html#high-level-extending)?","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""generated_jit is deprecated, because @overload is a better solution - can you rewrite nan_of_type using @overload instead (see https://numba.readthedocs.io/en/latest/extending/high-level.html#high-level-extending)?"",
+  ""confidence"": ""low""
+}",
+GNF-0026-8ee693c5,llama3.2:3b,fold_safe_rag_generated,,0,5.24,GNF-0062-3cbef3ba|GNF-0161-43f5b312|GNF-0072-9fba4417|GNF-0129-c9f64c60|GNF-0054-d98d7afd|GNF-0060-3368e422|GNF-0036-b3e8f03a|GNF-0108-049dae8c,nan_inf|dtype_casting|overflow_underflow|nan_inf|not_numerical_failure|overflow_underflow|dtype_casting|not_numerical_failure,performance_only,nan_inf,unknown,yes,high,len(temp) Nvidia-smi usage shoots to a max state here:,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""len(temp) Nvidia-smi usage shoots to a max state here:"",
+  ""confidence"": ""high""
+}",
+GNF-0027-933bf558,llama3.2:3b,fold_safe_rag_generated,,0,4.60,GNF-0018-86e41701|GNF-0032-76c19db8|GNF-0189-2fcb9ca4|GNF-0073-9d1db2bf|GNF-0098-a1e24269|GNF-0109-5b3bb56e|GNF-0043-75ac4cd1|GNF-0076-60dcd2da,dtype_casting|dtype_casting|nan_inf|crash_compile|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure,precision_tolerance,nan_inf,unknown,yes,high,I was testing things locally and noticed this:,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I was testing things locally and noticed this:"",
+  ""confidence"": ""high""
+}",
+GNF-0028-64f6040c,llama3.2:3b,fold_safe_rag_generated,,0,5.68,GNF-0129-c9f64c60|GNF-0054-d98d7afd|GNF-0126-2958d273|GNF-0161-43f5b312|GNF-0072-9fba4417|GNF-0008-4625af98|GNF-0108-049dae8c|GNF-0026-8ee693c5,nan_inf|not_numerical_failure|nan_inf|dtype_casting|overflow_underflow|dtype_casting|not_numerical_failure|performance_only,nan_inf,nan_inf,unknown,yes,high,"While I think libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""While I think libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum."",
+  ""confidence"": ""high""
+}",
+GNF-0029-5f61e128,llama3.2:3b,fold_safe_rag_generated,,0,5.18,GNF-0062-3cbef3ba|GNF-0142-fd6a822f|GNF-0105-bbfb9d59|GNF-0014-9fb698b0|GNF-0060-3368e422|GNF-0154-a389b1a4|GNF-0044-58d8c7b3|GNF-0054-d98d7afd,nan_inf|overflow_underflow|dtype_casting|dtype_casting|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas."",
+  ""confidence"": ""high""
+}",
+GNF-0030-a4314978,llama3.2:3b,fold_safe_rag_generated,,0,6.32,GNF-0007-5a435abf|GNF-0035-1d6522c2|GNF-0063-a5f90bd9|GNF-0095-e46f2dc5|GNF-0134-2006d4e1|GNF-0010-ff390b39|GNF-0024-543e6651|GNF-0061-039345f1,dtype_casting|precision_tolerance|not_numerical_failure|precision_tolerance|dtype_casting|nan_inf|nan_inf|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,"When the same Tensor is passed to two (or more) positional tensor arguments of a `torch.autograd.Function.apply(...)`, and the backward returns different values for those positions (e.g. `None` for one slot and a tensor for another), `torch.compile` produces a graph that drops one of the per-slot gradient contributions.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""When the same Tensor is passed to two (or more) positional tensor arguments of a `torch.autograd.Function.apply(...)`, and the backward returns different values for those positions (e.g. `None` for one slot and a tensor for another), `torch.compile` produces a graph that drops one of the per-slot gradient contributions."",
+  ""confidence"": ""high""
+}",
+GNF-0031-dff9514d,llama3.2:3b,fold_safe_rag_generated,,0,4.44,GNF-0085-b4ddcf4b|GNF-0116-96b537db|GNF-0017-f27cd16b|GNF-0187-2664d182|GNF-0178-7e3074ef|GNF-0012-d3d20064|GNF-0062-3cbef3ba|GNF-0025-d23b5aed,dtype_casting|dtype_casting|crash_compile|overflow_underflow|not_numerical_failure|performance_only|nan_inf|nan_inf,precision_tolerance,precision_tolerance,unknown,yes,high,"can this issue be labelled as a ""good first issue""?","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""can this issue be labelled as a \""good first issue\""?"",
+  ""confidence"": ""high""
+}",
+GNF-0032-76c19db8,llama3.2:3b,fold_safe_rag_generated,,0,4.76,GNF-0089-074c6391|GNF-0158-41ca2b85|GNF-0043-75ac4cd1|GNF-0133-3e76eecf|GNF-0067-0064f2a6|GNF-0082-a3d486ce|GNF-0044-58d8c7b3|GNF-0023-93595bc9,dtype_casting|dtype_casting|nan_inf|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure|crash_compile,precision_tolerance,dtype_casting,hardware_backend,yes,high,Casting an array to a byteswapped dtype does a view not a cast,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Casting an array to a byteswapped dtype does a view not a cast"",
+  ""confidence"": ""high""
+}",
+GNF-0033-1f6d8975,llama3.2:3b,fold_safe_rag_generated,,0,5.42,GNF-0016-7e125a4d|GNF-0022-a403f994|GNF-0167-13076e98|GNF-0140-0369d89c|GNF-0164-cdeaf26a|GNF-0133-3e76eecf|GNF-0179-0d2d153d|GNF-0095-e46f2dc5,dtype_casting|dtype_casting|nan_inf|overflow_underflow|nan_inf|overflow_underflow|performance_only|precision_tolerance,precision_tolerance,nan_inf,unknown,yes,high,"If I have `x.dtype=torch.bfloat16` and `y.dtype=torch.float32` and do `tl.dot(x.to(y.dtype), y, input_precision=""ieee"", out_dtype=tl.float32"")`, looks like triton will fallback to TF32 precision.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""If I have `x.dtype=torch.bfloat16` and `y.dtype=torch.float32` and do `tl.dot(x.to(y.dtype), y, input_precision=\""ieee\"", out_dtype=tl.float32\"")`, looks like triton will fallback to TF32 precision."",
+  ""confidence"": ""high""
+}",
+GNF-0034-77cd048a,llama3.2:3b,fold_safe_rag_generated,,0,4.60,GNF-0056-d1d1b50f|GNF-0132-01bc7af7|GNF-0092-350f027f|GNF-0019-965637d3|GNF-0181-f206820c|GNF-0179-0d2d153d|GNF-0109-5b3bb56e|GNF-0184-5cb52bd8,overflow_underflow|dtype_casting|nan_inf|nan_inf|dtype_casting|performance_only|overflow_underflow|performance_only,needs_review,nan_inf,unknown,yes,high,you may not be bounds checking correctly in the matmul.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""you may not be bounds checking correctly in the matmul."",
+  ""confidence"": ""high""
+}",
+GNF-0035-1d6522c2,llama3.2:3b,fold_safe_rag_generated,,0,6.73,GNF-0030-a4314978|GNF-0084-8e030aa9|GNF-0004-e5162a33|GNF-0124-5e35db0b|GNF-0095-e46f2dc5|GNF-0163-93b2beac|GNF-0041-2e844e08|GNF-0063-a5f90bd9,nan_inf|nan_inf|dtype_casting|overflow_underflow|precision_tolerance|precision_tolerance|dtype_casting|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,"You should not use `.data` in general. If you want to detach from the autograd graph, you can use `.detach()` But within a custom Function forward, since autograd is already disabled, you can just do return `x.view(x.shape)` @albanD Using `.detach()` can also reproduce this issue, while `x.view(x.shape)` seems to resolve it.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""You should not use `.data` in general. If you want to detach from the autograd graph, you can use `.detach()` But within a custom Function forward, since autograd is already disabled, you can just do return `x.view(x.shape)` @albanD Using `.detach()` can also reproduce this issue, while `x.view(x.shape)` seems to resolve it."",
+  ""confidence"": ""high""
+}",
+GNF-0036-b3e8f03a,llama3.2:3b,fold_safe_rag_generated,,0,5.59,GNF-0052-c0b07407|GNF-0123-b044c5aa|GNF-0175-551fdc3c|GNF-0042-938c1ba1|GNF-0021-ebaa6477|GNF-0060-3368e422|GNF-0093-6cb318e0|GNF-0117-5c96ad33,dtype_casting|dtype_casting|not_numerical_failure|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure|nan_inf,dtype_casting,overflow_underflow,unknown,yes,high,"ncclAlltoAll( send_contiguous->opaque(), recv_contiguous->opaque(), ToNcclCount(dtype, count), nccl_dtype, comm_, AsCudaStream(stream)) failed: unhandled system error (run with NCCL_DEBUG=INFO for details).","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""ncclAlltoAll( send_contiguous->opaque(), recv_contiguous->opaque(), ToNcclCount(dtype, count), nccl_dtype, comm_, AsCudaStream(stream)) failed: unhandled system error (run with NCCL_DEBUG=INFO for details)."",
+  ""confidence"": ""high""
+}",
+GNF-0037-7af727c1,llama3.2:3b,fold_safe_rag_generated,,0,7.24,GNF-0161-43f5b312|GNF-0072-9fba4417|GNF-0129-c9f64c60|GNF-0028-64f6040c|GNF-0108-049dae8c|GNF-0054-d98d7afd|GNF-0060-3368e422|GNF-0110-1c6064fd,dtype_casting|overflow_underflow|nan_inf|nan_inf|not_numerical_failure|not_numerical_failure|overflow_underflow|dtype_casting,overflow_underflow,nan_inf,unknown,yes,high,0x348 is misaligned ========= Address 0x348 is misaligned ========= Saved host backtrace up to driver entry point at kernel launch time ========= Host Frame: [0x4808d6] ========= in /lib/x86_64-linux-gnu/libcuda.so.1 ========= Host Frame:cudaStreamSynchronize_ptsz [0x5143b] ========= in /home/fel...,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""0x348 is misaligned ========= Address 0x348 is misaligned ========= Saved host backtrace up to driver entry point at kernel launch time ========= Host Frame: [0x4808d6] ========= in /lib/x86_64-linux-gnu/libcuda.so.1 ========= Host Frame:cudaStreamSynchronize_ptsz [0x5143b] ========= in /home/fel..."",
+  ""confidence"": ""high""
+}",
+GNF-0038-ba034dce,llama3.2:3b,fold_safe_rag_generated,,0,5.00,GNF-0079-ec781ba7|GNF-0100-a235b2dd|GNF-0181-f206820c|GNF-0037-7af727c1|GNF-0096-cc3502f6|GNF-0109-5b3bb56e|GNF-0010-ff390b39|GNF-0015-04273d95,overflow_underflow|dtype_casting|dtype_casting|not_numerical_failure|precision_tolerance|overflow_underflow|nan_inf|nan_inf,crash_compile,nan_inf,unknown,yes,high,"I think 8-bit, 32-bit mixed precision is not well supported yet.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I think 8-bit, 32-bit mixed precision is not well supported yet."",
+  ""confidence"": ""high""
+}",
+GNF-0039-1a4af8a4,llama3.2:3b,fold_safe_rag_generated,,0,6.00,GNF-0186-6c92b3b9|GNF-0020-322072f7|GNF-0082-a3d486ce|GNF-0158-41ca2b85|GNF-0043-75ac4cd1|GNF-0044-58d8c7b3|GNF-0023-93595bc9|GNF-0163-93b2beac,overflow_underflow|dtype_casting|overflow_underflow|dtype_casting|nan_inf|not_numerical_failure|crash_compile|precision_tolerance,needs_review,dtype_casting,compiler_codegen,yes,high,"import cupy as cp a = cp.zeros((66, 66, 66, 200, 32), 'f') a[33, 33, 33, 80, 0] = 1.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""import cupy as cp a = cp.zeros((66, 66, 66, 200, 32), 'f') a[33, 33, 33, 80, 0] = 1."",
+  ""confidence"": ""high""
+}",
+GNF-0040-5f558cf9,llama3.2:3b,fold_safe_rag_generated,,0,4.71,GNF-0007-5a435abf|GNF-0063-a5f90bd9|GNF-0030-a4314978|GNF-0022-a403f994|GNF-0073-9d1db2bf|GNF-0159-f17202a4|GNF-0098-a1e24269|GNF-0176-0884dd43,dtype_casting|not_numerical_failure|nan_inf|dtype_casting|crash_compile|precision_tolerance|overflow_underflow|precision_tolerance,needs_review,nan_inf,unknown,yes,high,and a downstream `MulBackward0` eventually produced NaN,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""and a downstream `MulBackward0` eventually produced NaN"",
+  ""confidence"": ""high""
+}",
+GNF-0041-2e844e08,llama3.2:3b,fold_safe_rag_generated,,0,5.84,GNF-0051-53841ba4|GNF-0043-75ac4cd1|GNF-0072-9fba4417|GNF-0096-cc3502f6|GNF-0124-5e35db0b|GNF-0160-b61a834c|GNF-0084-8e030aa9|GNF-0087-b5fe68e9,not_numerical_failure|nan_inf|overflow_underflow|precision_tolerance|overflow_underflow|dtype_casting|nan_inf|dtype_casting,crash_compile,nan_inf,unknown,yes,high,"List of accessible CPUs cores : 16-127 This is probably related to the issue - if 128 is `n`, then it would be greater than 112, but we're probably looking at mapping core counts incorrectly somehow.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""List of accessible CPUs cores : 16-127 This is probably related to the issue - if 128 is `n`, then it would be greater than 112, but we're probably looking at mapping core counts incorrectly somehow."",
+  ""confidence"": ""high""
+}",
+GNF-0042-938c1ba1,llama3.2:3b,fold_safe_rag_generated,,0,5.15,GNF-0052-c0b07407|GNF-0149-305f23bb|GNF-0175-551fdc3c|GNF-0021-ebaa6477|GNF-0142-fd6a822f|GNF-0152-d8097288|GNF-0117-5c96ad33|GNF-0072-9fba4417,dtype_casting|dtype_casting|not_numerical_failure|nan_inf|overflow_underflow|not_numerical_failure|nan_inf|overflow_underflow,overflow_underflow,nan_inf,unknown,yes,high,"This converts the sorted dimension size to a concrete int, which fails when symbolic.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This converts the sorted dimension size to a concrete int, which fails when symbolic."",
+  ""confidence"": ""high""
+}",
+GNF-0043-75ac4cd1,llama3.2:3b,fold_safe_rag_generated,,0,5.52,GNF-0041-2e844e08|GNF-0051-53841ba4|GNF-0116-96b537db|GNF-0096-cc3502f6|GNF-0010-ff390b39|GNF-0074-c730bac3|GNF-0190-3f4e1893|GNF-0060-3368e422,dtype_casting|not_numerical_failure|dtype_casting|precision_tolerance|nan_inf|not_numerical_failure|overflow_underflow|overflow_underflow,nan_inf,precision_tolerance,unknown,yes,high,for completeness: ...,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""for completeness: ..."",
+  ""confidence"": ""high""
+}",
+GNF-0044-58d8c7b3,llama3.2:3b,fold_safe_rag_generated,,0,5.92,GNF-0101-ca19a99c|GNF-0082-a3d486ce|GNF-0062-3cbef3ba|GNF-0037-7af727c1|GNF-0123-b044c5aa|GNF-0026-8ee693c5|GNF-0110-1c6064fd|GNF-0126-2958d273,not_numerical_failure|overflow_underflow|nan_inf|not_numerical_failure|dtype_casting|performance_only|dtype_casting|nan_inf,crash_compile,nan_inf,environment_configuration,yes,high,Here https://docs.rapids.ai/install#WSL2 I followed the pip install instructions ... but I have @LAPTOP-DNCQ5AAC:/mnt/d/cuda/rapids/notebooks-contrib/community_tutorials_and_guides/cugraph$ nvidia-smi,"{""primary_failure_label"": ""nan_inf"", ""secondary_cause_labels"": [""environment_configuration""], ""is_true_numerical_failure"": ""yes"", ""evidence_quote"": ""Here https://docs.rapids.ai/install#WSL2 I followed the pip install instructions ... but I have @LAPTOP-DNCQ5AAC:/mnt/d/cuda/rapids/notebooks-contrib/community_tutorials_and_guides/cugraph$ nvidia-smi"", ""confidence"": ""high""}",
+GNF-0045-d28f7a7d,llama3.2:3b,fold_safe_rag_generated,,0,3.49,GNF-0187-2664d182|GNF-0128-c6e2544c|GNF-0025-d23b5aed|GNF-0063-a5f90bd9|GNF-0182-0943f7d0|GNF-0031-dff9514d|GNF-0183-0f27bf2e|GNF-0083-c671b943,overflow_underflow|nan_inf|nan_inf|not_numerical_failure|dtype_casting|dtype_casting|not_numerical_failure|overflow_underflow,nan_inf,nan_inf,unknown,yes,high,Can we utilize any CUDA-level support?,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Can we utilize any CUDA-level support?"",
+  ""confidence"": ""high""
+}",
+GNF-0046-21fccfc5,llama3.2:3b,fold_safe_rag_generated,,0,5.15,GNF-0103-f835a9bf|GNF-0184-5cb52bd8|GNF-0060-3368e422|GNF-0096-cc3502f6|GNF-0098-a1e24269|GNF-0178-7e3074ef|GNF-0123-b044c5aa|GNF-0148-5dbeb416,precision_tolerance|performance_only|overflow_underflow|precision_tolerance|overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting,precision_tolerance,precision_tolerance,unknown,yes,high,I've setup a standard system for comparing various jax JIT backends to hand-written CUDA code.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I've setup a standard system for comparing various jax JIT backends to hand-written CUDA code."",
+  ""confidence"": ""high""
+}",
+GNF-0047-c6f710e5,llama3.2:3b,fold_safe_rag_generated,,0,4.32,GNF-0191-cd071cce|GNF-0025-d23b5aed|GNF-0116-96b537db|GNF-0085-b4ddcf4b|GNF-0151-5ccf24b2|GNF-0065-e81a8790|GNF-0178-7e3074ef|GNF-0012-d3d20064,overflow_underflow|nan_inf|dtype_casting|dtype_casting|nan_inf|precision_tolerance|not_numerical_failure|performance_only,overflow_underflow,nan_inf,unknown,yes,high,source of problem is `a**b` invoking an integer exponential and causing undetected overflow.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""source of problem is `a**b` invoking an integer exponential and causing undetected overflow."",
+  ""confidence"": ""high""
+}",
+GNF-0048-07821d1f,llama3.2:3b,fold_safe_rag_generated,,0,4.58,GNF-0133-3e76eecf|GNF-0158-41ca2b85|GNF-0082-a3d486ce|GNF-0085-b4ddcf4b|GNF-0170-78e2d436|GNF-0151-5ccf24b2|GNF-0101-ca19a99c|GNF-0057-44d428bb,overflow_underflow|dtype_casting|overflow_underflow|dtype_casting|nan_inf|nan_inf|not_numerical_failure|precision_tolerance,overflow_underflow,nan_inf,unknown,yes,high,"In CuPy v7.0.0a1, `**` operator calls `pow` function.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""In CuPy v7.0.0a1, `**` operator calls `pow` function."",
+  ""confidence"": ""high""
+}",
+GNF-0049-80ab540f,llama3.2:3b,fold_safe_rag_generated,,0,5.34,GNF-0133-3e76eecf|GNF-0089-074c6391|GNF-0158-41ca2b85|GNF-0067-0064f2a6|GNF-0088-bbebe2a7|GNF-0127-32017a62|GNF-0051-53841ba4|GNF-0044-58d8c7b3,overflow_underflow|dtype_casting|dtype_casting|nan_inf|nan_inf|overflow_underflow|not_numerical_failure|not_numerical_failure,precision_tolerance,nan_inf,unknown,yes,high,"print(p(x).dtype) # prints float64 (not int64!) print(p(x_).dtype) # also prints float64 assert np.allclose(p(x_), p(x)) # will raise an error","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""print(p(x).dtype) # prints float64 (not int64!) print(p(x_).dtype) # also prints float64 assert np.allclose(p(x_), p(x)) # will raise an error"",
+  ""confidence"": ""high""
+}",
+GNF-0050-b61f01c8,llama3.2:3b,fold_safe_rag_generated,,0,4.52,GNF-0122-2172f7de|GNF-0014-9fb698b0|GNF-0080-d86cbc25|GNF-0136-a301f54e|GNF-0140-0369d89c|GNF-0037-7af727c1|GNF-0029-5f61e128|GNF-0147-77cef7ab,dtype_casting|dtype_casting|crash_compile|overflow_underflow|overflow_underflow|not_numerical_failure|not_numerical_failure|nan_inf,precision_tolerance,nan_inf,unknown,yes,high,Json reader doesn't seem to be inferring the dtype of a column which has floating values.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Json reader doesn't seem to be inferring the dtype of a column which has floating values."",
+  ""confidence"": ""high""
+}",
+GNF-0051-53841ba4,llama3.2:3b,fold_safe_rag_generated,,0,5.61,GNF-0116-96b537db|GNF-0041-2e844e08|GNF-0043-75ac4cd1|GNF-0096-cc3502f6|GNF-0124-5e35db0b|GNF-0044-58d8c7b3|GNF-0177-39a0d983|GNF-0015-04273d95,dtype_casting|dtype_casting|nan_inf|precision_tolerance|overflow_underflow|not_numerical_failure|overflow_underflow|nan_inf,crash_compile,dtype_casting,unknown,yes,high,There's obviously `icc_rt` from Intel Corp https://pypi.org/project/icc-rt/ accessible via pip.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""There's obviously `icc_rt` from Intel Corp https://pypi.org/project/icc-rt/ accessible via pip."",
+  ""confidence"": ""high""
+}",
+GNF-0052-c0b07407,llama3.2:3b,fold_safe_rag_generated,,0,5.29,GNF-0123-b044c5aa|GNF-0175-551fdc3c|GNF-0036-b3e8f03a|GNF-0042-938c1ba1|GNF-0060-3368e422|GNF-0021-ebaa6477|GNF-0152-d8097288|GNF-0106-69df058d,dtype_casting|not_numerical_failure|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|nan_inf,precision_tolerance,nan_inf,unknown,yes,high,"The root cause is an eager overflow check in `SearchSorted.__init__`. ``out_dtype.type(sorted_arr_aval.shape[dimension])`` This converts the sorted dimension size to a concrete int, which fails when symbolic.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The root cause is an eager overflow check in `SearchSorted.__init__`. ``out_dtype.type(sorted_arr_aval.shape[dimension])`` This converts the sorted dimension size to a concrete int, which fails when symbolic."",
+  ""confidence"": ""high""
+}",
+GNF-0053-9d7e3d51,llama3.2:3b,fold_safe_rag_generated,,0,4.84,GNF-0007-5a435abf|GNF-0010-ff390b39|GNF-0024-543e6651|GNF-0035-1d6522c2|GNF-0095-e46f2dc5|GNF-0177-39a0d983|GNF-0004-e5162a33|GNF-0094-5130df2b,dtype_casting|nan_inf|nan_inf|precision_tolerance|precision_tolerance|overflow_underflow|dtype_casting|overflow_underflow,nan_inf,nan_inf,unknown,yes,high,This should be undefined behavior. Also see this discussion on numpy https://github.com/numpy/numpy/issues/21364.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This should be undefined behavior. Also see this discussion on numpy https://github.com/numpy/numpy/issues/21364."",
+  ""confidence"": ""high""
+}",
+GNF-0054-d98d7afd,llama3.2:3b,fold_safe_rag_generated,,0,5.63,GNF-0108-049dae8c|GNF-0126-2958d273|GNF-0062-3cbef3ba|GNF-0008-4625af98|GNF-0139-08c1b395|GNF-0177-39a0d983|GNF-0161-43f5b312|GNF-0037-7af727c1,not_numerical_failure|nan_inf|nan_inf|dtype_casting|overflow_underflow|overflow_underflow|dtype_casting|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,"The distributed groupby vs non-distributed groupby mean should be the same, and stable (independent of the trail number). But the above will produce different numbers randomly.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The distributed groupby vs non-distributed groupby mean should be the same, and stable (independent of the trail number). But the above will produce different numbers randomly."",
+  ""confidence"": ""high""
+}",
+GNF-0055-6da9303a,llama3.2:3b,fold_safe_rag_generated,,0,4.19,GNF-0091-f2cd4055|GNF-0025-d23b5aed|GNF-0068-abb65bf7|GNF-0133-3e76eecf|GNF-0106-69df058d|GNF-0023-93595bc9|GNF-0047-c6f710e5|GNF-0107-36abe955,dtype_casting|nan_inf|dtype_casting|overflow_underflow|nan_inf|crash_compile|overflow_underflow|not_numerical_failure,dtype_casting,dtype_casting,unknown,yes,high,out1[0] = inp[0] * 2.3 out2[0] = inp[0] + 1,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""out1[0] = inp[0] * 2.3 out2[0] = inp[0] + 1"",
+  ""confidence"": ""high""
+}",
+GNF-0056-d1d1b50f,llama3.2:3b,fold_safe_rag_generated,,0,5.23,GNF-0034-77cd048a|GNF-0132-01bc7af7|GNF-0140-0369d89c|GNF-0167-13076e98|GNF-0179-0d2d153d|GNF-0164-cdeaf26a|GNF-0073-9d1db2bf|GNF-0187-2664d182,dtype_casting|dtype_casting|overflow_underflow|nan_inf|performance_only|nan_inf|crash_compile|overflow_underflow,overflow_underflow,nan_inf,unknown,yes,high,"The pointer addition does happen in 64-bit, but the overflow happens before that when you multiply the offset by the stride.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The pointer addition does happen in 64-bit, but the overflow happens before that when you multiply the offset by the stride."",
+  ""confidence"": ""high""
+}",
+GNF-0057-44d428bb,llama3.2:3b,fold_safe_rag_generated,,0,5.37,GNF-0063-a5f90bd9|GNF-0007-5a435abf|GNF-0030-a4314978|GNF-0022-a403f994|GNF-0073-9d1db2bf|GNF-0109-5b3bb56e|GNF-0012-d3d20064|GNF-0096-cc3502f6,not_numerical_failure|dtype_casting|nan_inf|dtype_casting|crash_compile|overflow_underflow|performance_only|precision_tolerance,crash_compile,nan_inf,unknown,yes,high,"rifted, and a downstream `MulBackward0` eventually produced NaN","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""rifted, and a downstream `MulBackward0` eventually produced NaN"",
+  ""confidence"": ""high""
+}",
+GNF-0058-03a80045,llama3.2:3b,fold_safe_rag_generated,,0,5.92,GNF-0148-5dbeb416|GNF-0098-a1e24269|GNF-0072-9fba4417|GNF-0158-41ca2b85|GNF-0183-0f27bf2e|GNF-0062-3cbef3ba|GNF-0095-e46f2dc5|GNF-0184-5cb52bd8,dtype_casting|overflow_underflow|overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|precision_tolerance|performance_only,nan_inf,nan_inf,hardware_backend,yes,high,This is actually expected. Triton is not tuned for Turing.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This is actually expected. Triton is not tuned for Turing."",
+  ""confidence"": ""high"" }",
+GNF-0059-b86722cb,llama3.2:3b,fold_safe_rag_generated,,0,5.22,GNF-0109-5b3bb56e|GNF-0140-0369d89c|GNF-0149-305f23bb|GNF-0158-41ca2b85|GNF-0043-75ac4cd1|GNF-0051-53841ba4|GNF-0044-58d8c7b3|GNF-0010-ff390b39,overflow_underflow|overflow_underflow|dtype_casting|dtype_casting|nan_inf|not_numerical_failure|not_numerical_failure|nan_inf,dtype_casting,nan_inf,unknown,yes,high,"assert num_stages >= 1 if constraints.get(""num_stages"", None): num_stages = constraints[""num_stages""]","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""assert num_stages >= 1 if constraints.get(\""num_stages\"", None): num_stages = constraints[\""num_stages\""]"",
+  ""confidence"": ""high""
+}",
+GNF-0060-3368e422,llama3.2:3b,fold_safe_rag_generated,,0,5.81,GNF-0123-b044c5aa|GNF-0149-305f23bb|GNF-0142-fd6a822f|GNF-0021-ebaa6477|GNF-0152-d8097288|GNF-0062-3cbef3ba|GNF-0175-551fdc3c|GNF-0072-9fba4417,dtype_casting|dtype_casting|overflow_underflow|nan_inf|not_numerical_failure|nan_inf|not_numerical_failure|overflow_underflow,overflow_underflow,overflow_underflow,unknown,yes,high,"OverflowError: An overflow was encountered while parsing an argument to a jitted computation, whose arg_path.","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""OverflowError: An overflow was encountered while parsing an argument to a jitted computation, whose arg_path."",
+  ""confidence"": ""high""
+}",
+GNF-0061-039345f1,llama3.2:3b,fold_safe_rag_generated,,0,6.53,GNF-0007-5a435abf|GNF-0030-a4314978|GNF-0073-9d1db2bf|GNF-0014-9fb698b0|GNF-0095-e46f2dc5|GNF-0111-4b909a91|GNF-0035-1d6522c2|GNF-0140-0369d89c,dtype_casting|nan_inf|crash_compile|dtype_casting|precision_tolerance|nan_inf|precision_tolerance|overflow_underflow,precision_tolerance,precision_tolerance,unknown,yes,high,"This may be caused by the reinplace optimization. Under inductor, index_copy is lowered to index_put, and the reinplace.py further optimizes it into index_put_. However, the reinplace logic does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This may be caused by the reinplace optimization. Under inductor, index_copy is lowered to index_put, and the reinplace.py further optimizes it into index_put_. However, the reinplace logic does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation."",
+  ""confidence"": ""high""
+}",
+GNF-0062-3cbef3ba,llama3.2:3b,fold_safe_rag_generated,,0,6.15,GNF-0072-9fba4417|GNF-0054-d98d7afd|GNF-0160-b61a834c|GNF-0024-543e6651|GNF-0188-931dcb6c|GNF-0126-2958d273|GNF-0008-4625af98|GNF-0095-e46f2dc5,overflow_underflow|not_numerical_failure|dtype_casting|nan_inf|overflow_underflow|nan_inf|dtype_casting|precision_tolerance,nan_inf,nan_inf,unknown,yes,high,std_mean` returns `nan` when input is an array containing only `inf`. This behavior is not consistent with `torch.mean`.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""std_mean` returns `nan` when input is an array containing only `inf`. This behavior is not consistent with `torch.mean`."",
+  ""confidence"": ""high""
+}",
+GNF-0063-a5f90bd9,llama3.2:3b,fold_safe_rag_generated,,0,7.27,GNF-0007-5a435abf|GNF-0057-44d428bb|GNF-0040-5f558cf9|GNF-0030-a4314978|GNF-0012-d3d20064|GNF-0178-7e3074ef|GNF-0187-2664d182|GNF-0183-0f27bf2e,dtype_casting|precision_tolerance|dtype_casting|nan_inf|performance_only|not_numerical_failure|overflow_underflow|not_numerical_failure,needs_review,dtype_casting,compiler_codegen,yes,high,"import torch import torch._dynamo torch._inductor.config.fallback_random = True def fn(): torch.manual_seed(0) out = torch.randint(0, 100, (4,1), dtype=torch.int64) # Shape and integer range are not important. other = torch.randint(0, 100, (2,1), dtype=torch.int64) # No inconsistency if remove this line, although the value won't be returned. return out cfunc = torch.compile(fn, backend='inductor')...","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""import torch import torch._dynamo torch._inductor.config.fallback_random = True def fn(): torch.manual_seed(0) out = torch.randint(0, 100, (4,1), dtype=torch.int64) # Shape and integer range are not important. other = torch.randint(0, 100, (2,1), dtype=torch.int64) # No inconsistency if remove this line, although the value won't be returned. return out cfunc = torch.compile(fn, backend='inductor')..."",
+  ""confidence"": ""high""
+}",
+GNF-0064-6c864f3b,llama3.2:3b,fold_safe_rag_generated,,0,5.11,GNF-0022-a403f994|GNF-0148-5dbeb416|GNF-0140-0369d89c|GNF-0058-03a80045|GNF-0167-13076e98|GNF-0184-5cb52bd8|GNF-0103-f835a9bf|GNF-0162-297471a6,dtype_casting|dtype_casting|overflow_underflow|nan_inf|nan_inf|performance_only|precision_tolerance|not_numerical_failure,needs_review,precision_tolerance,unknown,yes,high,"I have no benchmark, but I am about 99% sure that jax does not actually generate fused kernels for workloads involving e.g., matrix multiplications.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""performance_only""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I have no benchmark, but I am about 99% sure that jax does not actually generate fused kernels for workloads involving e.g., matrix multiplications."",
+  ""confidence"": ""high""
+}",
+GNF-0065-e81a8790,llama3.2:3b,fold_safe_rag_generated,,0,4.73,GNF-0178-7e3074ef|GNF-0012-d3d20064|GNF-0070-0db7eac0|GNF-0187-2664d182|GNF-0184-5cb52bd8|GNF-0085-b4ddcf4b|GNF-0183-0f27bf2e|GNF-0094-5130df2b,not_numerical_failure|performance_only|nan_inf|overflow_underflow|performance_only|dtype_casting|not_numerical_failure|overflow_underflow,precision_tolerance,precision_tolerance,unknown,unclear,low,"This is a ""narrative"" type of bug report, aka \","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This is a \""narrative\"" type of bug report, aka \\"",
+  ""confidence"": ""low""
+}",
+GNF-0066-103332ec,llama3.2:3b,fold_safe_rag_generated,,0,6.25,GNF-0002-16e149fe|GNF-0014-9fb698b0|GNF-0111-4b909a91|GNF-0030-a4314978|GNF-0057-44d428bb|GNF-0124-5e35db0b|GNF-0109-5b3bb56e|GNF-0061-039345f1,dtype_casting|dtype_casting|nan_inf|nan_inf|precision_tolerance|overflow_underflow|overflow_underflow|not_numerical_failure,precision_tolerance,nan_inf,unknown,yes,high,the bug I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the bug I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled"",
+  ""confidence"": ""high""
+}",
+GNF-0067-0064f2a6,llama3.2:3b,fold_safe_rag_generated,,0,6.14,GNF-0170-78e2d436|GNF-0032-76c19db8|GNF-0005-80aeca70|GNF-0089-074c6391|GNF-0049-80ab540f|GNF-0088-bbebe2a7|GNF-0051-53841ba4|GNF-0044-58d8c7b3,nan_inf|dtype_casting|overflow_underflow|dtype_casting|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,"print(cp.interp(x0_cp, x_cp, y_cp)) # [ 1., nan, inf, inf, 4.] print(np.interp(x0_np, x_np, y_np)) # [ 1., 2., inf, inf, 4.]","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""print(cp.interp(x0_cp, x_cp, y_cp)) # [ 1., nan, inf, inf, 4.] print(np.interp(x0_np, x_np, y_np)) # [ 1., 2., inf, inf, 4.]"", 
+  ""confidence"": ""high""
+}",
+GNF-0068-abb65bf7,llama3.2:3b,fold_safe_rag_generated,,0,5.45,GNF-0071-ca4885e3|GNF-0101-ca19a99c|GNF-0025-d23b5aed|GNF-0009-f786b33b|GNF-0191-cd071cce|GNF-0037-7af727c1|GNF-0140-0369d89c|GNF-0096-cc3502f6,dtype_casting|not_numerical_failure|nan_inf|dtype_casting|overflow_underflow|not_numerical_failure|overflow_underflow|precision_tolerance,dtype_casting,precision_tolerance,unknown,yes,high,Thanks for the report - it does look like there's something wrong with the example.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Thanks for the report - it does look like there's something wrong with the example."",
+  ""confidence"": ""high""
+}",
+GNF-0069-88ed627b,llama3.2:3b,fold_safe_rag_generated,,0,4.95,GNF-0137-1f5e2c55|GNF-0023-93595bc9|GNF-0032-76c19db8|GNF-0039-1a4af8a4|GNF-0088-bbebe2a7|GNF-0011-0a961578|GNF-0005-80aeca70|GNF-0170-78e2d436,performance_only|crash_compile|dtype_casting|dtype_casting|nan_inf|overflow_underflow|overflow_underflow|nan_inf,dtype_casting,dtype_casting,unknown,unclear,high,NotImplementedError: CUDA device on which this array resides.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""NotImplementedError: CUDA device on which this array resides."",
+  ""confidence"": ""high""
+}",
+GNF-0070-0db7eac0,llama3.2:3b,fold_safe_rag_generated,,0,5.17,GNF-0097-60602b2b|GNF-0009-f786b33b|GNF-0103-f835a9bf|GNF-0187-2664d182|GNF-0128-c6e2544c|GNF-0025-d23b5aed|GNF-0184-5cb52bd8|GNF-0098-a1e24269,dtype_casting|dtype_casting|precision_tolerance|overflow_underflow|nan_inf|nan_inf|performance_only|overflow_underflow,nan_inf,precision_tolerance,unknown,yes,high,I have found this a very useful feature. For example it prevents the need to initialize different values when trying to find a max/min reduction (i.e. -inf vs +inf).,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I have found this a very useful feature. For example it prevents the need to initialize different values when trying to find a max/min reduction (i.e. -inf vs +inf)."",
+  ""confidence"": ""high""
+}",
+GNF-0071-ca4885e3,llama3.2:3b,fold_safe_rag_generated,,0,6.40,GNF-0116-96b537db|GNF-0009-f786b33b|GNF-0101-ca19a99c|GNF-0025-d23b5aed|GNF-0098-a1e24269|GNF-0174-e7b5adf3|GNF-0043-75ac4cd1|GNF-0057-44d428bb,dtype_casting|dtype_casting|not_numerical_failure|nan_inf|overflow_underflow|overflow_underflow|nan_inf|precision_tolerance,crash_compile,nan_inf,unknown,yes,high,"Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File ""/home/nfs/gmarkall/numbadev/numba/numba/cuda/cudadrv/driver.py"", line 293 in safe_cuda_api_call","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File \""/home/nfs/gmarkall/numbadev/numba/numba/cuda/cudadrv/driver.py\"", line 293 in safe_cuda_api_call"",
+  ""confidence"": ""high""
+}",
+GNF-0072-9fba4417,llama3.2:3b,fold_safe_rag_generated,,0,6.69,GNF-0108-049dae8c|GNF-0126-2958d273|GNF-0062-3cbef3ba|GNF-0008-4625af98|GNF-0161-43f5b312|GNF-0177-39a0d983|GNF-0139-08c1b395|GNF-0037-7af727c1,not_numerical_failure|nan_inf|nan_inf|dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|not_numerical_failure,overflow_underflow,nan_inf,unknown,yes,high,"A csv files contains values greater than max(int64) and some null values. In this case, cudf CSV reader is inferring the column type to be `float` column.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""A csv files contains values greater than max(int64) and some null values. In this case, cudf CSV reader is inferring the column type to be `float` column."",
+  ""confidence"": ""high""
+}",
+GNF-0073-9d1db2bf,llama3.2:3b,fold_safe_rag_generated,,0,5.36,GNF-0132-01bc7af7|GNF-0025-d23b5aed|GNF-0012-d3d20064|GNF-0134-2006d4e1|GNF-0094-5130df2b|GNF-0187-2664d182|GNF-0030-a4314978|GNF-0178-7e3074ef,dtype_casting|nan_inf|performance_only|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure,dtype_casting,precision_tolerance,unknown,yes,high,"For configurations that do not make sense from a performance perspective, we should exclude them from the search space.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""For configurations that do not make sense from a performance perspective, we should exclude them from the search space."",
+  ""confidence"": ""high""
+}",
+GNF-0074-c730bac3,llama3.2:3b,fold_safe_rag_generated,,0,6.26,GNF-0160-b61a834c|GNF-0054-d98d7afd|GNF-0072-9fba4417|GNF-0177-39a0d983|GNF-0041-2e844e08|GNF-0024-543e6651|GNF-0126-2958d273|GNF-0095-e46f2dc5,dtype_casting|not_numerical_failure|overflow_underflow|overflow_underflow|dtype_casting|nan_inf|nan_inf|precision_tolerance,overflow_underflow,precision_tolerance,unknown,unclear,low,"Dumb question, but do you choose Python 3.8 on purpose? Do you run into the same issues if you chose e.g. `conda create --yes --name jax_error_test_env python==3.12` ?","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""unknown""
+  ],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Dumb question, but do you choose Python 3.8 on purpose? Do you run into the same issues if you chose e.g. `conda create --yes --name jax_error_test_env python==3.12` ?"",
+  ""confidence"": ""low""
+}",
+GNF-0075-7d0d1d21,llama3.2:3b,fold_safe_rag_generated,,0,5.13,GNF-0029-5f61e128|GNF-0157-7be66b56|GNF-0042-938c1ba1|GNF-0186-6c92b3b9|GNF-0118-6cddc10b|GNF-0039-1a4af8a4|GNF-0088-bbebe2a7|GNF-0093-6cb318e0,not_numerical_failure|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|dtype_casting|nan_inf|not_numerical_failure,needs_review,dtype_casting,compiler_codegen,yes,high,cupy.random.randint ignores size option if it is a scalar of cupy.ndarray.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cupy.random.randint ignores size option if it is a scalar of cupy.ndarray."",
+  ""confidence"": ""high"" }",
+GNF-0076-60dcd2da,llama3.2:3b,fold_safe_rag_generated,,0,5.64,GNF-0003-eaa63fac|GNF-0037-7af727c1|GNF-0027-933bf558|GNF-0062-3cbef3ba|GNF-0079-ec781ba7|GNF-0044-58d8c7b3|GNF-0073-9d1db2bf|GNF-0140-0369d89c,dtype_casting|not_numerical_failure|dtype_casting|nan_inf|overflow_underflow|not_numerical_failure|crash_compile|overflow_underflow,crash_compile,nan_inf,unknown,yes,high,Address 0x7f410720120c is out of bounds,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Address 0x7f410720120c is out of bounds"",
+  ""confidence"": ""high""
+}",
+GNF-0077-892468a4,llama3.2:3b,fold_safe_rag_generated,,0,5.53,GNF-0134-2006d4e1|GNF-0132-01bc7af7|GNF-0109-5b3bb56e|GNF-0061-039345f1|GNF-0152-d8097288|GNF-0030-a4314978|GNF-0103-f835a9bf|GNF-0019-965637d3,dtype_casting|dtype_casting|overflow_underflow|not_numerical_failure|not_numerical_failure|nan_inf|precision_tolerance|nan_inf,precision_tolerance,nan_inf,unknown,yes,high,FP8 GEMM result not right: ![image](https://github.com/user-attachments/assets/5a0f6973-1f4d-4287-b602-f33fa5cc799d),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""FP8 GEMM result not right: ![image](https://github.com/user-attachments/assets/5a0f6973-1f4d-4287-b602-f33fa5cc799d)"",
+  ""confidence"": ""high""
+}",
+GNF-0078-20f6032e,llama3.2:3b,fold_safe_rag_generated,,0,6.18,GNF-0082-a3d486ce|GNF-0103-f835a9bf|GNF-0025-d23b5aed|GNF-0109-5b3bb56e|GNF-0043-75ac4cd1|GNF-0039-1a4af8a4|GNF-0031-dff9514d|GNF-0096-cc3502f6,overflow_underflow|precision_tolerance|nan_inf|overflow_underflow|nan_inf|dtype_casting|dtype_casting|precision_tolerance,dtype_casting,precision_tolerance,unknown,yes,high,"No worries. The way Numba works, is that most (all?) NumPy functions must be re-implemented in pure Python such that Numba can compile them.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""No worries. The way Numba works, is that most (all?) NumPy functions must be re-implemented in pure Python such that Numba can compile them."",
+  ""confidence"": ""high"" }",
+GNF-0079-ec781ba7,llama3.2:3b,fold_safe_rag_generated,,0,6.01,GNF-0038-ba034dce|GNF-0100-a235b2dd|GNF-0037-7af727c1|GNF-0188-931dcb6c|GNF-0140-0369d89c|GNF-0062-3cbef3ba|GNF-0084-8e030aa9|GNF-0051-53841ba4,dtype_casting|dtype_casting|not_numerical_failure|overflow_underflow|overflow_underflow|nan_inf|nan_inf|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,MLIR Parser: custom op parser 'tt.reduce.return',"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""MLIR Parser: custom op parser 'tt.reduce.return'"",
+  ""confidence"": ""high""
+}",
+GNF-0080-d86cbc25,llama3.2:3b,fold_safe_rag_generated,,0,4.96,GNF-0105-bbfb9d59|GNF-0060-3368e422|GNF-0120-3d8af802|GNF-0029-5f61e128|GNF-0072-9fba4417|GNF-0126-2958d273|GNF-0026-8ee693c5|GNF-0028-64f6040c,dtype_casting|overflow_underflow|dtype_casting|not_numerical_failure|overflow_underflow|nan_inf|performance_only|nan_inf,dtype_casting,nan_inf,unknown,yes,high,Claude-generated description of the issue and repro: ...,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""nan_inf""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Claude-generated description of the issue and repro: ..."",
+  ""confidence"": ""high""
+}",
+GNF-0081-5786ae97,llama3.2:3b,fold_safe_rag_generated,,0,6.78,GNF-0180-3e16cf7e|GNF-0158-41ca2b85|GNF-0162-297471a6|GNF-0140-0369d89c|GNF-0042-938c1ba1|GNF-0115-bd414dfb|GNF-0093-6cb318e0|GNF-0179-0d2d153d,dtype_casting|dtype_casting|not_numerical_failure|overflow_underflow|overflow_underflow|precision_tolerance|not_numerical_failure|performance_only,dtype_casting,nan_inf,unknown,yes,high,plain matmul kernel yields a maximal relative difference of 4.6x with the matmul example from the getting-started codebase.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""plain matmul kernel yields a maximal relative difference of 4.6x with the matmul example from the getting-started codebase."",
+  ""confidence"": ""high""
+}",
+GNF-0082-a3d486ce,llama3.2:3b,fold_safe_rag_generated,,0,5.60,GNF-0127-32017a62|GNF-0044-58d8c7b3|GNF-0039-1a4af8a4|GNF-0149-305f23bb|GNF-0096-cc3502f6|GNF-0140-0369d89c|GNF-0051-53841ba4|GNF-0088-bbebe2a7,overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|precision_tolerance|overflow_underflow|not_numerical_failure|nan_inf,overflow_underflow,dtype_casting,unknown,yes,high,import cupy 9.0.0a2 doesn't work on Windows 10,"{""primary_failure_label"": ""dtype_casting"", ""secondary_cause_labels"": [""Windows 10""], ""is_true_numerical_failure"": ""yes"", ""evidence_quote"": ""import cupy 9.0.0a2 doesn't work on Windows 10"", ""confidence"": ""high""}",
+GNF-0083-c671b943,llama3.2:3b,fold_safe_rag_generated,,0,4.45,GNF-0187-2664d182|GNF-0178-7e3074ef|GNF-0012-d3d20064|GNF-0183-0f27bf2e|GNF-0184-5cb52bd8|GNF-0145-13ae4b2a|GNF-0085-b4ddcf4b|GNF-0062-3cbef3ba,overflow_underflow|not_numerical_failure|performance_only|not_numerical_failure|performance_only|dtype_casting|dtype_casting|nan_inf,performance_only,dtype_casting,unknown,yes,high,A NumPy fallback mode has been discussed to be introduced.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""performance_only""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""A NumPy fallback mode has been discussed to be introduced."",
+  ""confidence"": ""high""
+}",
+GNF-0084-8e030aa9,llama3.2:3b,fold_safe_rag_generated,,0,6.10,GNF-0024-543e6651|GNF-0188-931dcb6c|GNF-0177-39a0d983|GNF-0015-04273d95|GNF-0095-e46f2dc5|GNF-0160-b61a834c|GNF-0108-049dae8c|GNF-0054-d98d7afd,nan_inf|overflow_underflow|overflow_underflow|nan_inf|precision_tolerance|dtype_casting|not_numerical_failure|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,Seems like we have an issue with either cuSOLVER or the way we dispatch to it:,"{""primary_failure_label"": ""nan_inf"", ""secondary_cause_labels"": [""dtype_casting""], ""is_true_numerical_failure"": ""yes"", ""evidence_quote"": ""Seems like we have an issue with either cuSOLVER or the way we dispatch to it:"", ""confidence"": ""high""}",
+GNF-0085-b4ddcf4b,llama3.2:3b,fold_safe_rag_generated,,0,5.60,GNF-0062-3cbef3ba|GNF-0031-dff9514d|GNF-0145-13ae4b2a|GNF-0184-5cb52bd8|GNF-0072-9fba4417|GNF-0154-a389b1a4|GNF-0187-2664d182|GNF-0044-58d8c7b3,nan_inf|dtype_casting|dtype_casting|performance_only|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure,precision_tolerance,precision_tolerance,unknown,yes,high,I suspect a discrepancy between the algorithms used for parsing and converting a string decimal value to a binary floating point value.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I suspect a discrepancy between the algorithms used for parsing and converting a string decimal value to a binary floating point value."",
+  ""confidence"": ""high""
+}",
+GNF-0086-61dd6010,llama3.2:3b,fold_safe_rag_generated,,0,5.45,GNF-0093-6cb318e0|GNF-0156-b72349bc|GNF-0085-b4ddcf4b|GNF-0021-ebaa6477|GNF-0158-41ca2b85|GNF-0098-a1e24269|GNF-0133-3e76eecf|GNF-0012-d3d20064,not_numerical_failure|not_numerical_failure|dtype_casting|nan_inf|dtype_casting|overflow_underflow|overflow_underflow|performance_only,nan_inf,nan_inf,unknown,yes,high,Sometimes even output a nan matrix.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Sometimes even output a nan matrix."",
+  ""confidence"": ""high""
+}",
+GNF-0087-b5fe68e9,llama3.2:3b,fold_safe_rag_generated,,0,5.40,GNF-0160-b61a834c|GNF-0015-04273d95|GNF-0177-39a0d983|GNF-0024-543e6651|GNF-0188-931dcb6c|GNF-0095-e46f2dc5|GNF-0152-d8097288|GNF-0108-049dae8c,dtype_casting|nan_inf|overflow_underflow|nan_inf|overflow_underflow|precision_tolerance|not_numerical_failure|not_numerical_failure,overflow_underflow,nan_inf,unknown,yes,high,"subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence."",
+  ""confidence"": ""high""
+}",
+GNF-0088-bbebe2a7,llama3.2:3b,fold_safe_rag_generated,,0,5.39,GNF-0170-78e2d436|GNF-0089-074c6391|GNF-0032-76c19db8|GNF-0049-80ab540f|GNF-0005-80aeca70|GNF-0067-0064f2a6|GNF-0023-93595bc9|GNF-0101-ca19a99c,nan_inf|dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|crash_compile|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,"can_cast() does not support Python ints, floats, and complex because the result used to depend on the value.","{""primary_failure_label"": ""nan_inf"", ""secondary_cause_labels"": [""dtype_casting""], ""is_true_numerical_failure"": ""yes"", ""evidence_quote"": ""can_cast() does not support Python ints, floats, and complex because the result used to depend on the value."", ""confidence"": ""high""}",
+GNF-0089-074c6391,llama3.2:3b,fold_safe_rag_generated,,0,5.76,GNF-0032-76c19db8|GNF-0170-78e2d436|GNF-0158-41ca2b85|GNF-0049-80ab540f|GNF-0088-bbebe2a7|GNF-0005-80aeca70|GNF-0023-93595bc9|GNF-0051-53841ba4,dtype_casting|nan_inf|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|crash_compile|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,Pinned memory is for the host memory allocation. Please check https://docs.cupy.dev/en/stable/user_guide/memory.html for details.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Pinned memory is for the host memory allocation. Please check https://docs.cupy.dev/en/stable/user_guide/memory.html for details."",
+  ""confidence"": ""high"" }",
+GNF-0090-14f882db,llama3.2:3b,fold_safe_rag_generated,,0,4.31,GNF-0044-58d8c7b3|GNF-0184-5cb52bd8|GNF-0097-60602b2b|GNF-0154-a389b1a4|GNF-0120-3d8af802|GNF-0037-7af727c1|GNF-0060-3368e422|GNF-0159-f17202a4,not_numerical_failure|performance_only|dtype_casting|nan_inf|dtype_casting|not_numerical_failure|overflow_underflow|precision_tolerance,needs_review,precision_tolerance,unknown,yes,high,Function with completely incorrect outputs most of the times in PyTorch 2,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Function with completely incorrect outputs most of the times in PyTorch 2"",
+  ""confidence"": ""high""
+}",
+GNF-0091-f2cd4055,llama3.2:3b,fold_safe_rag_generated,,0,5.57,GNF-0009-f786b33b|GNF-0140-0369d89c|GNF-0157-7be66b56|GNF-0118-6cddc10b|GNF-0025-d23b5aed|GNF-0096-cc3502f6|GNF-0174-e7b5adf3|GNF-0029-5f61e128,dtype_casting|overflow_underflow|dtype_casting|nan_inf|nan_inf|precision_tolerance|overflow_underflow|not_numerical_failure,precision_tolerance,nan_inf,unknown,yes,high,arg #1: outer dimension mismatch,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""arg #1: outer dimension mismatch"",
+  ""confidence"": ""high""
+}",
+GNF-0092-350f027f,llama3.2:3b,fold_safe_rag_generated,,0,5.03,GNF-0034-77cd048a|GNF-0001-f56f80f3|GNF-0013-bd88dbb3|GNF-0019-965637d3|GNF-0057-44d428bb|GNF-0109-5b3bb56e|GNF-0179-0d2d153d|GNF-0056-d1d1b50f,dtype_casting|dtype_casting|nan_inf|nan_inf|precision_tolerance|overflow_underflow|performance_only|overflow_underflow,crash_compile,nan_inf,unknown,yes,high,"Using both `padding_option=""zero""` or `padding_option=""nan""` results in the same incorrect result","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Using both `padding_option=\""zero\""` or `padding_option=\""nan\""` results in the same incorrect result"",
+  ""confidence"": ""high""
+}",
+GNF-0093-6cb318e0,llama3.2:3b,fold_safe_rag_generated,,0,5.84,GNF-0060-3368e422|GNF-0036-b3e8f03a|GNF-0156-b72349bc|GNF-0110-1c6064fd|GNF-0021-ebaa6477|GNF-0042-938c1ba1|GNF-0117-5c96ad33|GNF-0175-551fdc3c,overflow_underflow|dtype_casting|not_numerical_failure|dtype_casting|nan_inf|overflow_underflow|nan_inf|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,"In three of the cases, you are setting indices_are_sorted and/or unique_indices to True, when your indices are neither unique nor sorted.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""In three of the cases, you are setting indices_are_sorted and/or unique_indices to True, when your indices are neither unique nor sorted."",
+  ""confidence"": ""high""
+}",
+GNF-0094-5130df2b,llama3.2:3b,fold_safe_rag_generated,,0,5.02,GNF-0085-b4ddcf4b|GNF-0184-5cb52bd8|GNF-0031-dff9514d|GNF-0063-a5f90bd9|GNF-0183-0f27bf2e|GNF-0073-9d1db2bf|GNF-0103-f835a9bf|GNF-0154-a389b1a4,dtype_casting|performance_only|dtype_casting|not_numerical_failure|not_numerical_failure|crash_compile|precision_tolerance|nan_inf,needs_review,dtype_casting,memory_mask_bounds,yes,high,"adding a e8m0 type should be easy, it looks like it is already there in MLIR.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""adding a e8m0 type should be easy, it looks like it is already there in MLIR."",
+  ""confidence"": ""high""
+}",
+GNF-0095-e46f2dc5,llama3.2:3b,fold_safe_rag_generated,,0,6.39,GNF-0024-543e6651|GNF-0139-08c1b395|GNF-0015-04273d95|GNF-0177-39a0d983|GNF-0108-049dae8c|GNF-0087-b5fe68e9|GNF-0008-4625af98|GNF-0051-53841ba4,nan_inf|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,"mean = x.mean(dim=1, keepdim=True) # (B, C, L) -> (B, 1, L)","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""mean = x.mean(dim=1, keepdim=True) # (B, C, L) -> (B, 1, L)"",
+  ""confidence"": ""high""
+}",
+GNF-0096-cc3502f6,llama3.2:3b,fold_safe_rag_generated,,0,6.40,GNF-0051-53841ba4|GNF-0041-2e844e08|GNF-0020-322072f7|GNF-0043-75ac4cd1|GNF-0082-a3d486ce|GNF-0062-3cbef3ba|GNF-0037-7af727c1|GNF-0121-d1cf86e9,not_numerical_failure|dtype_casting|dtype_casting|nan_inf|overflow_underflow|nan_inf|not_numerical_failure|precision_tolerance,needs_review,nan_inf,unknown,yes,high,Thanks for the report. Numba 0.54 (which is in development at present) will be the first release with TBB 2021 support.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Thanks for the report. Numba 0.54 (which is in development at present) will be the first release with TBB 2021 support."",
+  ""confidence"": ""high"" }",
+GNF-0097-60602b2b,llama3.2:3b,fold_safe_rag_generated,,0,4.26,GNF-0062-3cbef3ba|GNF-0154-a389b1a4|GNF-0012-d3d20064|GNF-0187-2664d182|GNF-0009-f786b33b|GNF-0085-b4ddcf4b|GNF-0060-3368e422|GNF-0073-9d1db2bf,nan_inf|nan_inf|performance_only|overflow_underflow|dtype_casting|dtype_casting|overflow_underflow|crash_compile,dtype_casting,dtype_casting,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": """",
+  ""confidence"": ""low""
+}",
+GNF-0098-a1e24269,llama3.2:3b,fold_safe_rag_generated,,0,6.43,GNF-0018-86e41701|GNF-0071-ca4885e3|GNF-0103-f835a9bf|GNF-0051-53841ba4|GNF-0121-d1cf86e9|GNF-0060-3368e422|GNF-0044-58d8c7b3|GNF-0010-ff390b39,dtype_casting|dtype_casting|precision_tolerance|not_numerical_failure|precision_tolerance|overflow_underflow|not_numerical_failure|nan_inf,needs_review,nan_inf,unknown,yes,high,"Coincidentally, the Numba team also tried building Numba on ppc64le a few weeks ago and saw similar failures, but we don't understand the root cause.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Coincidentally, the Numba team also tried building Numba on ppc64le a few weeks ago and saw similar failures, but we don't understand the root cause."",
+  ""confidence"": ""high"" }",
+GNF-0099-8e08d802,llama3.2:3b,fold_safe_rag_generated,,0,5.38,GNF-0016-7e125a4d|GNF-0140-0369d89c|GNF-0034-77cd048a|GNF-0104-5a61566a|GNF-0019-965637d3|GNF-0142-fd6a822f|GNF-0179-0d2d153d|GNF-0044-58d8c7b3,dtype_casting|overflow_underflow|dtype_casting|nan_inf|nan_inf|overflow_underflow|performance_only|not_numerical_failure,precision_tolerance,nan_inf,unknown,yes,high,"num_warps=2, num_stages=4","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""num_warps=2, num_stages=4"",
+  ""confidence"": ""high""
+}",
+GNF-0100-a235b2dd,llama3.2:3b,fold_safe_rag_generated,,0,5.26,GNF-0038-ba034dce|GNF-0079-ec781ba7|GNF-0096-cc3502f6|GNF-0019-965637d3|GNF-0016-7e125a4d|GNF-0154-a389b1a4|GNF-0109-5b3bb56e|GNF-0073-9d1db2bf,dtype_casting|overflow_underflow|precision_tolerance|nan_inf|dtype_casting|nan_inf|overflow_underflow|crash_compile,crash_compile,dtype_casting,compiler_codegen,yes,high,"empty(size, dtype=torch","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""empty(size, dtype=torch"",
+  ""confidence"": ""high""
+}",
+GNF-0101-ca19a99c,llama3.2:3b,fold_safe_rag_generated,,0,4.88,GNF-0044-58d8c7b3|GNF-0127-32017a62|GNF-0149-305f23bb|GNF-0116-96b537db|GNF-0060-3368e422|GNF-0175-551fdc3c|GNF-0129-c9f64c60|GNF-0021-ebaa6477,not_numerical_failure|overflow_underflow|dtype_casting|dtype_casting|overflow_underflow|not_numerical_failure|nan_inf|nan_inf,needs_review,dtype_casting,unknown,yes,high,The code error is as follows.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The code error is as follows."",
+  ""confidence"": ""high""
+}",
+GNF-0102-5bd04adc,llama3.2:3b,fold_safe_rag_generated,,0,5.59,GNF-0142-fd6a822f|GNF-0060-3368e422|GNF-0156-b72349bc|GNF-0110-1c6064fd|GNF-0073-9d1db2bf|GNF-0169-cf25d953|GNF-0062-3cbef3ba|GNF-0103-f835a9bf,overflow_underflow|overflow_underflow|not_numerical_failure|dtype_casting|crash_compile|dtype_casting|nan_inf|precision_tolerance,nan_inf,nan_inf,unknown,yes,high,yolo_obj = yolov4loss_jax() return yolo_obj,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""yolo_obj = yolov4loss_jax() return yolo_obj"",
+  ""confidence"": ""high""
+}",
+GNF-0103-f835a9bf,llama3.2:3b,fold_safe_rag_generated,,0,5.86,GNF-0098-a1e24269|GNF-0012-d3d20064|GNF-0109-5b3bb56e|GNF-0178-7e3074ef|GNF-0070-0db7eac0|GNF-0046-21fccfc5|GNF-0149-305f23bb|GNF-0062-3cbef3ba,overflow_underflow|performance_only|overflow_underflow|not_numerical_failure|nan_inf|dtype_casting|dtype_casting|nan_inf,needs_review,dtype_casting,compiler_codegen,yes,high,"I'm trying to build jax on a cluster that uses IBM power9 processors (it's a sister cluster to Summit at ORNL). It seems to be failing when trying to build XLA, which is strange because I've been able to install tensorflow just fine.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I'm trying to build jax on a cluster that uses IBM power9 processors (it's a sister cluster to Summit at ORNL). It seems to be failing when trying to build XLA, which is strange because I've been able to install tensorflow just fine."",
+  ""confidence"": ""high""
+}",
+GNF-0104-5a61566a,llama3.2:3b,fold_safe_rag_generated,,0,4.94,GNF-0164-cdeaf26a|GNF-0099-8e08d802|GNF-0034-77cd048a|GNF-0167-13076e98|GNF-0140-0369d89c|GNF-0179-0d2d153d|GNF-0109-5b3bb56e|GNF-0035-1d6522c2,nan_inf|dtype_casting|dtype_casting|nan_inf|overflow_underflow|performance_only|overflow_underflow|precision_tolerance,nan_inf,nan_inf,unknown,yes,high,"q = desc_Q.load([start_m, 0])","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""q = desc_Q.load([start_m, 0])"",
+  ""confidence"": ""high""
+}",
+GNF-0105-bbfb9d59,llama3.2:3b,fold_safe_rag_generated,,0,7.03,GNF-0062-3cbef3ba|GNF-0122-2172f7de|GNF-0161-43f5b312|GNF-0072-9fba4417|GNF-0054-d98d7afd|GNF-0029-5f61e128|GNF-0026-8ee693c5|GNF-0109-5b3bb56e,nan_inf|dtype_casting|dtype_casting|overflow_underflow|not_numerical_failure|not_numerical_failure|performance_only|overflow_underflow,dtype_casting,nan_inf,unknown,yes,high,The dask_cudf merge functions returns too few rows when both the dtype of the column being merged on is mismatched (eg: `int64` on the left and `int32` on the right) _and_ when `npartitions>1`,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The dask_cudf merge functions returns too few rows when both the dtype of the column being merged on is mismatched (eg: `int64` on the left and `int32` on the right) _and_ when `npartitions>1`"",
+  ""confidence"": ""high""
+}",
+GNF-0106-69df058d,llama3.2:3b,fold_safe_rag_generated,,0,6.66,GNF-0052-c0b07407|GNF-0110-1c6064fd|GNF-0152-d8097288|GNF-0021-ebaa6477|GNF-0175-551fdc3c|GNF-0142-fd6a822f|GNF-0117-5c96ad33|GNF-0095-e46f2dc5,dtype_casting|dtype_casting|not_numerical_failure|nan_inf|not_numerical_failure|overflow_underflow|nan_inf|precision_tolerance,nan_inf,nan_inf,unknown,yes,high,"out = jax.nn.dot_product_attention(np.zeros((T, N, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), mask=mask, )","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""out = jax.nn.dot_product_attention(np.zeros((T, N, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), mask=mask, )"",
+  ""confidence"": ""high""
+}",
+GNF-0107-36abe955,llama3.2:3b,fold_safe_rag_generated,,0,6.62,GNF-0101-ca19a99c|GNF-0174-e7b5adf3|GNF-0097-60602b2b|GNF-0079-ec781ba7|GNF-0010-ff390b39|GNF-0008-4625af98|GNF-0096-cc3502f6|GNF-0152-d8097288,not_numerical_failure|overflow_underflow|dtype_casting|overflow_underflow|nan_inf|dtype_casting|precision_tolerance|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,temp = array[i-start+1:i+1] temp = (temp - temp.min())/(temp.max() - temp.min())*2-1 out[i] = np.arctanh(temp[-1]),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""temp = array[i-start+1:i+1] temp = (temp - temp.min())/(temp.max() - temp.min())*2-1 out[i] = np.arctanh(temp[-1])"",
+  ""confidence"": ""high""
+}",
+GNF-0108-049dae8c,llama3.2:3b,fold_safe_rag_generated,,0,5.23,GNF-0024-543e6651|GNF-0188-931dcb6c|GNF-0160-b61a834c|GNF-0072-9fba4417|GNF-0054-d98d7afd|GNF-0126-2958d273|GNF-0008-4625af98|GNF-0095-e46f2dc5,nan_inf|overflow_underflow|dtype_casting|overflow_underflow|not_numerical_failure|nan_inf|dtype_casting|precision_tolerance,overflow_underflow,nan_inf,unknown,yes,high,"replace([cp.inf, -cp.inf], cp.nan) mutates categorical column codes","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""replace([cp.inf, -cp.inf], cp.nan) mutates categorical column codes"",
+  ""confidence"": ""high""
+}",
+GNF-0109-5b3bb56e,llama3.2:3b,fold_safe_rag_generated,,0,7.40,GNF-0153-0a1f22c0|GNF-0160-b61a834c|GNF-0124-5e35db0b|GNF-0062-3cbef3ba|GNF-0020-322072f7|GNF-0044-58d8c7b3|GNF-0051-53841ba4|GNF-0025-d23b5aed,overflow_underflow|dtype_casting|overflow_underflow|nan_inf|dtype_casting|not_numerical_failure|not_numerical_failure|nan_inf,overflow_underflow,overflow_underflow,unknown,yes,high,FileNotFoundError: [Errno 2] No such file or directory: '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' -> '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir',"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""FileNotFoundError: [Errno 2] No such file or directory: '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' -> '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir'"",
+  ""confidence"": ""high""
+}",
+GNF-0110-1c6064fd,llama3.2:3b,fold_safe_rag_generated,,0,5.98,GNF-0149-305f23bb|GNF-0123-b044c5aa|GNF-0042-938c1ba1|GNF-0060-3368e422|GNF-0021-ebaa6477|GNF-0093-6cb318e0|GNF-0175-551fdc3c|GNF-0117-5c96ad33,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure|nan_inf,crash_compile,nan_inf,unknown,yes,high,"Seems that the head dim of K doesn't have stride 1 which is required by cuDNN, could you provide a repo with how QKV is constructed?","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Seems that the head dim of K doesn't have stride 1 which is required by cuDNN, could you provide a repo with how QKV is constructed?"",
+  ""confidence"": ""high""
+}",
+GNF-0111-4b909a91,llama3.2:3b,fold_safe_rag_generated,,0,6.57,GNF-0132-01bc7af7|GNF-0134-2006d4e1|GNF-0095-e46f2dc5|GNF-0015-04273d95|GNF-0010-ff390b39|GNF-0163-93b2beac|GNF-0140-0369d89c|GNF-0056-d1d1b50f,dtype_casting|dtype_casting|precision_tolerance|nan_inf|nan_inf|precision_tolerance|overflow_underflow|overflow_underflow,nan_inf,precision_tolerance,unknown,yes,high,The issue only seems to happen when offset = w (equivalent to offset = 0 but kept for other reasons). I suspect there's some negative or overflow indexing happening and the compiled kernel is accessing unallocated memory.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue only seems to happen when offset = w (equivalent to offset = 0 but kept for other reasons). I suspect there's some negative or overflow indexing happening and the compiled kernel is accessing unallocated memory."",
+  ""confidence"": ""high""
+}",
+GNF-0112-9ee80d72,llama3.2:3b,fold_safe_rag_generated,,0,6.39,GNF-0020-322072f7|GNF-0186-6c92b3b9|GNF-0185-120804a6|GNF-0037-7af727c1|GNF-0154-a389b1a4|GNF-0100-a235b2dd|GNF-0044-58d8c7b3|GNF-0096-cc3502f6,dtype_casting|overflow_underflow|overflow_underflow|not_numerical_failure|nan_inf|dtype_casting|not_numerical_failure|precision_tolerance,crash_compile,dtype_casting,unknown,yes,high,"cupy/cuda/cupy_cub.cu: In instantiation of 'void _cub_reduce_argmin::operator()(void*, size_t&, void*, void*, int, cudaStream_t) [with T = signed char; size_t = long unsigned int; cudaStream_t = CUstream_st*]':","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cupy/cuda/cupy_cub.cu: In instantiation of 'void _cub_reduce_argmin::operator()(void*, size_t&, void*, void*, int, cudaStream_t) [with T = signed char; size_t = long unsigned int; cudaStream_t = CUstream_st*]':"",
+  ""confidence"": ""high""
+}",
+GNF-0113-e024c338,llama3.2:3b,fold_safe_rag_generated,,0,5.17,GNF-0031-dff9514d|GNF-0027-933bf558|GNF-0128-c6e2544c|GNF-0187-2664d182|GNF-0094-5130df2b|GNF-0030-a4314978|GNF-0103-f835a9bf|GNF-0073-9d1db2bf,dtype_casting|dtype_casting|nan_inf|overflow_underflow|overflow_underflow|nan_inf|precision_tolerance|crash_compile,precision_tolerance,precision_tolerance,unknown,unclear,medium,"While the current ability to pass a dict of dtypes to `rtol=` and `atol=` is nice, in practice it is used pretty rarely meaning that double precision routines are often tested with the same precision as single precision ones.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""While the current ability to pass a dict of dtypes to `rtol=` and `atol=` is nice, in practice it is used pretty rarely meaning that double precision routines are often tested with the same precision as single precision ones."",
+  ""confidence"": ""medium""
+}",
+GNF-0114-9723251e,llama3.2:3b,fold_safe_rag_generated,,0,4.80,GNF-0072-9fba4417|GNF-0029-5f61e128|GNF-0039-1a4af8a4|GNF-0014-9fb698b0|GNF-0129-c9f64c60|GNF-0140-0369d89c|GNF-0043-75ac4cd1|GNF-0096-cc3502f6,overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|nan_inf|overflow_underflow|nan_inf|precision_tolerance,dtype_casting,dtype_casting,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": """",
+  ""confidence"": ""low""
+}",
+GNF-0115-bd414dfb,llama3.2:3b,fold_safe_rag_generated,,0,5.10,GNF-0021-ebaa6477|GNF-0175-551fdc3c|GNF-0149-305f23bb|GNF-0052-c0b07407|GNF-0142-fd6a822f|GNF-0152-d8097288|GNF-0098-a1e24269|GNF-0117-5c96ad33,nan_inf|not_numerical_failure|dtype_casting|dtype_casting|overflow_underflow|not_numerical_failure|overflow_underflow|nan_inf,needs_review,nan_inf,unknown,yes,high,"When the `chunk_size` is large, this matrix multiplication is performed incorrectly.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""When the `chunk_size` is large, this matrix multiplication is performed incorrectly."",
+  ""confidence"": ""high""
+}",
+GNF-0116-96b537db,llama3.2:3b,fold_safe_rag_generated,,0,4.92,GNF-0051-53841ba4|GNF-0043-75ac4cd1|GNF-0071-ca4885e3|GNF-0101-ca19a99c|GNF-0025-d23b5aed|GNF-0096-cc3502f6|GNF-0031-dff9514d|GNF-0098-a1e24269,not_numerical_failure|nan_inf|dtype_casting|not_numerical_failure|nan_inf|precision_tolerance|dtype_casting|overflow_underflow,precision_tolerance,precision_tolerance,unknown,yes,high,array('int64'),"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""array('int64')"",
+  ""confidence"": ""high""
+}",
+GNF-0117-5c96ad33,llama3.2:3b,fold_safe_rag_generated,,0,5.01,GNF-0036-b3e8f03a|GNF-0026-8ee693c5|GNF-0060-3368e422|GNF-0042-938c1ba1|GNF-0052-c0b07407|GNF-0028-64f6040c|GNF-0156-b72349bc|GNF-0093-6cb318e0,dtype_casting|performance_only|overflow_underflow|overflow_underflow|dtype_casting|nan_inf|not_numerical_failure|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,"It seems that it would be more appropriate to return NaN in these cases (as scipy.special.ndtri, torch.special.ndtri, etc. do).","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""It seems that it would be more appropriate to return NaN in these cases (as scipy.special.ndtri, torch.special.ndtri, etc. do)."",
+  ""confidence"": ""high""
+}",
+GNF-0118-6cddc10b,llama3.2:3b,fold_safe_rag_generated,,0,7.52,GNF-0140-0369d89c|GNF-0002-16e149fe|GNF-0060-3368e422|GNF-0151-5ccf24b2|GNF-0123-b044c5aa|GNF-0167-13076e98|GNF-0163-93b2beac|GNF-0103-f835a9bf,overflow_underflow|dtype_casting|overflow_underflow|nan_inf|dtype_casting|nan_inf|precision_tolerance|precision_tolerance,crash_compile,precision_tolerance,unknown,yes,high,"xn, yn = np.array([2]), np.array([-3]) >>> xp, yp = 2, -3 >>> xt, yt = torch.tensor([2]), torch.tensor([-3]) >>> xn ** yn Traceback (most recent call last): File ""<stdin>"", line 1, in <module> ValueError: Integers to negative integer powers are not allowed. >>> xp ** yp 0.125 >>> xt ** yt tensor([0])","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""xn, yn = np.array([2]), np.array([-3]) >>> xp, yp = 2, -3 >>> xt, yt = torch.tensor([2]), torch.tensor([-3]) >>> xn ** yn Traceback (most recent call last): File \""<stdin>\"", line 1, in <module> ValueError: Integers to negative integer powers are not allowed. >>> xp ** yp 0.125 >>> xt ** yt tensor([0])"",
+  ""confidence"": ""high""
+}",
+GNF-0119-84e3156c,llama3.2:3b,fold_safe_rag_generated,,0,4.65,GNF-0181-f206820c|GNF-0034-77cd048a|GNF-0056-d1d1b50f|GNF-0092-350f027f|GNF-0167-13076e98|GNF-0140-0369d89c|GNF-0065-e81a8790|GNF-0103-f835a9bf,dtype_casting|dtype_casting|overflow_underflow|nan_inf|nan_inf|overflow_underflow|precision_tolerance|precision_tolerance,dtype_casting,dtype_casting,memory_mask_bounds,yes,low,tl.constexpr(0.0).to(tl.float16),"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""tl.constexpr(0.0).to(tl.float16)"",
+  ""confidence"": ""low""
+}",
+GNF-0120-3d8af802,llama3.2:3b,fold_safe_rag_generated,,0,5.87,GNF-0166-2dbedde8|GNF-0147-77cef7ab|GNF-0105-bbfb9d59|GNF-0029-5f61e128|GNF-0026-8ee693c5|GNF-0041-2e844e08|GNF-0062-3cbef3ba|GNF-0080-d86cbc25,not_numerical_failure|nan_inf|dtype_casting|not_numerical_failure|performance_only|dtype_casting|nan_inf|crash_compile,precision_tolerance,nan_inf,unknown,yes,high,ValueError('Metadata mismatch found in `from_delayed`.\n\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`'),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""ValueError('Metadata mismatch found in `from_delayed`.\\n\\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`')"",
+  ""confidence"": ""high""
+}",
+GNF-0121-d1cf86e9,llama3.2:3b,fold_safe_rag_generated,,0,7.52,GNF-0096-cc3502f6|GNF-0098-a1e24269|GNF-0020-322072f7|GNF-0041-2e844e08|GNF-0103-f835a9bf|GNF-0072-9fba4417|GNF-0147-77cef7ab|GNF-0101-ca19a99c,precision_tolerance|overflow_underflow|dtype_casting|dtype_casting|precision_tolerance|overflow_underflow|nan_inf|not_numerical_failure,needs_review,dtype_casting,hardware_backend,yes,high,"numba/np/ufunc/tbbpool.cpp:30:2: error: #error ""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required"" #error ""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required""","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"" #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+  ""confidence"": ""high""
+}",
+GNF-0122-2172f7de,llama3.2:3b,fold_safe_rag_generated,,0,5.45,GNF-0105-bbfb9d59|GNF-0062-3cbef3ba|GNF-0086-61dd6010|GNF-0060-3368e422|GNF-0182-0943f7d0|GNF-0156-b72349bc|GNF-0185-120804a6|GNF-0065-e81a8790,dtype_casting|nan_inf|nan_inf|overflow_underflow|dtype_casting|not_numerical_failure|overflow_underflow|precision_tolerance,precision_tolerance,precision_tolerance,unknown,yes,high,Truncation is expected when the divisor has a scale that is equal-or-less-than the dividend.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Truncation is expected when the divisor has a scale that is equal-or-less-than the dividend."",
+  ""confidence"": ""high""
+}",
+GNF-0123-b044c5aa,llama3.2:3b,fold_safe_rag_generated,,0,6.17,GNF-0052-c0b07407|GNF-0149-305f23bb|GNF-0021-ebaa6477|GNF-0175-551fdc3c|GNF-0060-3368e422|GNF-0142-fd6a822f|GNF-0152-d8097288|GNF-0028-64f6040c,dtype_casting|dtype_casting|nan_inf|not_numerical_failure|overflow_underflow|overflow_underflow|not_numerical_failure|nan_inf,dtype_casting,dtype_casting,hardware_backend,unclear,low,"For simplicity, JAX has removed its internal frames from the traceback of the following exception.","{""primary_failure_label"": ""dtype_casting"", ""secondary_cause_labels"": [""hardware_backend""], ""is_true_numerical_failure"": ""unclear"", ""evidence_quote"": ""For simplicity, JAX has removed its internal frames from the traceback of the following exception."", ""confidence"": ""low""}",
+GNF-0124-5e35db0b,llama3.2:3b,fold_safe_rag_generated,,0,6.14,GNF-0015-04273d95|GNF-0177-39a0d983|GNF-0188-931dcb6c|GNF-0024-543e6651|GNF-0160-b61a834c|GNF-0095-e46f2dc5|GNF-0108-049dae8c|GNF-0152-d8097288,nan_inf|overflow_underflow|overflow_underflow|nan_inf|dtype_casting|precision_tolerance|not_numerical_failure|not_numerical_failure,overflow_underflow,dtype_casting,hardware_backend,yes,high,"After looking through the code, I guess we would need a new `complex32_bf16` type (similar to `CUDA_C_16BF`) to handle this.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""After looking through the code, I guess we would need a new `complex32_bf16` type (similar to `CUDA_C_16BF`) to handle this."",
+  ""confidence"": ""high"" }",
+GNF-0125-29346792,llama3.2:3b,fold_safe_rag_generated,,0,4.93,GNF-0071-ca4885e3|GNF-0161-43f5b312|GNF-0025-d23b5aed|GNF-0029-5f61e128|GNF-0070-0db7eac0|GNF-0037-7af727c1|GNF-0096-cc3502f6|GNF-0012-d3d20064,dtype_casting|dtype_casting|nan_inf|not_numerical_failure|nan_inf|not_numerical_failure|precision_tolerance|performance_only,dtype_casting,precision_tolerance,unknown,yes,medium,Some changes to exception messages we replicate (see `numba.tests.test_mathlib.TestMathLib.test_hypot`),"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Some changes to exception messages we replicate (see `numba.tests.test_mathlib.TestMathLib.test_hypot`)"",
+  ""confidence"": ""medium""
+}",
+GNF-0126-2958d273,llama3.2:3b,fold_safe_rag_generated,,0,5.92,GNF-0108-049dae8c|GNF-0054-d98d7afd|GNF-0072-9fba4417|GNF-0062-3cbef3ba|GNF-0160-b61a834c|GNF-0024-543e6651|GNF-0188-931dcb6c|GNF-0161-43f5b312,not_numerical_failure|not_numerical_failure|overflow_underflow|nan_inf|dtype_casting|nan_inf|overflow_underflow|dtype_casting,nan_inf,nan_inf,unknown,yes,high,"For a cuDF DataFrame containing a categorical column with a custom CategoricalDtype, calling: gdf.replace([cp.inf, -cp.inf], cp.nan) can mutate the categorical column values/codes, even though the categorical column does not contain inf or -inf.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""For a cuDF DataFrame containing a categorical column with a custom CategoricalDtype, calling: gdf.replace([cp.inf, -cp.inf], cp.nan) can mutate the categorical column values/codes, even though the categorical column does not contain inf or -inf."",
+  ""confidence"": ""high""
+}",
+GNF-0127-32017a62,llama3.2:3b,fold_safe_rag_generated,,0,6.99,GNF-0082-a3d486ce|GNF-0149-305f23bb|GNF-0101-ca19a99c|GNF-0036-b3e8f03a|GNF-0026-8ee693c5|GNF-0129-c9f64c60|GNF-0072-9fba4417|GNF-0175-551fdc3c,overflow_underflow|dtype_casting|not_numerical_failure|dtype_casting|performance_only|nan_inf|overflow_underflow|not_numerical_failure,overflow_underflow,nan_inf,unknown,yes,high,"Thank you for using and contributing to CuPy! If your issue is a **request for support in using CuPy**, please post it on [Stack Overflow](https://stackoverflow.com/questions/tagged/cupy) or Google Groups ([en](https://groups.google.com/forum/#!forum/cupy) / [ja](https://groups.google.com/forum/#!forum/cupy-ja)).","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Thank you for using and contributing to CuPy! If your issue is a **request for support in using CuPy**, please post it on [Stack Overflow](https://stackoverflow.com/questions/tagged/cupy) or Google Groups ([en](https://groups.google.com/forum/#!forum/cupy) / [ja](https://groups.google.com/forum/#!forum/cupy-ja))."",
+  ""confidence"": ""high""
+}",
+GNF-0128-c6e2544c,llama3.2:3b,fold_safe_rag_generated,,0,4.73,GNF-0070-0db7eac0|GNF-0031-dff9514d|GNF-0187-2664d182|GNF-0023-93595bc9|GNF-0025-d23b5aed|GNF-0158-41ca2b85|GNF-0012-d3d20064|GNF-0178-7e3074ef,nan_inf|dtype_casting|overflow_underflow|crash_compile|nan_inf|dtype_casting|performance_only|not_numerical_failure,nan_inf,dtype_casting,unknown,yes,high,I guess it's only a matter of float-to-string conversion here.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""unknown""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I guess it's only a matter of float-to-string conversion here."",
+  ""confidence"": ""high""
+}",
+GNF-0129-c9f64c60,llama3.2:3b,fold_safe_rag_generated,,0,6.21,GNF-0028-64f6040c|GNF-0072-9fba4417|GNF-0054-d98d7afd|GNF-0126-2958d273|GNF-0008-4625af98|GNF-0161-43f5b312|GNF-0037-7af727c1|GNF-0026-8ee693c5,nan_inf|overflow_underflow|not_numerical_failure|nan_inf|dtype_casting|dtype_casting|not_numerical_failure|performance_only,nan_inf,nan_inf,unknown,yes,high,The `to_strip` parameter here is expected to only be a `str` type. Calling `cudf.Scalar(to_strip)` when `to_strip` is a list is later incorrectly converting a list-scalar into a `string_scalar`. I think the right behavior is to throw a TypeError instead of what Pandas does.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The `to_strip` parameter here is expected to only be a `str` type. Calling `cudf.Scalar(to_strip)` when `to_strip` is a list is later incorrectly converting a list-scalar into a `string_scalar`. I think the right behavior is to throw a TypeError instead of what Pandas does."",
+  ""confidence"": ""high""
+}",
+GNF-0130-957b5693,llama3.2:3b,fold_safe_rag_generated,,0,6.34,GNF-0149-305f23bb|GNF-0021-ebaa6477|GNF-0042-938c1ba1|GNF-0123-b044c5aa|GNF-0060-3368e422|GNF-0152-d8097288|GNF-0175-551fdc3c|GNF-0117-5c96ad33,dtype_casting|nan_inf|overflow_underflow|dtype_casting|overflow_underflow|not_numerical_failure|not_numerical_failure|nan_inf,needs_review,nan_inf,unknown,yes,high,"uv venv uv pip install -U “jax[cuda12]” source .venv/bin/activate python import jax.numpy as jnp; jnp.linalg.solve(jnp.array([[1]]), jnp.array([1]))","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""uv venv uv pip install -U \u201cjax[cuda12]\u201d source .venv/bin/activate python import jax.numpy as jnp; jnp.linalg.solve(jnp.array([[1]]), jnp.array([1]))"",
+  ""confidence"": ""high""
+}",
+GNF-0131-4b657811,llama3.2:3b,fold_safe_rag_generated,,0,5.74,GNF-0022-a403f994|GNF-0019-965637d3|GNF-0056-d1d1b50f|GNF-0179-0d2d153d|GNF-0187-2664d182|GNF-0138-73610007|GNF-0118-6cddc10b|GNF-0012-d3d20064,dtype_casting|nan_inf|overflow_underflow|performance_only|overflow_underflow|dtype_casting|nan_inf|performance_only,needs_review,dtype_casting,memory_mask_bounds,yes,high,"a) Instead of cache inputs as float32, we directly cache them as float16 and only convert to float32 at the time of computation","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""a) Instead of cache inputs as float32, we directly cache them as float16 and only convert to float32 at the time of computation"",
+  ""confidence"": ""high""
+}",
+GNF-0132-01bc7af7,llama3.2:3b,fold_safe_rag_generated,,0,6.50,GNF-0111-4b909a91|GNF-0172-1596bb30|GNF-0002-16e149fe|GNF-0140-0369d89c|GNF-0056-d1d1b50f|GNF-0073-9d1db2bf|GNF-0013-bd88dbb3|GNF-0163-93b2beac,nan_inf|dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|crash_compile|nan_inf|precision_tolerance,precision_tolerance,precision_tolerance,unknown,yes,high,"so when the kernel runs twice, the first call modifies `in_out_ptr0` which leads to the wrong value being loaded in the second call.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""so when the kernel runs twice, the first call modifies `in_out_ptr0` which leads to the wrong value being loaded in the second call."",
+  ""confidence"": ""high"" }",
+GNF-0133-3e76eecf,llama3.2:3b,fold_safe_rag_generated,,0,5.54,GNF-0049-80ab540f|GNF-0005-80aeca70|GNF-0032-76c19db8|GNF-0089-074c6391|GNF-0170-78e2d436|GNF-0067-0064f2a6|GNF-0044-58d8c7b3|GNF-0023-93595bc9,overflow_underflow|overflow_underflow|dtype_casting|dtype_casting|nan_inf|nan_inf|not_numerical_failure|crash_compile,dtype_casting,nan_inf,unknown,yes,high,around 0.0044% of the values are not the same as the scipy one.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""around 0.0044% of the values are not the same as the scipy one."",
+  ""confidence"": ""high""
+}",
+GNF-0134-2006d4e1,llama3.2:3b,fold_safe_rag_generated,,0,5.49,GNF-0030-a4314978|GNF-0138-73610007|GNF-0007-5a435abf|GNF-0073-9d1db2bf|GNF-0111-4b909a91|GNF-0140-0369d89c|GNF-0095-e46f2dc5|GNF-0063-a5f90bd9,nan_inf|dtype_casting|dtype_casting|crash_compile|nan_inf|overflow_underflow|precision_tolerance|not_numerical_failure,precision_tolerance,precision_tolerance,unknown,unclear,low,"The static launcher appears to compress all pointer-typed Triton arguments to ""O"" and does not preserve or validate the original pointer element dtype (for example *fp16, *bf16, *fp32) before launch.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The static launcher appears to compress all pointer-typed Triton arguments to \""O\"" and does not preserve or validate the original pointer element dtype (for example *fp16, *bf16, *fp32) before launch."",
+  ""confidence"": ""low""
+}",
+GNF-0135-51861a93,llama3.2:3b,fold_safe_rag_generated,,0,9.71,GNF-0024-543e6651|GNF-0139-08c1b395|GNF-0177-39a0d983|GNF-0015-04273d95|GNF-0108-049dae8c|GNF-0087-b5fe68e9|GNF-0008-4625af98|GNF-0051-53841ba4,nan_inf|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|dtype_casting|dtype_casting|not_numerical_failure,crash_compile,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""File \""/lib/python3.11/site-packages/torchvision/__init__.py\"", line 10, in <module> from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils # usort:skip ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \""/lib/python3.11/site-packages/torchvision/models/__init__.py\"", line 2, in <module> from .convnext import * File \""/lib/python3.11/site-packages/torchvision/models/convnext.py\"", line 8, in <module> from ..ops.misc import Conv2dNormActivation, Permute File \""/lib/python3.11/site-packages/torchvision/ops/__init__.py\"", line 23, in <module> from .poolers import MultiScaleRo",
+GNF-0136-a301f54e,llama3.2:3b,fold_safe_rag_generated,,0,8.29,GNF-0158-41ca2b85|GNF-0133-3e76eecf|GNF-0157-7be66b56|GNF-0023-93595bc9|GNF-0082-a3d486ce|GNF-0044-58d8c7b3|GNF-0037-7af727c1|GNF-0062-3cbef3ba,dtype_casting|overflow_underflow|dtype_casting|crash_compile|overflow_underflow|not_numerical_failure|not_numerical_failure|nan_inf,performance_only,nan_inf,unknown,yes,high,"Loop has started ... Traceback (most recent call last): File ""/media/eric/M33/py311/../core.py"" line 90, in <module> result = core() ^^^^^^ File ""/media/eric/M33/py311/../core.py"" line 61, in core exp_Dop_h= cp.exp(Dop_s * h / 2.0) ~~~~~~~~~~^~~~~ File ""/cupy/_core/core.pyx"", line 1307, in cupy._core.c...","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Loop has started ... Traceback (most recent call last): File \""/media/eric/M33/py311/../core.py\"" line 90, in <module> result = core() ^^^^^^ File \""/media/eric/M33/py311/../core.py\"" line 61, in core exp_Dop_h= cp.exp(Dop_s * h / 2.0) ~~~~~~~~~~^~~~~ File \""/cupy/_core/core.pyx\"", line 1307, in cupy._core.c..."",
+  ""confidence"": ""high""
+}",
+GNF-0137-1f5e2c55,llama3.2:3b,fold_safe_rag_generated,,0,5.98,GNF-0069-88ed627b|GNF-0187-2664d182|GNF-0023-93595bc9|GNF-0133-3e76eecf|GNF-0012-d3d20064|GNF-0068-abb65bf7|GNF-0029-5f61e128|GNF-0062-3cbef3ba,dtype_casting|overflow_underflow|crash_compile|overflow_underflow|performance_only|dtype_casting|not_numerical_failure|nan_inf,performance_only,dtype_casting,hardware_backend,yes,high,"def g_block_diag(mats: cupyx.scipy.sparse.coo_matrices, format=None, dtype=None): """""" Build a block diagonal sparse matrix from provided matrices. \","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""def g_block_diag(mats: cupyx.scipy.sparse.coo_matrices, format=None, dtype=None): \""\""\"" Build a block diagonal sparse matrix from provided matrices. \\"",
+  ""confidence"": ""high""
+}",
+GNF-0138-73610007,llama3.2:3b,fold_safe_rag_generated,,0,6.37,GNF-0014-9fb698b0|GNF-0057-44d428bb|GNF-0164-cdeaf26a|GNF-0134-2006d4e1|GNF-0056-d1d1b50f|GNF-0030-a4314978|GNF-0098-a1e24269|GNF-0061-039345f1,dtype_casting|precision_tolerance|nan_inf|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure,performance_only,nan_inf,unknown,yes,high,"This is quite strange, is cuda-gdb returning the correct line info, is this index later used which is causing the IMA?","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This is quite strange, is cuda-gdb returning the correct line info, is this index later used which is causing the IMA?"",
+  ""confidence"": ""high""
+}",
+GNF-0139-08c1b395,llama3.2:3b,fold_safe_rag_generated,,0,5.40,GNF-0177-39a0d983|GNF-0015-04273d95|GNF-0160-b61a834c|GNF-0188-931dcb6c|GNF-0024-543e6651|GNF-0095-e46f2dc5|GNF-0108-049dae8c|GNF-0152-d8097288,overflow_underflow|nan_inf|dtype_casting|overflow_underflow|nan_inf|precision_tolerance|not_numerical_failure|not_numerical_failure,needs_review,nan_inf,unknown,yes,high,RuntimeError: CUDA error: an illegal memory access was encountered,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""RuntimeError: CUDA error: an illegal memory access was encountered"",
+  ""confidence"": ""high""
+}",
+GNF-0140-0369d89c,llama3.2:3b,fold_safe_rag_generated,,0,7.06,GNF-0118-6cddc10b|GNF-0109-5b3bb56e|GNF-0158-41ca2b85|GNF-0082-a3d486ce|GNF-0110-1c6064fd|GNF-0010-ff390b39|GNF-0101-ca19a99c|GNF-0093-6cb318e0,nan_inf|overflow_underflow|dtype_casting|overflow_underflow|dtype_casting|nan_inf|not_numerical_failure|not_numerical_failure,dtype_casting,nan_inf,unknown,yes,high,"FP16 on Pascal GPUs is not supported. More generally compute capability < 70 is not supported, though you can make it work by changing the datatype to fp16 and using block sizes that don't overflow shared memory","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""FP16 on Pascal GPUs is not supported. More generally compute capability < 70 is not supported, though you can make it work by changing the datatype to fp16 and using block sizes that don't overflow shared memory"",
+  ""confidence"": ""high""
+}",
+GNF-0141-cd3b65ac,llama3.2:3b,fold_safe_rag_generated,,0,5.27,GNF-0025-d23b5aed|GNF-0068-abb65bf7|GNF-0102-5bd04adc|GNF-0060-3368e422|GNF-0191-cd071cce|GNF-0116-96b537db|GNF-0137-1f5e2c55|GNF-0012-d3d20064,nan_inf|dtype_casting|nan_inf|overflow_underflow|overflow_underflow|dtype_casting|performance_only|performance_only,nan_inf,dtype_casting,hardware_backend,yes,high,"Currently math.isnan is supported for checking for `NaN`s, but there's no way to check for `NaT`s easily short of viewing as an int64 and comparing to the minimum value (-9223372036854775808).","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Currently math.isnan is supported for checking for `NaN`s, but there's no way to check for `NaT`s easily short of viewing as an int64 and comparing to the minimum value (-9223372036854775808)."",
+  ""confidence"": ""high""
+}",
+GNF-0142-fd6a822f,llama3.2:3b,fold_safe_rag_generated,,0,7.84,GNF-0149-305f23bb|GNF-0123-b044c5aa|GNF-0060-3368e422|GNF-0021-ebaa6477|GNF-0042-938c1ba1|GNF-0152-d8097288|GNF-0175-551fdc3c|GNF-0026-8ee693c5,dtype_casting|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure|not_numerical_failure|performance_only,precision_tolerance,nan_inf,unknown,yes,high,"import jax; import jax.numpy as jnp; qkv = jax.random.normal(jax.random.PRNGKey(42), (2, 8192, 4, 128), dtype=jnp.bfloat16) flash_attention_output = jax.nn.dot_product_attention(query=qkv, key=qkv, value=qkv, implementation='cudnn', is_causal=True, )","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""import jax; import jax.numpy as jnp; qkv = jax.random.normal(jax.random.PRNGKey(42), (2, 8192, 4, 128), dtype=jnp.bfloat16) flash_attention_output = jax.nn.dot_product_attention(query=qkv, key=qkv, value=qkv, implementation='cudnn', is_causal=True, )"",
+  ""confidence"": ""high""
+}",
+GNF-0143-8c373d44,llama3.2:3b,fold_safe_rag_generated,,0,5.25,GNF-0100-a235b2dd|GNF-0132-01bc7af7|GNF-0187-2664d182|GNF-0060-3368e422|GNF-0025-d23b5aed|GNF-0103-f835a9bf|GNF-0019-965637d3|GNF-0183-0f27bf2e,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|precision_tolerance|nan_inf|not_numerical_failure,overflow_underflow,overflow_underflow,unknown,yes,high,"To compute `(a * b) % c`, if `a * b` is greater than `max(int32_t)`, then the final result is incorrect.","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""To compute `(a * b) % c`, if `a * b` is greater than `max(int32_t)`, then the final result is incorrect."",
+  ""confidence"": ""high""
+}",
+GNF-0144-bd760235,llama3.2:3b,fold_safe_rag_generated,,0,5.85,GNF-0097-60602b2b|GNF-0182-0943f7d0|GNF-0183-0f27bf2e|GNF-0187-2664d182|GNF-0063-a5f90bd9|GNF-0184-5cb52bd8|GNF-0154-a389b1a4|GNF-0103-f835a9bf,dtype_casting|dtype_casting|not_numerical_failure|overflow_underflow|not_numerical_failure|performance_only|nan_inf|precision_tolerance,overflow_underflow,precision_tolerance,unknown,yes,high,"The `libcudf` implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The `libcudf` implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+  ""confidence"": ""high""
+}",
+GNF-0145-13ae4b2a,llama3.2:3b,fold_safe_rag_generated,,0,6.26,GNF-0085-b4ddcf4b|GNF-0037-7af727c1|GNF-0184-5cb52bd8|GNF-0098-a1e24269|GNF-0161-43f5b312|GNF-0029-5f61e128|GNF-0025-d23b5aed|GNF-0012-d3d20064,dtype_casting|not_numerical_failure|performance_only|overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|performance_only,performance_only,nan_inf,async_race_ordering,yes,high,I've investigated this issue using nsys and discovered two unnecessary synchronization points: one from CUDA synchronization and another from the GIL thread synchronization.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""async_race_ordering""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I've investigated this issue using nsys and discovered two unnecessary synchronization points: one from CUDA synchronization and another from the GIL thread synchronization."",
+  ""confidence"": ""high""
+}",
+GNF-0146-2fe36ae1,llama3.2:3b,fold_safe_rag_generated,,0,6.15,GNF-0109-5b3bb56e|GNF-0096-cc3502f6|GNF-0037-7af727c1|GNF-0153-0a1f22c0|GNF-0020-322072f7|GNF-0088-bbebe2a7|GNF-0158-41ca2b85|GNF-0044-58d8c7b3,overflow_underflow|precision_tolerance|not_numerical_failure|overflow_underflow|dtype_casting|nan_inf|dtype_casting|not_numerical_failure,crash_compile,nan_inf,unknown,yes,high,jitify2 in cuda13,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""jitify2 in cuda13"",
+  ""confidence"": ""high""
+}",
+GNF-0147-77cef7ab,llama3.2:3b,fold_safe_rag_generated,,0,7.12,GNF-0072-9fba4417|GNF-0008-4625af98|GNF-0120-3d8af802|GNF-0037-7af727c1|GNF-0062-3cbef3ba|GNF-0166-2dbedde8|GNF-0126-2958d273|GNF-0026-8ee693c5,overflow_underflow|dtype_casting|dtype_casting|not_numerical_failure|nan_inf|not_numerical_failure|nan_inf|performance_only,nan_inf,nan_inf,unknown,yes,high,"The only different I see with respect to other float columns being inferred correctly is the difference in scientific notation, i.e., `34.3e+09` is being inferred correctly but `34.3e+304` is not.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The only different I see with respect to other float columns being inferred correctly is the difference in scientific notation, i.e., `34.3e+09` is being inferred correctly but `34.3e+304` is not."",
+  ""confidence"": ""high""
+}",
+GNF-0148-5dbeb416,llama3.2:3b,fold_safe_rag_generated,,0,6.18,GNF-0085-b4ddcf4b|GNF-0058-03a80045|GNF-0060-3368e422|GNF-0140-0369d89c|GNF-0145-13ae4b2a|GNF-0183-0f27bf2e|GNF-0062-3cbef3ba|GNF-0178-7e3074ef,dtype_casting|nan_inf|overflow_underflow|overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|not_numerical_failure,performance_only,nan_inf,hardware_backend,yes,high,Our benchmark: [fp8_matmul.py.zip](https://github.com/openai/triton/files/13034506/fp8_matmul.py.zip),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Our benchmark: [fp8_matmul.py.zip](https://github.com/openai/triton/files/13034506/fp8_matmul.py.zip)"",
+  ""confidence"": ""high""
+}",
+GNF-0149-305f23bb,llama3.2:3b,fold_safe_rag_generated,,0,8.05,GNF-0110-1c6064fd|GNF-0123-b044c5aa|GNF-0042-938c1ba1|GNF-0142-fd6a822f|GNF-0175-551fdc3c|GNF-0021-ebaa6477|GNF-0152-d8097288|GNF-0117-5c96ad33,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|not_numerical_failure|nan_inf|not_numerical_failure|nan_inf,dtype_casting,nan_inf,unknown,yes,high,"The CUDNN version is 9.14 (91400 from `check_cudnn_version()`) I don't have immediate access to RTX 5090 rn, could you run again with env ` CUDNN_FRONTEND_LOG_FILE=fe.log CUDNN_FRONTEND_LOG_INFO=1 CUDNN_LOGLEVEL_DBG=3 CUDNN_LOGDEST_DBG=be.log` and attach the logs here?","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The CUDNN version is 9.14 (91400 from `check_cudnn_version()`) I don't have immediate access to RTX 5090 rn, could you run again with env ` CUDNN_FRONTEND_LOG_FILE=fe.log CUDNN_FRONTEND_LOG_INFO=1 CUDNN_LOGLEVEL_DBG=3 CUDNN_LOGDEST_DBG=be.log` and attach the logs here?"",
+  ""confidence"": ""high""
+}",
+GNF-0150-3c830fbd,llama3.2:3b,fold_safe_rag_generated,,0,7.52,GNF-0167-13076e98|GNF-0132-01bc7af7|GNF-0001-f56f80f3|GNF-0140-0369d89c|GNF-0164-cdeaf26a|GNF-0179-0d2d153d|GNF-0152-d8097288|GNF-0060-3368e422,nan_inf|dtype_casting|dtype_casting|overflow_underflow|nan_inf|performance_only|not_numerical_failure|overflow_underflow,performance_only,nan_inf,unknown,yes,high,y_size x_size block pointer pointer block 0 32.0 32.0 0.024209 0.025256 1 64.0 64.0 0.025827 0.024142 2 128.0 128.0 0.024124 0.025241 3 256.0 256.0 0.147073 0.028446,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""y_size x_size block pointer pointer block 0 32.0 32.0 0.024209 0.025256 1 64.0 64.0 0.025827 0.024142 2 128.0 128.0 0.024124 0.025241 3 256.0 256.0 0.147073 0.028446"",
+  ""confidence"": ""high""
+}",
+GNF-0151-5ccf24b2,llama3.2:3b,fold_safe_rag_generated,,0,5.37,GNF-0116-96b537db|GNF-0060-3368e422|GNF-0118-6cddc10b|GNF-0012-d3d20064|GNF-0085-b4ddcf4b|GNF-0094-5130df2b|GNF-0178-7e3074ef|GNF-0070-0db7eac0,dtype_casting|overflow_underflow|nan_inf|performance_only|dtype_casting|overflow_underflow|not_numerical_failure|nan_inf,nan_inf,precision_tolerance,unknown,unclear,low,This is an RFC on altering Numba's fundamental numerical functionality to better reflect what is present in Python/NumPy.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This is an RFC on altering Numba's fundamental numerical functionality to better reflect what is present in Python/NumPy."",
+  ""confidence"": ""low""
+}",
+GNF-0152-d8097288,llama3.2:3b,fold_safe_rag_generated,,0,8.13,GNF-0139-08c1b395|GNF-0087-b5fe68e9|GNF-0108-049dae8c|GNF-0015-04273d95|GNF-0177-39a0d983|GNF-0126-2958d273|GNF-0052-c0b07407|GNF-0026-8ee693c5,overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|overflow_underflow|nan_inf|dtype_casting|performance_only,performance_only,nan_inf,unknown,yes,high,"The implementation of `betainc` is here: https://github.com/jax-ml/jax/blob/579a1573cc82265c2b3245f2ee9ffd33f55fcd63/jax/_src/lax/special.py#L210-L297 Note that it's not a native operation, rather it's defined in terms of lax control flow operators.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The implementation of `betainc` is here: https://github.com/jax-ml/jax/blob/579a1573cc82265c2b3245f2ee9ffd33f55fcd63/jax/_src/lax/special.py#L210-L297 Note that it's not a native operation, rather it's defined in terms of lax control flow operators."",
+  ""confidence"": ""high""
+}",
+GNF-0153-0a1f22c0,llama3.2:3b,fold_safe_rag_generated,,0,5.67,GNF-0109-5b3bb56e|GNF-0140-0369d89c|GNF-0095-e46f2dc5|GNF-0160-b61a834c|GNF-0096-cc3502f6|GNF-0016-7e125a4d|GNF-0167-13076e98|GNF-0010-ff390b39,overflow_underflow|overflow_underflow|precision_tolerance|dtype_casting|precision_tolerance|dtype_casting|nan_inf|nan_inf,overflow_underflow,nan_inf,memory_mask_bounds,yes,high,device kernel image is invalid,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""device kernel image is invalid"",
+  ""confidence"": ""high""
+}",
+GNF-0154-a389b1a4,llama3.2:3b,fold_safe_rag_generated,,0,5.23,GNF-0185-120804a6|GNF-0062-3cbef3ba|GNF-0037-7af727c1|GNF-0097-60602b2b|GNF-0184-5cb52bd8|GNF-0085-b4ddcf4b|GNF-0012-d3d20064|GNF-0187-2664d182,overflow_underflow|nan_inf|not_numerical_failure|dtype_casting|performance_only|dtype_casting|performance_only|overflow_underflow,needs_review,nan_inf,unknown,yes,high,double free or corruption (!prev) Aborted (core dumped),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""double free or corruption (!prev) Aborted (core dumped)"",
+  ""confidence"": ""high""
+}",
+GNF-0155-6ad1750a,llama3.2:3b,fold_safe_rag_generated,,0,5.87,GNF-0145-13ae4b2a|GNF-0187-2664d182|GNF-0097-60602b2b|GNF-0154-a389b1a4|GNF-0184-5cb52bd8|GNF-0037-7af727c1|GNF-0073-9d1db2bf|GNF-0025-d23b5aed,dtype_casting|overflow_underflow|dtype_casting|nan_inf|performance_only|not_numerical_failure|crash_compile|nan_inf,performance_only,dtype_casting,async_race_ordering|hardware_backend,no,high,"However, when I perform small-granularity and short-running reads where each `read_parquet` operation has a runtime of less than 10 ms, I've noticed that the pipeline is gone, `read_parquet` operations from different thr","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""async_race_ordering"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""no"",
+  ""evidence_quote"": ""However, when I perform small-granularity and short-running reads where each `read_parquet` operation has a runtime of less than 10 ms, I've noticed that the pipeline is gone, `read_parquet` operations from different thr"",
+  ""confidence"": ""high""
+}",
+GNF-0156-b72349bc,llama3.2:3b,fold_safe_rag_generated,,0,6.29,GNF-0093-6cb318e0|GNF-0060-3368e422|GNF-0036-b3e8f03a|GNF-0117-5c96ad33|GNF-0175-551fdc3c|GNF-0042-938c1ba1|GNF-0028-64f6040c|GNF-0161-43f5b312,not_numerical_failure|overflow_underflow|dtype_casting|nan_inf|not_numerical_failure|overflow_underflow|nan_inf|dtype_casting,crash_compile,nan_inf,unknown,yes,high,The ahead of time lowering and compilation method for calculating the FLOPS described in (https://jax.readthedocs.io/en/latest/aot.html) returns -1 when applied to a flax.linen.Module involving convolution.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The ahead of time lowering and compilation method for calculating the FLOPS described in (https://jax.readthedocs.io/en/latest/aot.html) returns -1 when applied to a flax.linen.Module involving convolution."",
+  ""confidence"": ""high""
+}",
+GNF-0157-7be66b56,llama3.2:3b,fold_safe_rag_generated,,0,6.24,GNF-0136-a301f54e|GNF-0023-93595bc9|GNF-0158-41ca2b85|GNF-0133-3e76eecf|GNF-0039-1a4af8a4|GNF-0029-5f61e128|GNF-0025-d23b5aed|GNF-0118-6cddc10b,overflow_underflow|crash_compile|dtype_casting|overflow_underflow|dtype_casting|not_numerical_failure|nan_inf|nan_inf,precision_tolerance,nan_inf,unknown,yes,high,TypeError: Cannot cast output operand from dtype('complex128') to dtype('float64') according to the rule 'same_kind',"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: Cannot cast output operand from dtype('complex128') to dtype('float64') according to the rule 'same_kind'"",
+  ""confidence"": ""high""
+}",
+GNF-0158-41ca2b85,llama3.2:3b,fold_safe_rag_generated,,0,6.55,GNF-0032-76c19db8|GNF-0136-a301f54e|GNF-0089-074c6391|GNF-0005-80aeca70|GNF-0170-78e2d436|GNF-0067-0064f2a6|GNF-0044-58d8c7b3|GNF-0023-93595bc9,dtype_casting|overflow_underflow|dtype_casting|overflow_underflow|nan_inf|nan_inf|not_numerical_failure|crash_compile,dtype_casting,nan_inf,memory_mask_bounds,yes,high,"Seems that the shape `(500, 1, 5, 3400)` is reshaped here to `(500, 80, 5, 3400)` then ascontiguousarray is called.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Seems that the shape `(500, 1, 5, 3400)` is reshaped here to `(500, 80, 5, 3400)` then ascontiguousarray is called."",
+  ""confidence"": ""high""
+}",
+GNF-0159-f17202a4,llama3.2:3b,fold_safe_rag_generated,,0,5.61,GNF-0030-a4314978|GNF-0134-2006d4e1|GNF-0164-cdeaf26a|GNF-0061-039345f1|GNF-0040-5f558cf9|GNF-0057-44d428bb|GNF-0037-7af727c1|GNF-0153-0a1f22c0,nan_inf|dtype_casting|nan_inf|not_numerical_failure|dtype_casting|precision_tolerance|not_numerical_failure|overflow_underflow,crash_compile,precision_tolerance,unknown,yes,high,torch.compile is broken with autograd.Function with completely incorrect outputs most of the times in PyTorch 2.11,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""torch.compile is broken with autograd.Function with completely incorrect outputs most of the times in PyTorch 2.11"",
+  ""confidence"": ""high""
+}",
+GNF-0160-b61a834c,llama3.2:3b,fold_safe_rag_generated,,0,6.26,GNF-0024-543e6651|GNF-0139-08c1b395|GNF-0108-049dae8c|GNF-0177-39a0d983|GNF-0015-04273d95|GNF-0087-b5fe68e9|GNF-0008-4625af98|GNF-0074-c730bac3,nan_inf|overflow_underflow|not_numerical_failure|overflow_underflow|nan_inf|dtype_casting|dtype_casting|not_numerical_failure,crash_compile,nan_inf,unknown,yes,low,"print(v, type(v)) w = int(v[1:]) + 1 sw = f't{w}' client_store.compare_set(","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""print(v, type(v)) w = int(v[1:]) + 1 sw = f't{w}' client_store.compare_set(""
+
+
+
+
+
+
+
+}",
+GNF-0161-43f5b312,llama3.2:3b,fold_safe_rag_generated,,0,6.88,GNF-0072-9fba4417|GNF-0008-4625af98|GNF-0028-64f6040c|GNF-0129-c9f64c60|GNF-0037-7af727c1|GNF-0054-d98d7afd|GNF-0026-8ee693c5|GNF-0060-3368e422,overflow_underflow|dtype_casting|nan_inf|nan_inf|not_numerical_failure|not_numerical_failure|performance_only|overflow_underflow,dtype_casting,nan_inf,unknown,yes,high,"While I _think_ libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""While I _think_ libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum."",
+  ""confidence"": ""high""
+}",
+GNF-0162-297471a6,llama3.2:3b,fold_safe_rag_generated,,0,5.80,GNF-0180-3e16cf7e|GNF-0052-c0b07407|GNF-0142-fd6a822f|GNF-0021-ebaa6477|GNF-0152-d8097288|GNF-0175-551fdc3c|GNF-0095-e46f2dc5|GNF-0030-a4314978,dtype_casting|dtype_casting|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure|precision_tolerance|nan_inf,crash_compile,nan_inf,unknown,yes,high,gradient over scanned function is inverse.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""gradient over scanned function is inverse."",
+  ""confidence"": ""high""
+}",
+GNF-0163-93b2beac,llama3.2:3b,fold_safe_rag_generated,,0,7.22,GNF-0007-5a435abf|GNF-0030-a4314978|GNF-0014-9fb698b0|GNF-0043-75ac4cd1|GNF-0035-1d6522c2|GNF-0140-0369d89c|GNF-0063-a5f90bd9|GNF-0073-9d1db2bf,dtype_casting|nan_inf|dtype_casting|nan_inf|precision_tolerance|overflow_underflow|not_numerical_failure|crash_compile,needs_review,nan_inf,unknown,yes,high,"In this repro, the function `foo()` is mutating a tensor with overlapping data. This is undefined behavior ([docs](https://docs.pytorch.org/docs/stable/generated/torch.as_strided.html)), because there is a data race to perform the mutation, so you can get different results depending on the kernel that runs, and we end up with a different behavior under eager vs compile.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""In this repro, the function `foo()` is mutating a tensor with overlapping data. This is undefined behavior ([docs](https://docs.pytorch.org/docs/stable/generated/torch.as_strided.html)), because there is a data race to perform the mutation, so you can get different results depending on the kernel that runs, and we end up with a different behavior under eager vs compile."",
+  ""confidence"": ""high""
+}",
+GNF-0164-cdeaf26a,llama3.2:3b,fold_safe_rag_generated,,0,5.77,GNF-0138-73610007|GNF-0181-f206820c|GNF-0015-04273d95|GNF-0104-5a61566a|GNF-0056-d1d1b50f|GNF-0140-0369d89c|GNF-0159-f17202a4|GNF-0044-58d8c7b3,dtype_casting|dtype_casting|nan_inf|nan_inf|overflow_underflow|overflow_underflow|precision_tolerance|not_numerical_failure,nan_inf,precision_tolerance,unknown,yes,high,"Another hint is that if I use fp32 dot accumulation instead of fp16, the output will be correct.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Another hint is that if I use fp32 dot accumulation instead of fp16, the output will be correct."",
+  ""confidence"": ""high""
+}",
+GNF-0165-0b146b77,llama3.2:3b,fold_safe_rag_generated,,0,4.86,GNF-0082-a3d486ce|GNF-0187-2664d182|GNF-0071-ca4885e3|GNF-0031-dff9514d|GNF-0184-5cb52bd8|GNF-0023-93595bc9|GNF-0178-7e3074ef|GNF-0012-d3d20064,overflow_underflow|overflow_underflow|dtype_casting|dtype_casting|performance_only|crash_compile|not_numerical_failure|performance_only,needs_review,precision_tolerance,unknown,yes,low,I think this is kinda follow-up of #3529? - Slack? - Mailing list? - GitHub issue tracker? - any other channels I am not aware of? :,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I think this is kinda follow-up of #3529? - Slack? - Mailing list? - GitHub issue tracker? - any other channels I am not aware of? :"",
+  ""confidence"": ""low""
+}",
+GNF-0166-2dbedde8,llama3.2:3b,fold_safe_rag_generated,,0,4.63,GNF-0120-3d8af802|GNF-0072-9fba4417|GNF-0147-77cef7ab|GNF-0041-2e844e08|GNF-0037-7af727c1|GNF-0065-e81a8790|GNF-0154-a389b1a4|GNF-0185-120804a6,dtype_casting|overflow_underflow|nan_inf|dtype_casting|not_numerical_failure|precision_tolerance|nan_inf|overflow_underflow,needs_review,dtype_casting,unknown,no,high,volatile cudf::size_type count = 0;,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""no"",
+  ""evidence_quote"": ""volatile cudf::size_type count = 0;"",
+  ""confidence"": ""high""
+}",
+GNF-0167-13076e98,llama3.2:3b,fold_safe_rag_generated,,0,5.45,GNF-0140-0369d89c|GNF-0001-f56f80f3|GNF-0150-3c830fbd|GNF-0056-d1d1b50f|GNF-0118-6cddc10b|GNF-0019-965637d3|GNF-0179-0d2d153d|GNF-0073-9d1db2bf,overflow_underflow|dtype_casting|dtype_casting|overflow_underflow|nan_inf|nan_inf|performance_only|crash_compile,performance_only,nan_inf,unknown,yes,high,Tile-CBDetect (our Tile-language bug detection tool) detected a performance bottleneck in the `max` binary operator.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Tile-CBDetect (our Tile-language bug detection tool) detected a performance bottleneck in the `max` binary operator."",
+  ""confidence"": ""high""
+}",
+GNF-0168-49dcb998,llama3.2:3b,fold_safe_rag_generated,,0,4.32,GNF-0184-5cb52bd8|GNF-0082-a3d486ce|GNF-0182-0943f7d0|GNF-0154-a389b1a4|GNF-0085-b4ddcf4b|GNF-0128-c6e2544c|GNF-0137-1f5e2c55|GNF-0103-f835a9bf,performance_only|overflow_underflow|dtype_casting|nan_inf|dtype_casting|nan_inf|performance_only|precision_tolerance,performance_only,dtype_casting,unknown,yes,high,x = cupy.fromDlpack(torch.utils.dlpack.to_dlpack(x)),"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""performance_only""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""x = cupy.fromDlpack(torch.utils.dlpack.to_dlpack(x))"",
+  ""confidence"": ""high""
+}",
+GNF-0169-cf25d953,llama3.2:3b,fold_safe_rag_generated,,0,5.34,GNF-0162-297471a6|GNF-0142-fd6a822f|GNF-0093-6cb318e0|GNF-0030-a4314978|GNF-0060-3368e422|GNF-0111-4b909a91|GNF-0110-1c6064fd|GNF-0068-abb65bf7,not_numerical_failure|overflow_underflow|not_numerical_failure|nan_inf|overflow_underflow|nan_inf|dtype_casting|dtype_casting,crash_compile,nan_inf,unknown,yes,high,"The issue goes away when using a for-loop to iterate over layers instead, even though the parameter count is verified to be the same for both models.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue goes away when using a for-loop to iterate over layers instead, even though the parameter count is verified to be the same for both models."",
+  ""confidence"": ""high""
+}",
+GNF-0170-78e2d436,llama3.2:3b,fold_safe_rag_generated,,0,4.90,GNF-0067-0064f2a6|GNF-0089-074c6391|GNF-0088-bbebe2a7|GNF-0158-41ca2b85|GNF-0133-3e76eecf|GNF-0127-32017a62|GNF-0051-53841ba4|GNF-0152-d8097288,nan_inf|dtype_casting|nan_inf|dtype_casting|overflow_underflow|overflow_underflow|not_numerical_failure|not_numerical_failure,nan_inf,nan_inf,unknown,yes,high,nan` broken,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""nan` broken"",
+  ""confidence"": ""high""
+}",
+GNF-0171-20358422,llama3.2:3b,fold_safe_rag_generated,,0,6.00,GNF-0110-1c6064fd|GNF-0142-fd6a822f|GNF-0109-5b3bb56e|GNF-0103-f835a9bf|GNF-0158-41ca2b85|GNF-0062-3cbef3ba|GNF-0093-6cb318e0|GNF-0175-551fdc3c,dtype_casting|overflow_underflow|overflow_underflow|precision_tolerance|dtype_casting|nan_inf|not_numerical_failure|not_numerical_failure,dtype_casting,nan_inf,unknown,yes,high,Allocating 5945425920 bytes exceeds the memory limit of 4294967296 bytes.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Allocating 5945425920 bytes exceeds the memory limit of 4294967296 bytes."",
+  ""confidence"": ""high""
+}",
+GNF-0172-1596bb30,llama3.2:3b,fold_safe_rag_generated,,0,5.85,GNF-0132-01bc7af7|GNF-0002-16e149fe|GNF-0118-6cddc10b|GNF-0057-44d428bb|GNF-0167-13076e98|GNF-0140-0369d89c|GNF-0163-93b2beac|GNF-0135-51861a93,dtype_casting|dtype_casting|nan_inf|precision_tolerance|nan_inf|overflow_underflow|precision_tolerance|overflow_underflow,overflow_underflow,overflow_underflow,hardware_backend,yes,high,ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576),"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""ValueError: numel (2097152) exceeds triton maximum tensor numel (1048576)"",
+  ""confidence"": ""high""
+}",
+GNF-0173-29d14bbd,llama3.2:3b,fold_safe_rag_generated,,0,4.24,GNF-0089-074c6391|GNF-0088-bbebe2a7|GNF-0075-7d0d1d21|GNF-0170-78e2d436|GNF-0133-3e76eecf|GNF-0023-93595bc9|GNF-0049-80ab540f|GNF-0096-cc3502f6,dtype_casting|nan_inf|dtype_casting|nan_inf|overflow_underflow|crash_compile|overflow_underflow|precision_tolerance,dtype_casting,dtype_casting,memory_mask_bounds,yes,high,short quote from target text,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""short quote from target text"",
+  ""confidence"": ""high""
+}",
+GNF-0174-e7b5adf3,llama3.2:3b,fold_safe_rag_generated,,0,5.72,GNF-0071-ca4885e3|GNF-0096-cc3502f6|GNF-0018-86e41701|GNF-0025-d23b5aed|GNF-0101-ca19a99c|GNF-0062-3cbef3ba|GNF-0109-5b3bb56e|GNF-0060-3368e422,dtype_casting|precision_tolerance|dtype_casting|nan_inf|not_numerical_failure|nan_inf|overflow_underflow|overflow_underflow,crash_compile,nan_inf,unknown,yes,high,No symbol table info available.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""No symbol table info available."",
+  ""confidence"": ""high""
+}",
+GNF-0175-551fdc3c,llama3.2:3b,fold_safe_rag_generated,,0,5.37,GNF-0052-c0b07407|GNF-0036-b3e8f03a|GNF-0042-938c1ba1|GNF-0060-3368e422|GNF-0028-64f6040c|GNF-0156-b72349bc|GNF-0108-049dae8c|GNF-0126-2958d273,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|not_numerical_failure|nan_inf,needs_review,nan_inf,unknown,yes,high,The consistent +2 offset (rather than random noise) suggests a JIT cache or compiled kernel selection error rather than a floating-point summation issue.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The consistent +2 offset (rather than random noise) suggests a JIT cache or compiled kernel selection error rather than a floating-point summation issue."",
+  ""confidence"": ""high""
+}",
+GNF-0176-0884dd43,llama3.2:3b,fold_safe_rag_generated,,0,5.19,GNF-0178-7e3074ef|GNF-0062-3cbef3ba|GNF-0094-5130df2b|GNF-0018-86e41701|GNF-0103-f835a9bf|GNF-0098-a1e24269|GNF-0097-60602b2b|GNF-0184-5cb52bd8,not_numerical_failure|nan_inf|overflow_underflow|dtype_casting|precision_tolerance|overflow_underflow|dtype_casting|performance_only,needs_review,precision_tolerance,unknown,yes,high,I am hoping that this could be easily added to the win-64 channels?,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I am hoping that this could be easily added to the win-64 channels?"",
+  ""confidence"": ""high""
+}",
+GNF-0177-39a0d983,llama3.2:3b,fold_safe_rag_generated,,0,6.29,GNF-0139-08c1b395|GNF-0015-04273d95|GNF-0124-5e35db0b|GNF-0160-b61a834c|GNF-0087-b5fe68e9|GNF-0084-8e030aa9|GNF-0095-e46f2dc5|GNF-0108-049dae8c,overflow_underflow|nan_inf|overflow_underflow|dtype_casting|dtype_casting|nan_inf|precision_tolerance|not_numerical_failure,overflow_underflow,dtype_casting,unknown,yes,high,pip install torch or pip install torch --index-url https://download.pytorch.org/whl/cu124,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""unknown""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""pip install torch or pip install torch --index-url https://download.pytorch.org/whl/cu124"",
+  ""confidence"": ""high"" }",
+GNF-0178-7e3074ef,llama3.2:3b,fold_safe_rag_generated,,0,5.87,GNF-0187-2664d182|GNF-0031-dff9514d|GNF-0065-e81a8790|GNF-0103-f835a9bf|GNF-0183-0f27bf2e|GNF-0063-a5f90bd9|GNF-0060-3368e422|GNF-0062-3cbef3ba,overflow_underflow|dtype_casting|precision_tolerance|precision_tolerance|not_numerical_failure|not_numerical_failure|overflow_underflow|nan_inf,performance_only,precision_tolerance,unknown,yes,high,"I was trying different python parallelization/jit frameworks like jax and taichi, but I am always coming back to Numba due to it being beginner friendly and one can gradually increase the efficiency with further understanding.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I was trying different python parallelization/jit frameworks like jax and taichi, but I am always coming back to Numba due to it being beginner friendly and one can gradually increase the efficiency with further understanding."",
+  ""confidence"": ""high""
+}",
+GNF-0179-0d2d153d,llama3.2:3b,fold_safe_rag_generated,,0,4.85,GNF-0181-f206820c|GNF-0131-4b657811|GNF-0056-d1d1b50f|GNF-0013-bd88dbb3|GNF-0167-13076e98|GNF-0140-0369d89c|GNF-0057-44d428bb|GNF-0037-7af727c1,dtype_casting|dtype_casting|overflow_underflow|nan_inf|nan_inf|overflow_underflow|precision_tolerance|not_numerical_failure,performance_only,nan_inf,memory_mask_bounds,yes,high,Using both `padding_option=,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Using both `padding_option="",
+  ""confidence"": ""high""
+}",
+GNF-0180-3e16cf7e,llama3.2:3b,fold_safe_rag_generated,,0,5.97,GNF-0110-1c6064fd|GNF-0036-b3e8f03a|GNF-0142-fd6a822f|GNF-0060-3368e422|GNF-0175-551fdc3c|GNF-0152-d8097288|GNF-0021-ebaa6477|GNF-0117-5c96ad33,dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|not_numerical_failure|not_numerical_failure|nan_inf|nan_inf,precision_tolerance,nan_inf,unknown,yes,high,Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion."",
+  ""confidence"": ""high""
+}",
+GNF-0181-f206820c,llama3.2:3b,fold_safe_rag_generated,,0,5.16,GNF-0038-ba034dce|GNF-0132-01bc7af7|GNF-0164-cdeaf26a|GNF-0140-0369d89c|GNF-0179-0d2d153d|GNF-0079-ec781ba7|GNF-0167-13076e98|GNF-0096-cc3502f6,dtype_casting|dtype_casting|nan_inf|overflow_underflow|performance_only|overflow_underflow|nan_inf|precision_tolerance,dtype_casting,dtype_casting,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": """",
+  ""confidence"": ""low""
+}",
+GNF-0182-0943f7d0,llama3.2:3b,fold_safe_rag_generated,,0,4.69,GNF-0085-b4ddcf4b|GNF-0184-5cb52bd8|GNF-0187-2664d182|GNF-0144-bd760235|GNF-0131-4b657811|GNF-0062-3cbef3ba|GNF-0012-d3d20064|GNF-0103-f835a9bf,dtype_casting|performance_only|overflow_underflow|overflow_underflow|dtype_casting|nan_inf|performance_only|precision_tolerance,needs_review,dtype_casting,memory_mask_bounds,yes,high,cuDF only supports 128 bit types for decimal (fixed point) data.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""memory_mask_bounds""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cuDF only supports 128 bit types for decimal (fixed point) data."",
+  ""confidence"": ""high""
+}",
+GNF-0183-0f27bf2e,llama3.2:3b,fold_safe_rag_generated,,0,5.39,GNF-0012-d3d20064|GNF-0148-5dbeb416|GNF-0178-7e3074ef|GNF-0094-5130df2b|GNF-0063-a5f90bd9|GNF-0145-13ae4b2a|GNF-0109-5b3bb56e|GNF-0058-03a80045,performance_only|dtype_casting|not_numerical_failure|overflow_underflow|not_numerical_failure|dtype_casting|overflow_underflow|nan_inf,performance_only,precision_tolerance,unknown,yes,high,"Sure. (1) We have already incorporated fast math into specific code paths, such as exp, but cos and sin use the slower path by default (verification required).","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Sure. (1) We have already incorporated fast math into specific code paths, such as exp, but cos and sin use the slower path by default (verification required)."",
+  ""confidence"": ""high""
+}",
+GNF-0184-5cb52bd8,llama3.2:3b,fold_safe_rag_generated,,0,5.53,GNF-0187-2664d182|GNF-0044-58d8c7b3|GNF-0085-b4ddcf4b|GNF-0182-0943f7d0|GNF-0062-3cbef3ba|GNF-0154-a389b1a4|GNF-0037-7af727c1|GNF-0012-d3d20064,overflow_underflow|not_numerical_failure|dtype_casting|dtype_casting|nan_inf|nan_inf|not_numerical_failure|performance_only,performance_only,dtype_casting,unknown,yes,high,"cuDF does use KvikIO's C++ library libkvikio for GPUDirect Storage, in the libcudf C++ code that underpins cuDF's Python interface.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""performance_only""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""cuDF does use KvikIO's C++ library libkvikio for GPUDirect Storage, in the libcudf C++ code that underpins cuDF's Python interface."",
+  ""confidence"": ""high""
+}",
+GNF-0185-120804a6,llama3.2:3b,fold_safe_rag_generated,,0,5.51,GNF-0154-a389b1a4|GNF-0129-c9f64c60|GNF-0060-3368e422|GNF-0161-43f5b312|GNF-0145-13ae4b2a|GNF-0096-cc3502f6|GNF-0072-9fba4417|GNF-0029-5f61e128,nan_inf|nan_inf|overflow_underflow|dtype_casting|dtype_casting|precision_tolerance|overflow_underflow|not_numerical_failure,overflow_underflow,nan_inf,unknown,yes,high,std::bad_alloc: out of memory Aborted (core dumped),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""std::bad_alloc: out of memory Aborted (core dumped)"",
+  ""confidence"": ""high""
+}",
+GNF-0186-6c92b3b9,llama3.2:3b,fold_safe_rag_generated,,0,6.00,GNF-0039-1a4af8a4|GNF-0020-322072f7|GNF-0136-a301f54e|GNF-0118-6cddc10b|GNF-0109-5b3bb56e|GNF-0101-ca19a99c|GNF-0023-93595bc9|GNF-0062-3cbef3ba,dtype_casting|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|not_numerical_failure|crash_compile|nan_inf,crash_compile,nan_inf,unknown,yes,high,"Given that it works if a is one element smaller, this probably has to do with a signed integer overflow somewhere.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Given that it works if a is one element smaller, this probably has to do with a signed integer overflow somewhere."",
+  ""confidence"": ""high""
+}",
+GNF-0187-2664d182,llama3.2:3b,fold_safe_rag_generated,,0,5.81,GNF-0012-d3d20064|GNF-0178-7e3074ef|GNF-0031-dff9514d|GNF-0184-5cb52bd8|GNF-0182-0943f7d0|GNF-0136-a301f54e|GNF-0083-c671b943|GNF-0154-a389b1a4,performance_only|not_numerical_failure|dtype_casting|performance_only|dtype_casting|overflow_underflow|overflow_underflow|nan_inf,performance_only,dtype_casting,hardware_backend,yes,high,"For the former, yes it will benefit the performance of host-device transfer, and it is possible to create a NumPy array from a pinned memory, something like `python ptr = cp.cuda.alloc_pinned_memory(itemsize*size) np_array = np.frombuffer(ptr, dtype, size).reshape(shape)`","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""hardware_backend""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""For the former, yes it will benefit the performance of host-device transfer, and it is possible to create a NumPy array from a pinned memory, something like `python ptr = cp.cuda.alloc_pinned_memory(itemsize*size) np_array = np.frombuffer(ptr, dtype, size).reshape(shape)`"",
+  ""confidence"": ""high""
+}",
+GNF-0188-931dcb6c,llama3.2:3b,fold_safe_rag_generated,,0,8.27,GNF-0024-543e6651|GNF-0108-049dae8c|GNF-0139-08c1b395|GNF-0015-04273d95|GNF-0177-39a0d983|GNF-0087-b5fe68e9|GNF-0008-4625af98|GNF-0051-53841ba4,nan_inf|not_numerical_failure|overflow_underflow|nan_inf|overflow_underflow|dtype_casting|dtype_casting|not_numerical_failure,overflow_underflow,nan_inf,unknown,yes,high,"Invalid __global__ read of size 4 bytes ========= at 0x1830 in void at::native::<unnamed>::adaptive_average_pool<float>(const T1 *, T1 *, int, int, int, int, long, long, long) ========= by thread (0,0,0) in block (0,4,0) ========= Address 0x7b1ca6ffff84 is out of bounds ========= and is 124 bytes before the nearest allocation at 0x7b1ca7000000 of size 2,097,152 bytes =========","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Invalid __global__ read of size 4 bytes ========= at 0x1830 in void at::native::<unnamed>::adaptive_average_pool<float>(const T1 *, T1 *, int, int, int, int, long, long, long) ========= by thread (0,0,0) in block (0,4,0) ========= Address 0x7b1ca6ffff84 is out of bounds ========= and is 124 bytes before the nearest allocation at 0x7b1ca7000000 of size 2,097,152 bytes ========="",
+  ""confidence"": ""high""
+}",
+GNF-0189-2fcb9ca4,llama3.2:3b,fold_safe_rag_generated,,0,5.14,GNF-0027-933bf558|GNF-0032-76c19db8|GNF-0098-a1e24269|GNF-0043-75ac4cd1|GNF-0060-3368e422|GNF-0070-0db7eac0|GNF-0093-6cb318e0|GNF-0012-d3d20064,dtype_casting|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|nan_inf|not_numerical_failure|performance_only,needs_review,dtype_casting,unknown,no,high,Casting an array to a byteswapped dtype does a view not a cast,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""no"",
+  ""evidence_quote"": ""Casting an array to a byteswapped dtype does a view not a cast"",
+  ""confidence"": ""high""
+}",
+GNF-0190-3f4e1893,llama3.2:3b,fold_safe_rag_generated,,0,5.44,GNF-0188-931dcb6c|GNF-0135-51861a93|GNF-0084-8e030aa9|GNF-0160-b61a834c|GNF-0095-e46f2dc5|GNF-0015-04273d95|GNF-0108-049dae8c|GNF-0008-4625af98,overflow_underflow|overflow_underflow|nan_inf|dtype_casting|precision_tolerance|nan_inf|not_numerical_failure|dtype_casting,overflow_underflow,precision_tolerance,unknown,yes,low,Pipeline failed while executing [TritonGPURemoveLayoutConversions on 'builtin.module' operation],"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Pipeline failed while executing [TritonGPURemoveLayoutConversions on 'builtin.module' operation]"",
+  ""confidence"": ""low""
+}",
+GNF-0191-cd071cce,llama3.2:3b,fold_safe_rag_generated,,0,5.75,GNF-0068-abb65bf7|GNF-0031-dff9514d|GNF-0073-9d1db2bf|GNF-0133-3e76eecf|GNF-0060-3368e422|GNF-0019-965637d3|GNF-0178-7e3074ef|GNF-0012-d3d20064,dtype_casting|dtype_casting|crash_compile|overflow_underflow|overflow_underflow|nan_inf|not_numerical_failure|performance_only,overflow_underflow,overflow_underflow,unknown,yes,high,"I think the reason you don't see it is that launches are asynchronous, and setting max_num_parallel_iter to a constant changed the timing of execution such that your program manages to exit before the values printed by the kernel get flushed into the terminal.","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I think the reason you don't see it is that launches are asynchronous, and setting max_num_parallel_iter to a constant changed the timing of execution such that your program manages to exit before the values printed by the kernel get flushed into the terminal."",
+  ""confidence"": ""high""
+}",

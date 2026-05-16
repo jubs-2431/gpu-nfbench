@@ -1,0 +1,14 @@
+{
+  "body": "Repro:\r\n```\r\nfrom ctypes import c_void_p, c_long\r\nimport torch\r\nimport random\r\nfrom torch import empty_strided, as_strided, device\r\nfrom torch._inductor.codecache import AsyncCompile\r\n\r\naten = torch.ops.aten\r\nassert_size_stride = torch._C._dynamo.guards.assert_size_stride\r\nasync_compile = AsyncCompile()\r\n\r\nimport triton\r\nimport triton.language as tl\r\nfrom torch._inductor.triton_ops.autotune import grid\r\nfrom torch._C import _cuda_getCurrentRawStream as get_cuda_stream\r\n\r\n\r\n@triton.jit\r\ndef kernel1(in_ptr0, in_ptr1, out_ptr0, xnumel, XBLOCK : tl.constexpr):\r\n    xnumel = 3288334336\r\n    xoffset = tl.program_id(0) * XBLOCK\r\n    xindex = xoffset + tl.reshape(tl.arange(0, XBLOCK), [XBLOCK])\r\n    xmask = xindex < xnumel\r\n    x3 = xindex\r\n    x1 = (xindex // 12544) % 64\r\n    tmp0 = tl.load(in_ptr0 + (x3), xmask)\r\n    tmp1 = tl.load(in_ptr1 + (x1), xmask)\r\n    tmp2 = tmp0 - tmp1\r\n    tl.store(out_ptr0 + (x3 + tl.zeros([XBLOCK], tl.int32)), tmp2, xmask)\r\n\r\ndef call(args):\r\n    primals_1, primals_63, primals_123 = args\r\n    args.clear()\r\n    buf0 = aten.convolution(primals_123, primals_1, None, (2, 2), (3, 3), (1, 1), False, (0, 0), 1)\r\n    assert_size_stride(buf0, (4096, 64, 112, 112), (802816, 12544, 112, 1))\r\n    buf1 = empty_strided((4096, 64, 112, 112), (802816, 12544, 112, 1), device='cuda', dtype=torch.float32)\r\n    bin = kernel1[grid(3288334336)](buf0, primals_63, buf1, 3288334336, 1024)\r\n    print(bin.asm['ptx'])\r\n    return (buf1,)\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    from torch._dynamo.testing import rand_strided\r\n    from torch._inductor.utils import print_performance\r\n    primals_1 = rand_strided((64, 3, 7, 7), (147, 49, 7, 1), device='cuda', dtype=torch.float32)\r\n    primals_63 = rand_strided((64, ), (1, ), device='cuda', dtype=torch.float32)\r\n    primals_123 = rand_strided((4096, 3, 224, 224), (150528, 50176, 224, 1), device='cuda', dtype=torch.float32)\r\n    print_performance(lambda: call([primals_1, primals_63, primals_123]))\r\n```\r\nNumber of elements in the tensor is more than INT_MAX, but on a 40GB card it's far from out of memory.\r\n",
+  "closed_at": "2023-04-18T01:12:57Z",
+  "comments": 10,
+  "created_at": "2022-11-02T17:05:25Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/832",
+  "labels": [
+    "bug"
+  ],
+  "number": 832,
+  "state": "closed",
+  "title": "Index computations are done in int32 even for large tensors, and overflow causing IMA",
+  "updated_at": "2023-06-05T16:27:35Z"
+}

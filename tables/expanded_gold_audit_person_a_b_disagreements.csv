@@ -1,0 +1,8 @@
+person_a_primary_failure,person_b_primary_failure,issues
+performance_only,dtype_casting,9
+crash_compile,precision_tolerance,4
+dtype_casting,crash_compile,3
+not_numerical_failure,precision_tolerance,3
+not_numerical_failure,dtype_casting,2
+crash_compile,dtype_casting,1
+not_numerical_failure,performance_only,1

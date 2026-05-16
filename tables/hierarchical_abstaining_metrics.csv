@@ -1,0 +1,8 @@
+mode,answered_rows,total_rows,coverage,accuracy,macro_f1
+hierarchical_full_coverage,191,191,1.000,0.497,0.248
+hierarchical_vote_at_least_2,191,191,1.000,0.497,0.248
+hierarchical_vote_at_least_3,178,191,0.932,0.517,0.240
+hierarchical_vote_at_least_4,120,191,0.628,0.567,0.273
+hierarchical_vote_at_least_5,38,191,0.199,0.842,0.545
+hierarchical_gate_match_and_vote_at_least_3,177,191,0.927,0.520,0.241
+binary_gate_only,191,191,1.000,0.822,0.451

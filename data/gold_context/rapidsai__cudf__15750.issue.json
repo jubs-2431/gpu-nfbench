@@ -1,0 +1,16 @@
+{
+  "body": "**Describe the bug**\r\n\r\nWe recently saw a SIGSEGV when trying to parse some customer data using JSON. As I stripped down and obfuscated the data it switched to the process aborting with the error.\r\n\r\n```\r\ndouble free or corruption (!prev)\r\nAborted (core dumped)\r\n```\r\n\r\nThe code to reproduce this is\r\n\r\n```\r\nTEST_F(JsonReaderTest, JsonLinesCrash)\r\n{\r\n  std::string const fname = \"from_json_1_10_simplified.json\";\r\n\r\n  cudf::io::json_reader_options options =\r\n    cudf::io::json_reader_options::builder(cudf::io::source_info{fname})\r\n    .lines(true)\r\n    .recovery_mode(cudf::io::json_recovery_mode_t::RECOVER_WITH_NULL)\r\n    .normalize_single_quotes(true)\r\n    .normalize_whitespace(true)\r\n    .mixed_types_as_string(true)\r\n    .keep_quotes(true);\r\n\r\n  auto result = cudf::io::read_json(options);\r\n}\r\n```\r\n\r\nand the file is \r\n[from_json_1_10_simplified.json](https://github.com/rapidsai/cudf/files/15313863/from_json_1_10_simplified.json)\r\n",
+  "closed_at": "2024-05-31T04:42:52Z",
+  "comments": 6,
+  "created_at": "2024-05-14T21:17:00Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/15750",
+  "labels": [
+    "bug",
+    "libcudf",
+    "cuIO"
+  ],
+  "number": 15750,
+  "state": "closed",
+  "title": "[BUG] double free or memory corruption when parsing some JSON",
+  "updated_at": "2024-05-31T04:42:52Z"
+}

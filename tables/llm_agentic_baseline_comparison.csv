@@ -1,0 +1,9 @@
+model_or_mode,answered_rows,total_rows,coverage,accuracy,macro_f1,notes
+zero_shot_llama3.2_3b,191,191,1.000,0.194,0.140,Local Ollama zero-shot prompt packet.
+fold_safe_rag_llama3.2_3b,191,191,1.000,0.288,0.138,Retrieved labeled examples from other folds only.
+gemini_3_1_flash_lite_batched,191,191,1.000,0.220,0.203,External Gemini batched baseline; zero runner errors but biased toward crash_compile and not_numerical_failure.
+deterministic_plus_gemini_weighted_vote,191,191,1.000,0.539,0.272,Fixed vote over deterministic model family plus confidence-weighted Gemini prediction.
+deterministic_plus_gemini_agreement_selective,25,191,0.131,0.880,0.664,Selective external agreement mode using Gemini only when it agrees with deterministic ensemble or at least two deterministic models.
+agentic_full_coverage_vote,191,191,1.000,0.518,0.329,Vote over weak label deterministic models zero-shot LLM and RAG LLM.
+agentic_vote_agreement_at_least_6,51,191,0.267,0.706,0.408,Selective answer/abstain mode.
+candidate_tfidf_svm_rag_llm_agree,28,191,0.147,0.964,0.737,Strict selective agreement rule.

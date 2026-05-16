@@ -1,0 +1,16 @@
+{
+  "body": "I found some functions have different signature than NumPy/SciPy (e.g. some arguments are keyword-only in NumPy but not in CuPy). We should check and fix them.\r\n\r\n* cupy.arange\r\n* cupy.argmax\r\n* cupy.argmin\r\n* cupy.array\r\n* cupy.concatenate\r\n* ...\r\n\r\nNote: This list is not exhaustive (I'll try to complete the list but may take some time). If you find any functions with different signature leave a comment in this issue.",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2022-04-30T06:31:29Z",
+  "html_url": "https://github.com/cupy/cupy/issues/6693",
+  "labels": [
+    "contribution welcome",
+    "cat:numpy-compat",
+    "good first issue"
+  ],
+  "number": 6693,
+  "state": "open",
+  "title": "[Tracker] Fix signature mismatch with NumPy/SciPy",
+  "updated_at": "2025-12-20T23:45:16Z"
+}

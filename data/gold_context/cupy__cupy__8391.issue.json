@@ -1,0 +1,16 @@
+{
+  "body": "### Description\n\nIt seems like a `numpy` 2 thing, but using `cp.full` with `fill_value=np.nan` is broken, and previously worked.\n\n### To Reproduce\n\n```py\r\nimport numpy as np, cupy as cp\r\n\r\nout = cp.full((2, 2), np.nan)\r\n```\r\n\n\n### Installation\n\nWheel (`pip install cupy-***`)\n\n### Environment\n\n```\r\nOS                           : Linux-4.18.0-513.11.1.el8_9.x86_64-x86_64-with-glibc2.28\r\nPython Version               : 3.11.7\r\nCuPy Version                 : 13.2.0\r\nCuPy Platform                : NVIDIA CUDA\r\nNumPy Version                : 2.0.0\r\nSciPy Version                : None\r\nCython Build Version         : 0.29.36\r\nCython Runtime Version       : None\r\nCUDA Root                    : /usr/local/cuda\r\nnvcc PATH                    : /usr/local/cuda/bin/nvcc\r\nCUDA Build Version           : 12040\r\nCUDA Driver Version          : 12030\r\nCUDA Runtime Version         : 12040 (linked to CuPy) / 12030 (locally installed)\r\ncuBLAS Version               : (available)\r\ncuFFT Version                : 11012\r\ncuRAND Version               : 10304\r\ncuSOLVER Version             : (11, 5, 4)\r\ncuSPARSE Version             : (available)\r\nNVRTC Version                : (12, 3)\r\nThrust Version               : 200200\r\nCUB Build Version            : 200200\r\nJitify Build Version         : <unknown>\r\ncuDNN Build Version          : 8801\r\ncuDNN Version                : 8500\r\nNCCL Build Version           : (not loaded; try `import cupy.cuda.nccl` first)\r\nNCCL Runtime Version         : (not loaded; try `import cupy.cuda.nccl` first)\r\ncuTENSOR Version             : None\r\ncuSPARSELt Build Version     : None\r\nDevice 0 Name                : Tesla V100-SXM3-32GB\r\nDevice 0 Compute Capability  : 70\r\nDevice 0 PCI Bus ID          : 0000:C0:00.0\r\n```\r\n\n\n### Additional Information\n\nVersion info:\r\n```\r\nasttokens==2.4.1\r\ncupy-cuda12x==13.2.0\r\ndecorator==5.1.1\r\nexecuting==2.0.1\r\nfastrlock==0.8.2\r\nipython==8.25.0\r\njedi==0.19.1\r\nmatplotlib-inline==0.1.7\r\nnumpy==2.0.0\r\nparso==0.8.4\r\npexpect==4.9.0\r\nprompt-toolkit==3.0.47\r\nptyprocess==0.7.0\r\npure-eval==0.2.2\r\npygments==2.18.0\r\nsix==1.16.0\r\nstack-data==0.6.3\r\ntraitlets==5.14.3\r\ntyping-extensions==4.12.2\r\nwcwidth==0.2.13\r\n```\r\nand this works with:\r\n```\r\nnumpy==1.26.4\r\n```",
+  "closed_at": "2024-07-24T01:30:03Z",
+  "comments": 4,
+  "created_at": "2024-06-24T14:18:32Z",
+  "html_url": "https://github.com/cupy/cupy/issues/8391",
+  "labels": [
+    "cat:bug",
+    "prio:high",
+    "np2-v13"
+  ],
+  "number": 8391,
+  "state": "closed",
+  "title": "`cp.full` with `np.nan` broken",
+  "updated_at": "2024-07-24T01:30:03Z"
+}

@@ -1,0 +1,205 @@
+diff --git a/test/dynamo/test_decorators.py b/test/dynamo/test_decorators.py
+index 273b915c46a57..cce05981c48cd 100644
+--- a/test/dynamo/test_decorators.py
++++ b/test/dynamo/test_decorators.py
+@@ -217,10 +217,41 @@ def fn(a):
+         self.assertEqual(cnts.op_count, 5)
+ 
+     def test_allow_in_graph_deprecation_warning(self):
++        from torch._dynamo.utils import warn_once_cache
++
++        warn_once_cache.discard(
++            "torch._dynamo.allow_in_graph is deprecated and will be removed in a future version. "
++            "Use torch._dynamo.nonstrict_trace instead."
++        )
+         with self.assertWarnsRegex(FutureWarning, "nonstrict_trace"):
+             torch._dynamo.allow_in_graph(my_custom_function)
+         torch._dynamo.disallow_in_graph(my_custom_function)
+ 
++    def test_allow_in_graph_warns_once(self):
++        import subprocess
++        import sys
++
++        script = """\
++import warnings
++with warnings.catch_warnings(record=True) as ws:
++    warnings.simplefilter("always")
++    import torch
++
++    def fn1(x):
++        return x + 1
++
++    def fn2(x):
++        return x + 2
++
++    torch._dynamo.allow_in_graph(fn1)
++    torch._dynamo.allow_in_graph(fn2)
++    torch._dynamo.allow_in_graph(fn1)
++
++future = [w for w in ws if issubclass(w.category, FutureWarning) and "allow_in_graph" in str(w.message)]
++assert len(future) == 1, f"Expected 1 warning, got {len(future)}"
++"""
++        subprocess.check_output([sys.executable, "-c", script])
++
+     def test_allow_in_graph_no_id_reuse(self):
+         cnts = torch._dynamo.testing.CompileCounter()
+ 
+diff --git a/test/dynamo/test_einops.py b/test/dynamo/test_einops.py
+index c24b4a76cbaaf..54efe84fc8087 100644
+--- a/test/dynamo/test_einops.py
++++ b/test/dynamo/test_einops.py
+@@ -248,6 +248,26 @@ def fn(x):
+         x = torch.randn(5)
+         self.assertNotWarn(lambda: fn(x))
+ 
++    def test_no_allow_in_graph_deprecation_warning(self):
++        # einops registration uses allow_in_graph internally but should never
++        # surface the deprecation warning to users.
++        script = """\
++import warnings
++with warnings.catch_warnings(record=True) as ws:
++    warnings.simplefilter("always")
++    import torch
++    import einops
++    # Force einops registration by compiling something that uses it.
++    @torch.compile(backend="eager", fullgraph=True)
++    def fn(x):
++        return einops.rearrange(x, "... -> (...)")
++    fn(torch.randn(5))
++
++future = [w for w in ws if issubclass(w.category, FutureWarning) and "allow_in_graph" in str(w.message)]
++assert len(future) == 0, f"Expected 0 allow_in_graph warnings, got {len(future)}: {[str(w.message) for w in future]}"
++"""
++        subprocess.check_output([sys.executable, "-c", script])
++
+ 
+ instantiate_parametrized_tests(
+     TestEinops,
+diff --git a/torch/_dynamo/decorators.py b/torch/_dynamo/decorators.py
+index bd3df2c7a9224..15d28edf6e212 100644
+--- a/torch/_dynamo/decorators.py
++++ b/torch/_dynamo/decorators.py
+@@ -4,6 +4,7 @@
+ 
+ import functools
+ import inspect
++import warnings
+ import weakref
+ from collections.abc import Callable
+ from dataclasses import dataclass
+@@ -181,7 +182,7 @@ def assume_constant_result(fn):  # type: ignore[no-untyped-def]
+ @deprecated(
+     "torch._dynamo.allow_in_graph is deprecated and will be removed in a future version. "
+     "Use torch._dynamo.nonstrict_trace instead.",
+-    category=FutureWarning,
++    category=None,
+ )
+ def allow_in_graph(fn):  # type: ignore[no-untyped-def]
+     """
+@@ -192,6 +193,14 @@ def allow_in_graph(fn):  # type: ignore[no-untyped-def]
+ 
+     WARNING: this API can be a footgun, please read the documentation carefully.
+     """
++    from torch._dynamo.utils import warn_once
++
++    warn_once(
++        "torch._dynamo.allow_in_graph is deprecated and will be removed in a future version. "
++        "Use torch._dynamo.nonstrict_trace instead.",
++        stacklevel=2,
++        category=FutureWarning,
++    )
+     if isinstance(fn, (list, tuple)):
+         # pyrefly: ignore [deprecated]
+         return [allow_in_graph(x) for x in fn]
+@@ -1395,35 +1404,39 @@ def _allow_in_graph_einops() -> None:
+     #         einops.rearrange(torch.randn(1), "i -> i")
+     #     # einops 0.8.2+ don't need explicit allow_in_graph calls
+     #     return
++    # Suppress the allow_in_graph deprecation warning. For einops 0.7.0-0.8.1,
++    # einops._torch_specific itself calls allow_in_graph at import time. For
++    # einops ≤ 0.6.1 and ≥ 0.8.2, we call it in the except branch below.
++    with warnings.catch_warnings():
++        warnings.simplefilter("ignore", FutureWarning)
++        try:
++            # requires einops > 0.6.1, torch >= 2.0
++            from einops._torch_specific import (  # type: ignore[attr-defined]  # noqa: F401
++                _ops_were_registered_in_torchdynamo,
++            )
+ 
+-    try:
+-        # requires einops > 0.6.1, torch >= 2.0
+-        from einops._torch_specific import (  # type: ignore[attr-defined]  # noqa: F401
+-            _ops_were_registered_in_torchdynamo,
+-        )
+-
+-        # einops > 0.6.1 will call the op registration logic as it is imported.
+-    except ImportError:
+-        # einops <= 0.6.1 doesn't handle unhashable SymInt in its lru_cache'd
+-        # helpers. Backport the try/except TypeError fallback from einops 0.7.0+
+-        # so allow_in_graph works during fake tensor validation.
+-        _patch_einops_symint_compat(einops.einops)  # type: ignore[attr-defined]
+-        # pyrefly: ignore [deprecated]
+-        allow_in_graph(einops.rearrange)
+-        # pyrefly: ignore [deprecated]
+-        allow_in_graph(einops.reduce)
+-        if hasattr(einops, "repeat"):
+-            # pyrefly: ignore [deprecated]
+-            allow_in_graph(einops.repeat)  # available since einops 0.2.0
+-        if hasattr(einops, "einsum"):
+-            # pyrefly: ignore [deprecated]
+-            allow_in_graph(einops.einsum)  # available since einops 0.5.0
+-        if hasattr(einops, "pack"):
++            # einops > 0.6.1 will call the op registration logic as it is imported.
++        except ImportError:
++            # einops <= 0.6.1 doesn't handle unhashable SymInt in its lru_cache'd
++            # helpers. Backport the try/except TypeError fallback from einops 0.7.0+
++            # so allow_in_graph works during fake tensor validation.
++            _patch_einops_symint_compat(einops.einops)  # type: ignore[attr-defined]
+             # pyrefly: ignore [deprecated]
+-            allow_in_graph(einops.pack)  # available since einops 0.6.0
+-        if hasattr(einops, "unpack"):
++            allow_in_graph(einops.rearrange)
+             # pyrefly: ignore [deprecated]
+-            allow_in_graph(einops.unpack)  # available since einops 0.6.0
++            allow_in_graph(einops.reduce)
++            if hasattr(einops, "repeat"):
++                # pyrefly: ignore [deprecated]
++                allow_in_graph(einops.repeat)  # available since einops 0.2.0
++            if hasattr(einops, "einsum"):
++                # pyrefly: ignore [deprecated]
++                allow_in_graph(einops.einsum)  # available since einops 0.5.0
++            if hasattr(einops, "pack"):
++                # pyrefly: ignore [deprecated]
++                allow_in_graph(einops.pack)  # available since einops 0.6.0
++            if hasattr(einops, "unpack"):
++                # pyrefly: ignore [deprecated]
++                allow_in_graph(einops.unpack)  # available since einops 0.6.0
+ 
+ 
+ # Note: this carefully avoids eagerly import einops.
+diff --git a/torch/_dynamo/utils.py b/torch/_dynamo/utils.py
+index 9a280517a3710..c9caef0f3f20d 100644
+--- a/torch/_dynamo/utils.py
++++ b/torch/_dynamo/utils.py
+@@ -5019,7 +5019,11 @@ def __repr__(self) -> str:
+ warn_once_cache: set[str] = set()
+ 
+ 
+-def warn_once(msg: str, stacklevel: int = 1) -> None:
++def warn_once(
++    msg: str,
++    stacklevel: int = 1,
++    category: type[Warning] = UserWarning,
++) -> None:
+     # Dynamo causes all warnings.warn (in user code and in Dynamo code) to print all the time.
+     # https://github.com/pytorch/pytorch/issues/128427.
+     # warn_once is a workaround: if the msg has been warned on before, then we will not
+@@ -5028,7 +5032,7 @@ def warn_once(msg: str, stacklevel: int = 1) -> None:
+     if msg in warn_once_cache:
+         return
+     warn_once_cache.add(msg)
+-    warnings.warn(msg, stacklevel=stacklevel + 1)
++    warnings.warn(msg, category, stacklevel=stacklevel + 1)
+ 
+ 
+ def strip_color_from_string(text: str) -> str:

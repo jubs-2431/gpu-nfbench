@@ -1,0 +1,15 @@
+{
+  "body": "### Description\n\nSetting `jax_default_matmul_precision` to any non-default value (`\"tensorfloat32\"`, `\"high\"`, or `\"highest\"`) causes `jax.lax.scan` to crash on GPU with `INTERNAL: an unsupported value or parameter was passed to the function`.\n\nThe same operations work fine outside of `scan`, and `scan` works fine without the precision config.\n\n```python\nimport jax\nimport jax.numpy as jnp\n\njax.config.update(\"jax_default_matmul_precision\", \"tensorfloat32\")\n\ndef step(carry, _):\n    return carry @ jnp.ones((100, 100)), carry.sum()\n\njax.lax.scan(step, jnp.ones((100, 100)), None, length=3)\n```\n\nError:\n```bash\nE pjrt_stream_executor_client.cc:2111] Execution of replica 0 failed: INTERNAL: an unsupported value or parameter was passed to the function JaxRuntimeError: INTERNAL: an unsupported value or parameter was passed to the function\n```\n \n\n\n### System info (python version, jaxlib version, accelerator, etc.)\n\n- JAX: 0.9.0\n- jaxlib: 0.9.0\n- GPU: NVIDIA L4\n- CUDA: 13.0\n- Driver: 580.105.08\n- OS: Linux 6.8.0-1044-aws",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2026-02-08T20:08:44Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/34917",
+  "labels": [
+    "bug"
+  ],
+  "number": 34917,
+  "pull_request": null,
+  "state": "open",
+  "title": "jax.lax.scan crashes on GPU when jax_default_matmul_precision is set to any non-default value",
+  "updated_at": "2026-02-21T17:00:08Z"
+}

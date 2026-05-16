@@ -1,0 +1,658 @@
+[
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/cupy__cupy__821.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__821.issue.json",
+    "number": "821",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/821"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/cupy__cupy__1166.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__1166.issue.json",
+    "number": "1166",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/1166"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/cupy__cupy__851.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__851.issue.json",
+    "number": "851",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/851"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/cupy__cupy__2351.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__2351.issue.json",
+    "number": "2351",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2351"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/cupy__cupy__6661.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__6661.issue.json",
+    "number": "6661",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6661"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/cupy__cupy__6693.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__6693.issue.json",
+    "number": "6693",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6693"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/cupy__cupy__2248.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__2248.issue.json",
+    "number": "2248",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2248"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/cupy__cupy__2334.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__2334.issue.json",
+    "number": "2334",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2334"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/cupy__cupy__5328.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__5328.issue.json",
+    "number": "5328",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/5328"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/cupy__cupy__8260.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__8260.issue.json",
+    "number": "8260",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8260"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/cupy__cupy__2066.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__2066.issue.json",
+    "number": "2066",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2066"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/cupy__cupy__2742.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__2742.issue.json",
+    "number": "2742",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2742"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/cupy__cupy__1427.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__1427.issue.json",
+    "number": "1427",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/1427"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/cupy__cupy__1989.comments.json",
+    "issue_json": "data/validation_context/cupy__cupy__1989.issue.json",
+    "number": "1989",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/1989"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/jax-ml__jax__9591.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__9591.issue.json",
+    "number": "9591",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/9591"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/jax-ml__jax__10197.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__10197.issue.json",
+    "number": "10197",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/10197"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/jax-ml__jax__10255.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__10255.issue.json",
+    "number": "10255",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/10255"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/jax-ml__jax__15769.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__15769.issue.json",
+    "number": "15769",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/15769"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/jax-ml__jax__3411.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__3411.issue.json",
+    "number": "3411",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/3411"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/jax-ml__jax__8585.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__8585.issue.json",
+    "number": "8585",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/8585"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/jax-ml__jax__30874.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__30874.issue.json",
+    "number": "30874",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/30874"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/jax-ml__jax__34455.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__34455.issue.json",
+    "number": "34455",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/34455"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/jax-ml__jax__17912.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__17912.issue.json",
+    "number": "17912",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/17912"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/jax-ml__jax__18672.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__18672.issue.json",
+    "number": "18672",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/18672"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/jax-ml__jax__28547.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__28547.issue.json",
+    "number": "28547",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/28547"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/jax-ml__jax__4493.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__4493.issue.json",
+    "number": "4493",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/4493"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/jax-ml__jax__10021.comments.json",
+    "issue_json": "data/validation_context/jax-ml__jax__10021.issue.json",
+    "number": "10021",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/10021"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/numba__numba__2011.comments.json",
+    "issue_json": "data/validation_context/numba__numba__2011.issue.json",
+    "number": "2011",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2011"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/numba__numba__2205.comments.json",
+    "issue_json": "data/validation_context/numba__numba__2205.issue.json",
+    "number": "2205",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2205"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/numba__numba__4333.comments.json",
+    "issue_json": "data/validation_context/numba__numba__4333.issue.json",
+    "number": "4333",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4333"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/numba__numba__4771.comments.json",
+    "issue_json": "data/validation_context/numba__numba__4771.issue.json",
+    "number": "4771",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4771"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/numba__numba__3203.comments.json",
+    "issue_json": "data/validation_context/numba__numba__3203.issue.json",
+    "number": "3203",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/3203"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/numba__numba__3226.comments.json",
+    "issue_json": "data/validation_context/numba__numba__3226.issue.json",
+    "number": "3226",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/3226"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/numba__numba__7062.comments.json",
+    "issue_json": "data/validation_context/numba__numba__7062.issue.json",
+    "number": "7062",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/7062"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/numba__numba__9229.comments.json",
+    "issue_json": "data/validation_context/numba__numba__9229.issue.json",
+    "number": "9229",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/9229"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/numba__numba__4713.comments.json",
+    "issue_json": "data/validation_context/numba__numba__4713.issue.json",
+    "number": "4713",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4713"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/numba__numba__4783.comments.json",
+    "issue_json": "data/validation_context/numba__numba__4783.issue.json",
+    "number": "4783",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4783"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/numba__numba__2988.comments.json",
+    "issue_json": "data/validation_context/numba__numba__2988.issue.json",
+    "number": "2988",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2988"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/numba__numba__10116.comments.json",
+    "issue_json": "data/validation_context/numba__numba__10116.issue.json",
+    "number": "10116",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10116"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/numba__numba__2451.comments.json",
+    "issue_json": "data/validation_context/numba__numba__2451.issue.json",
+    "number": "2451",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2451"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/numba__numba__2463.comments.json",
+    "issue_json": "data/validation_context/numba__numba__2463.issue.json",
+    "number": "2463",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2463"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/pytorch__pytorch__100085.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__100085.issue.json",
+    "number": "100085",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/100085"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/pytorch__pytorch__109386.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__109386.issue.json",
+    "number": "109386",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/109386"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/pytorch__pytorch__121226.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__121226.issue.json",
+    "number": "121226",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/121226"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/pytorch__pytorch__121588.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__121588.issue.json",
+    "number": "121588",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/121588"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/pytorch__pytorch__119131.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__119131.issue.json",
+    "number": "119131",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/119131"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/pytorch__pytorch__129966.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__129966.issue.json",
+    "number": "129966",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/129966"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/pytorch__pytorch__117844.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__117844.issue.json",
+    "number": "117844",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/117844"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/pytorch__pytorch__123042.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__123042.issue.json",
+    "number": "123042",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/123042"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/pytorch__pytorch__109074.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__109074.issue.json",
+    "number": "109074",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/109074"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/pytorch__pytorch__123983.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__123983.issue.json",
+    "number": "123983",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/123983"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/pytorch__pytorch__168397.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__168397.issue.json",
+    "number": "168397",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/168397"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/pytorch__pytorch__104322.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__104322.issue.json",
+    "number": "104322",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/104322"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/pytorch__pytorch__104698.comments.json",
+    "issue_json": "data/validation_context/pytorch__pytorch__104698.issue.json",
+    "number": "104698",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/104698"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/rapidsai__cudf__3961.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__3961.issue.json",
+    "number": "3961",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3961"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/rapidsai__cudf__4663.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__4663.issue.json",
+    "number": "4663",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/4663"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/rapidsai__cudf__3554.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__3554.issue.json",
+    "number": "3554",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3554"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/rapidsai__cudf__4309.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__4309.issue.json",
+    "number": "4309",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/4309"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/rapidsai__cudf__406.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__406.issue.json",
+    "number": "406",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/406"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/rapidsai__cudf__446.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__446.issue.json",
+    "number": "446",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/446"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/rapidsai__cudf__7088.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__7088.issue.json",
+    "number": "7088",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/7088"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/rapidsai__cudf__12058.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__12058.issue.json",
+    "number": "12058",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/12058"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/rapidsai__cudf__2543.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__2543.issue.json",
+    "number": "2543",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/2543"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/rapidsai__cudf__3797.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__3797.issue.json",
+    "number": "3797",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3797"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/rapidsai__cudf__2283.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__2283.issue.json",
+    "number": "2283",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/2283"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/rapidsai__cudf__9861.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__9861.issue.json",
+    "number": "9861",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/9861"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/rapidsai__cudf__28.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__28.issue.json",
+    "number": "28",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/28"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/rapidsai__cudf__2477.comments.json",
+    "issue_json": "data/validation_context/rapidsai__cudf__2477.issue.json",
+    "number": "2477",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/2477"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/triton-lang__triton__187.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__187.issue.json",
+    "number": "187",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/187"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/validation_context/triton-lang__triton__592.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__592.issue.json",
+    "number": "592",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/592"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/triton-lang__triton__189.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__189.issue.json",
+    "number": "189",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/189"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/validation_context/triton-lang__triton__635.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__635.issue.json",
+    "number": "635",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/635"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/triton-lang__triton__781.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__781.issue.json",
+    "number": "781",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/781"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/validation_context/triton-lang__triton__1090.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__1090.issue.json",
+    "number": "1090",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1090"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/triton-lang__triton__475.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__475.issue.json",
+    "number": "475",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/475"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/validation_context/triton-lang__triton__832.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__832.issue.json",
+    "number": "832",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/832"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/triton-lang__triton__506.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__506.issue.json",
+    "number": "506",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/506"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/validation_context/triton-lang__triton__1670.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__1670.issue.json",
+    "number": "1670",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1670"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/triton-lang__triton__1535.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__1535.issue.json",
+    "number": "1535",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1535"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/validation_context/triton-lang__triton__2301.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__2301.issue.json",
+    "number": "2301",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2301"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/triton-lang__triton__211.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__211.issue.json",
+    "number": "211",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/211"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/validation_context/triton-lang__triton__1003.comments.json",
+    "issue_json": "data/validation_context/triton-lang__triton__1003.issue.json",
+    "number": "1003",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1003"
+  }
+]

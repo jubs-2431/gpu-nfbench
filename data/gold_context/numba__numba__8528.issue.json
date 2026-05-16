@@ -1,0 +1,16 @@
+{
+  "body": "<!--\r\n\r\nThanks for opening an issue! To help the Numba team handle your information\r\nefficiently, please first ensure that there is no other issue present that\r\nalready describes the issue you have\r\n(search at https://github.com/numba/numba/issues?&q=is%3Aissue).\r\n\r\n-->\r\n\r\n## Reporting a bug\r\n\r\n<!--\r\n\r\nBefore submitting a bug report please ensure that you can check off these boxes:\r\n\r\n-->\r\n\r\n- [x] I have tried using the latest released version of Numba (most recent is\r\n visible in the change log (https://github.com/numba/numba/blob/main/CHANGE_LOG).\r\n- [x] I have included a self contained code sample to reproduce the problem.\r\n  i.e. it's possible to run as 'python bug.py'.\r\n\r\nThis:\r\n```python\r\nimport numpy as np\r\nfrom numba.cuda import jit\r\nfrom numba.extending import overload\r\n\r\n\r\ndef bar():\r\n    pass\r\n\r\n\r\n@overload(bar, target='cuda')\r\ndef ol_bar(x, kw1=None):\r\n\r\n    def impl(x, kw1=None):\r\n        return 123\r\n    return impl\r\n\r\n\r\n@jit\r\ndef foo(arr):\r\n    arr[0] = bar(2)\r\n\r\ntmp = np.zeros((1,))\r\nfoo[1, 1](tmp)\r\nprint(tmp)\r\n```\r\nFails typing with `TypeError(\"Signature mismatch: 1 argument types given, but function takes 2 arguments\")`.\r\n",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2022-10-21T13:31:26Z",
+  "html_url": "https://github.com/numba/numba/issues/8528",
+  "labels": [
+    "CUDA",
+    "bug - failure to compile",
+    "bug - typing"
+  ],
+  "number": 8528,
+  "state": "open",
+  "title": "CUDA target overloads not handling kwargs",
+  "updated_at": "2022-10-26T12:01:13Z"
+}

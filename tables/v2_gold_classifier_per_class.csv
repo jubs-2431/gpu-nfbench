@@ -1,0 +1,8 @@
+label,support,precision,recall,f1
+crash_compile,192,0.725,0.755,0.740
+dtype_casting,193,0.641,0.694,0.667
+nan_inf,143,0.855,0.699,0.769
+not_numerical_failure,147,0.689,0.619,0.652
+overflow_underflow,94,0.813,0.649,0.722
+performance_only,54,0.744,0.537,0.624
+precision_tolerance,368,0.761,0.867,0.811

@@ -1,0 +1,10 @@
+model_or_mode,evaluation,answered_rows,coverage,accuracy,macro_f1
+majority_baseline,stratified_5fold,1191,1.000,0.301,0.066
+candidate_weak_label,stratified_5fold,1191,1.000,0.537,0.447
+bm25_knn,stratified_5fold,1191,1.000,0.589,0.580
+naive_bayes,stratified_5fold,1191,1.000,0.646,0.584
+tfidf_logistic,stratified_5fold,1191,1.000,0.728,0.707
+tfidf_linear_svm,stratified_5fold,1191,1.000,0.765,0.751
+bigram_tfidf_logistic,stratified_5fold,1191,1.000,0.762,0.751
+expanded_gold_vote_ensemble,stratified_5fold,1191,1.000,0.768,0.753
+binary_gate_tfidf_linear_svm,stratified_5fold_binary_gate,1191,1.000,0.940,0.874

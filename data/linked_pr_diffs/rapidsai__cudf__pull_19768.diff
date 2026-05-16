@@ -1,0 +1,1381 @@
+diff --git a/.devcontainer/cuda13.0-conda/devcontainer.json b/.devcontainer/cuda13.0-conda/devcontainer.json
+new file mode 100644
+index 00000000000..f236ef00da3
+--- /dev/null
++++ b/.devcontainer/cuda13.0-conda/devcontainer.json
+@@ -0,0 +1,76 @@
++{
++  "build": {
++    "context": "${localWorkspaceFolder}/.devcontainer",
++    "dockerfile": "${localWorkspaceFolder}/.devcontainer/Dockerfile",
++    "args": {
++      "CUDA": "13.0",
++      "PYTHON_PACKAGE_MANAGER": "conda",
++      "BASE": "rapidsai/devcontainers:25.10-cpp-mambaforge"
++    }
++  },
++  "runArgs": [
++    "--rm",
++    "--name",
++    "${localEnv:USER:anon}-rapids-${localWorkspaceFolderBasename}-25.10-cuda13.0-conda",
++    "--ulimit",
++    "nofile=500000"
++  ],
++  "hostRequirements": {
++    "gpu": "optional"
++  },
++  "features": {
++    "ghcr.io/rapidsai/devcontainers/features/cuda:25.10": {
++      "version": "13.0",
++      "installCompilers": false,
++      "installProfilers": true,
++      "installDevPackages": false,
++      "installcuDNN": false,
++      "installcuTensor": false,
++      "installNCCL": false,
++      "installCUDARuntime": false,
++      "installNVRTC": false,
++      "installOpenCL": false,
++      "installcuBLAS": false,
++      "installcuSPARSE": false,
++      "installcuFFT": false,
++      "installcuFile": false,
++      "installcuRAND": false,
++      "installcuSOLVER": false,
++      "installNPP": false,
++      "installnvJPEG": false,
++      "pruneStaticLibs": true
++    },
++    "ghcr.io/rapidsai/devcontainers/features/rapids-build-utils:25.10": {}
++  },
++  "overrideFeatureInstallOrder": [
++    "ghcr.io/rapidsai/devcontainers/features/cuda",
++    "ghcr.io/rapidsai/devcontainers/features/rapids-build-utils"
++  ],
++  "initializeCommand": [
++    "/bin/bash",
++    "-c",
++    "mkdir -m 0755 -p ${localWorkspaceFolder}/../.{aws,cache,config,conda/pkgs,conda/${localWorkspaceFolderBasename}-cuda13.0-envs}"
++  ],
++  "postAttachCommand": [
++    "/bin/bash",
++    "-c",
++    "if [ ${CODESPACES:-false} = 'true' ]; then . devcontainer-utils-post-attach-command; . rapids-post-attach-command; fi"
++  ],
++  "workspaceFolder": "/home/coder",
++  "workspaceMount": "source=${localWorkspaceFolder},target=/home/coder/cudf,type=bind,consistency=consistent",
++  "mounts": [
++    "source=${localWorkspaceFolder}/../.aws,target=/home/coder/.aws,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.cache,target=/home/coder/.cache,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.config,target=/home/coder/.config,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.conda/pkgs,target=/home/coder/.conda/pkgs,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.conda/${localWorkspaceFolderBasename}-cuda13.0-envs,target=/home/coder/.conda/envs,type=bind,consistency=consistent"
++  ],
++  "customizations": {
++    "vscode": {
++      "extensions": [
++        "ms-python.flake8",
++        "nvidia.nsight-vscode-edition"
++      ]
++    }
++  }
++}
+diff --git a/.devcontainer/cuda13.0-pip/devcontainer.json b/.devcontainer/cuda13.0-pip/devcontainer.json
+new file mode 100644
+index 00000000000..c6c0f0c2230
+--- /dev/null
++++ b/.devcontainer/cuda13.0-pip/devcontainer.json
+@@ -0,0 +1,53 @@
++{
++  "build": {
++    "context": "${localWorkspaceFolder}/.devcontainer",
++    "dockerfile": "${localWorkspaceFolder}/.devcontainer/Dockerfile",
++    "args": {
++      "CUDA": "13.0",
++      "PYTHON_PACKAGE_MANAGER": "pip",
++      "BASE": "rapidsai/devcontainers:25.10-cpp-cuda13.0"
++    }
++  },
++  "runArgs": [
++    "--rm",
++    "--name",
++    "${localEnv:USER:anon}-rapids-${localWorkspaceFolderBasename}-25.10-cuda13.0-pip",
++    "--ulimit",
++    "nofile=500000"
++  ],
++  "hostRequirements": {
++    "gpu": "optional"
++  },
++  "features": {
++    "ghcr.io/rapidsai/devcontainers/features/rapids-build-utils:25.10": {}
++  },
++  "overrideFeatureInstallOrder": [
++    "ghcr.io/rapidsai/devcontainers/features/rapids-build-utils"
++  ],
++  "initializeCommand": [
++    "/bin/bash",
++    "-c",
++    "mkdir -m 0755 -p ${localWorkspaceFolder}/../.{aws,cache,config/pip,local/share/${localWorkspaceFolderBasename}-cuda13.0-venvs}"
++  ],
++  "postAttachCommand": [
++    "/bin/bash",
++    "-c",
++    "if [ ${CODESPACES:-false} = 'true' ]; then . devcontainer-utils-post-attach-command; . rapids-post-attach-command; fi"
++  ],
++  "workspaceFolder": "/home/coder",
++  "workspaceMount": "source=${localWorkspaceFolder},target=/home/coder/cudf,type=bind,consistency=consistent",
++  "mounts": [
++    "source=${localWorkspaceFolder}/../.aws,target=/home/coder/.aws,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.cache,target=/home/coder/.cache,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.config,target=/home/coder/.config,type=bind,consistency=consistent",
++    "source=${localWorkspaceFolder}/../.local/share/${localWorkspaceFolderBasename}-cuda13.0-venvs,target=/home/coder/.local/share/venvs,type=bind,consistency=consistent"
++  ],
++  "customizations": {
++    "vscode": {
++      "extensions": [
++        "ms-python.flake8",
++        "nvidia.nsight-vscode-edition"
++      ]
++    }
++  }
++}
+diff --git a/.github/workflows/build.yaml b/.github/workflows/build.yaml
+index d9bb501c968..87cc789ac78 100644
+--- a/.github/workflows/build.yaml
++++ b/.github/workflows/build.yaml
+@@ -46,7 +46,7 @@ jobs:
+   cpp-build:
+     needs: [telemetry-setup]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-build.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -57,7 +57,7 @@ jobs:
+   python-build:
+     needs: [telemetry-setup, cpp-build]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-build.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -67,7 +67,7 @@ jobs:
+   upload-conda:
+     needs: [cpp-build, python-build]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-upload-packages.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-upload-packages.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -77,7 +77,7 @@ jobs:
+     if: github.ref_type == 'branch'
+     needs: python-build
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       arch: "amd64"
+       branch: ${{ inputs.branch }}
+@@ -90,7 +90,7 @@ jobs:
+   wheel-build-libcudf:
+     needs: [telemetry-setup]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # build for every combination of arch and CUDA version, but only for the latest Python
+       matrix_filter: group_by([.ARCH, (.CUDA_VER|split(".")|map(tonumber)|.[0])]) | map(max_by(.PY_VER|split(".")|map(tonumber)))
+@@ -105,7 +105,7 @@ jobs:
+   wheel-publish-libcudf:
+     needs: wheel-build-libcudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -116,7 +116,7 @@ jobs:
+   wheel-build-pylibcudf:
+     needs: [telemetry-setup, wheel-build-libcudf]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -128,7 +128,7 @@ jobs:
+   wheel-publish-pylibcudf:
+     needs: wheel-build-pylibcudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -139,7 +139,7 @@ jobs:
+   wheel-build-cudf:
+     needs: [telemetry-setup, wheel-build-pylibcudf]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -151,7 +151,7 @@ jobs:
+   wheel-publish-cudf:
+     needs: wheel-build-cudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -162,7 +162,7 @@ jobs:
+   wheel-build-dask-cudf:
+     needs: [telemetry-setup, wheel-build-cudf]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
+@@ -177,7 +177,7 @@ jobs:
+   wheel-publish-dask-cudf:
+     needs: wheel-build-dask-cudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+@@ -188,7 +188,7 @@ jobs:
+   wheel-build-cudf-polars:
+     needs: [telemetry-setup, wheel-build-pylibcudf]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
+@@ -203,7 +203,7 @@ jobs:
+   wheel-publish-cudf-polars:
+     needs: wheel-build-cudf-polars
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-publish.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type || 'branch' }}
+       branch: ${{ inputs.branch }}
+diff --git a/.github/workflows/pandas-tests.yaml b/.github/workflows/pandas-tests.yaml
+index 56fba1f6d8f..085c17bd9f2 100644
+--- a/.github/workflows/pandas-tests.yaml
++++ b/.github/workflows/pandas-tests.yaml
+@@ -22,9 +22,9 @@ jobs:
+   pandas-tests:
+       # run the Pandas unit tests
+       secrets: inherit
+-      uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++      uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+       with:
+-        matrix_filter: '[{"ARCH": "amd64", "PY_VER": "3.13", "CUDA_VER": "12.9.1", "LINUX_VER": "ubuntu24.04", "GPU": "l4", "DRIVER": "latest", "DEPENDENCIES": "newest"}]'
++        matrix_filter: '[{"ARCH": "amd64", "PY_VER": "3.13", "CUDA_VER": "13.0.0", "LINUX_VER": "ubuntu24.04", "GPU": "l4", "DRIVER": "latest", "DEPENDENCIES": "newest"}]'
+         build_type: nightly
+         branch: ${{ inputs.branch }}
+         date: ${{ inputs.date }}
+diff --git a/.github/workflows/pr.yaml b/.github/workflows/pr.yaml
+index 01da4160bad..b0071e52fac 100644
+--- a/.github/workflows/pr.yaml
++++ b/.github/workflows/pr.yaml
+@@ -43,7 +43,7 @@ jobs:
+       - telemetry-setup
+       - third-party-integration-tests-cudf-pandas
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/pr-builder.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/pr-builder.yaml@cuda13.0
+     if: always()
+     with:
+       needs: ${{ toJSON(needs) }}
+@@ -68,7 +68,7 @@ jobs:
+   changed-files:
+     secrets: inherit
+     needs: telemetry-setup
+-    uses: rapidsai/shared-workflows/.github/workflows/changed-files.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/changed-files.yaml@cuda13.0
+     with:
+       files_yaml: |
+         test_cpp:
+@@ -130,14 +130,14 @@ jobs:
+   checks:
+     secrets: inherit
+     needs: telemetry-setup
+-    uses: rapidsai/shared-workflows/.github/workflows/checks.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/checks.yaml@cuda13.0
+     with:
+       enable_check_generated_files: false
+       ignored_pr_jobs: "telemetry-summarize spark-rapids-jni"
+   conda-cpp-build:
+     needs: checks
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-build.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       node_type: "cpu16"
+@@ -145,7 +145,7 @@ jobs:
+   cpp-linters:
+     secrets: inherit
+     needs: checks
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       script: "ci/cpp_linters.sh"
+@@ -153,13 +153,13 @@ jobs:
+   conda-cpp-checks:
+     needs: conda-cpp-build
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-post-build-checks.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-post-build-checks.yaml@cuda13.0
+     with:
+       build_type: pull-request
+   conda-cpp-tests:
+     needs: [conda-cpp-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-tests.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_cpp
+     with:
+       build_type: pull-request
+@@ -167,14 +167,14 @@ jobs:
+   conda-python-build:
+     needs: conda-cpp-build
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-build.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       script: ci/build_python.sh
+   conda-python-cudf-tests:
+     needs: [conda-python-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       build_type: pull-request
+@@ -183,7 +183,7 @@ jobs:
+     # Tests for dask_cudf, custreamz, cudf_kafka are separated for CI parallelism
+     needs: [conda-python-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       build_type: pull-request
+@@ -191,7 +191,7 @@ jobs:
+   conda-java-tests:
+     needs: [conda-cpp-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_java
+     with:
+       build_type: pull-request
+@@ -202,7 +202,7 @@ jobs:
+   conda-notebook-tests:
+     needs: [conda-python-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_notebooks
+     with:
+       build_type: pull-request
+@@ -213,7 +213,7 @@ jobs:
+   docs-build:
+     needs: conda-python-build
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       node_type: "gpu-l4-latest-1"
+@@ -223,7 +223,7 @@ jobs:
+   wheel-build-libcudf:
+     needs: checks
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # build for every combination of arch and CUDA version, but only for the latest Python
+       matrix_filter: group_by([.ARCH, (.CUDA_VER|split(".")|map(tonumber)|.[0])]) | map(max_by(.PY_VER|split(".")|map(tonumber)))
+@@ -235,7 +235,7 @@ jobs:
+   wheel-build-pylibcudf:
+     needs: [checks, wheel-build-libcudf]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       script: "ci/build_wheel_pylibcudf.sh"
+@@ -244,7 +244,7 @@ jobs:
+   wheel-build-cudf:
+     needs: wheel-build-pylibcudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       build_type: pull-request
+       script: "ci/build_wheel_cudf.sh"
+@@ -253,7 +253,7 @@ jobs:
+   wheel-tests-cudf:
+     needs: [wheel-build-cudf, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       build_type: pull-request
+@@ -261,7 +261,7 @@ jobs:
+   wheel-build-cudf-polars:
+     needs: wheel-build-pylibcudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
+@@ -273,7 +273,7 @@ jobs:
+   wheel-tests-cudf-polars:
+     needs: [wheel-build-cudf-polars, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+@@ -283,7 +283,7 @@ jobs:
+   cudf-polars-polars-tests:
+     needs: wheel-build-cudf-polars
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+@@ -293,7 +293,7 @@ jobs:
+   wheel-build-dask-cudf:
+     needs: wheel-build-cudf
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-build.yaml@cuda13.0
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+       matrix_filter: map(select(.ARCH == "amd64")) | group_by(.CUDA_VER|split(".")|map(tonumber)|.[0]) | map(max_by([(.PY_VER|split(".")|map(tonumber)), (.CUDA_VER|split(".")|map(tonumber))]))
+@@ -305,7 +305,7 @@ jobs:
+   wheel-tests-dask-cudf:
+     needs: [wheel-build-dask-cudf, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+@@ -315,10 +315,10 @@ jobs:
+   devcontainer:
+     secrets: inherit
+     needs: telemetry-setup
+-    uses: rapidsai/shared-workflows/.github/workflows/build-in-devcontainer.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/build-in-devcontainer.yaml@cuda13.0
+     with:
+       arch: '["amd64", "arm64"]'
+-      cuda: '["12.9"]'
++      cuda: '["13.0"]'
+       node_type: "cpu8"
+       rapids-aux-secret-1: GIST_REPO_READ_ORG_GITHUB_TOKEN
+       env: |
+@@ -333,7 +333,7 @@ jobs:
+   unit-tests-cudf-pandas:
+     needs: [wheel-build-cudf, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python || fromJSON(needs.changed-files.outputs.changed_file_groups).test_cudf_pandas
+     with:
+       # This selects "ARCH=amd64 + the latest supported Python + CUDA".
+@@ -343,7 +343,7 @@ jobs:
+   third-party-integration-tests-cudf-pandas:
+     needs: conda-python-build
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python || fromJSON(needs.changed-files.outputs.changed_file_groups).test_cudf_pandas
+     with:
+       build_type: pull-request
+@@ -352,17 +352,17 @@ jobs:
+       sha: ${{ inputs.sha }}
+       node_type: "gpu-l4-latest-1"
+       continue-on-error: true
+-      container_image: "rapidsai/ci-conda:cuda12.9.0-ubuntu24.04-py3.12"
++      container_image: "rapidsai/ci-conda:25.10-latest"
+       script: |
+         ci/cudf_pandas_scripts/third-party-integration/test.sh python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml
+   pandas-tests:
+     # run the Pandas unit tests using PR branch
+     needs: [wheel-build-cudf, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python || fromJSON(needs.changed-files.outputs.changed_file_groups).test_cudf_pandas
+     with:
+-      matrix_filter: '[{"ARCH": "amd64", "PY_VER": "3.13", "CUDA_VER": "12.9.1", "LINUX_VER": "ubuntu24.04", "GPU": "l4", "DRIVER": "latest", "DEPENDENCIES": "newest"}]'
++      matrix_filter: '[{"ARCH": "amd64", "PY_VER": "3.13", "CUDA_VER": "13.0.0", "LINUX_VER": "ubuntu24.04", "GPU": "l4", "DRIVER": "latest", "DEPENDENCIES": "newest"}]'
+       build_type: pull-request
+       script: ci/cudf_pandas_scripts/pandas-tests/run.sh pr
+       # Hide test failures because they exceed the GITHUB_STEP_SUMMARY output limit.
+@@ -370,7 +370,7 @@ jobs:
+   pandas-tests-diff:
+     # diff the results of running the Pandas unit tests and publish a job summary
+     needs: pandas-tests
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       node_type: "cpu4"
+       build_type: pull-request
+@@ -378,7 +378,7 @@ jobs:
+   narwhals-tests:
+     needs: [conda-python-build, changed-files]
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     if: fromJSON(needs.changed-files.outputs.changed_file_groups).test_python
+     with:
+       build_type: pull-request
+diff --git a/.github/workflows/pr_issue_status_automation.yml b/.github/workflows/pr_issue_status_automation.yml
+index 148d83e73d6..e7e48eac44c 100644
+--- a/.github/workflows/pr_issue_status_automation.yml
++++ b/.github/workflows/pr_issue_status_automation.yml
+@@ -23,7 +23,7 @@ on:
+ 
+ jobs:
+     get-project-id:
+-      uses: rapidsai/shared-workflows/.github/workflows/project-get-item-id.yaml@branch-25.10
++      uses: rapidsai/shared-workflows/.github/workflows/project-get-item-id.yaml@cuda13.0
+       if: github.event.pull_request.state == 'open'
+       secrets: inherit
+       permissions:
+@@ -34,7 +34,7 @@ jobs:
+ 
+     update-status:
+       # This job sets the PR and its linked issues to "In Progress" status
+-      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-single-select-field.yaml@branch-25.10
++      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-single-select-field.yaml@cuda13.0
+       if: ${{ github.event.pull_request.state == 'open' && needs.get-project-id.outputs.ITEM_PROJECT_ID != '' }}
+       needs: get-project-id
+       with:
+@@ -50,7 +50,7 @@ jobs:
+ 
+     update-sprint:
+       # This job sets the PR and its linked issues to the current "Weekly Sprint"
+-      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-iteration-field.yaml@branch-25.10
++      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-iteration-field.yaml@cuda13.0
+       if: ${{ github.event.pull_request.state == 'open' && needs.get-project-id.outputs.ITEM_PROJECT_ID != '' }}
+       needs: get-project-id
+       with:
+@@ -79,7 +79,7 @@ jobs:
+ 
+     update-release:
+       # This job sets the PR and its linked issues to the release they are targeting
+-      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-single-select-field.yaml@branch-25.10
++      uses: rapidsai/shared-workflows/.github/workflows/project-get-set-single-select-field.yaml@cuda13.0
+       if: ${{ github.event.pull_request.state == 'open' && needs.get-project-id.outputs.ITEM_PROJECT_ID != '' }}
+       needs: [get-project-id, process-branch-name]
+       with:
+diff --git a/.github/workflows/test.yaml b/.github/workflows/test.yaml
+index b8af253bc56..52e381dd7d8 100644
+--- a/.github/workflows/test.yaml
++++ b/.github/workflows/test.yaml
+@@ -24,7 +24,7 @@ on:
+ jobs:
+   conda-cpp-checks:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-post-build-checks.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-post-build-checks.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -32,7 +32,7 @@ jobs:
+       sha: ${{ inputs.sha }}
+   conda-cpp-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-cpp-tests.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -41,7 +41,7 @@ jobs:
+       sha: ${{ inputs.sha }}
+   conda-cpp-memcheck-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -53,7 +53,7 @@ jobs:
+       script: "ci/test_cpp_memcheck.sh"
+   cpp-linters:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -63,7 +63,7 @@ jobs:
+       file_to_upload: iwyu_results.txt
+   conda-python-cudf-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -73,7 +73,7 @@ jobs:
+   conda-python-other-tests:
+     # Tests for dask_cudf, custreamz, cudf_kafka are separated for CI parallelism
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/conda-python-tests.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -82,7 +82,7 @@ jobs:
+       script: "ci/test_python_other.sh"
+   conda-java-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -94,7 +94,7 @@ jobs:
+       script: "ci/test_java.sh"
+   conda-notebook-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -106,7 +106,7 @@ jobs:
+       script: "ci/test_notebooks.sh"
+   wheel-tests-cudf:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -115,7 +115,7 @@ jobs:
+       script: ci/test_wheel_cudf.sh
+   wheel-tests-dask-cudf:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -124,7 +124,7 @@ jobs:
+       script: ci/test_wheel_dask_cudf.sh
+   unit-tests-cudf-pandas:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -133,19 +133,19 @@ jobs:
+       script: ci/cudf_pandas_scripts/run_tests.sh
+   third-party-integration-tests-cudf-pandas:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+       date: ${{ inputs.date }}
+       sha: ${{ inputs.sha }}
+       node_type: "gpu-l4-latest-1"
+-      container_image: "rapidsai/ci-conda:cuda12.9.0-ubuntu24.04-py3.12"
++      container_image: "rapidsai/ci-conda:25.10-latest"
+       script: |
+         ci/cudf_pandas_scripts/third-party-integration/test.sh python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml
+   wheel-tests-cudf-polars:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -154,7 +154,7 @@ jobs:
+       script: "ci/test_wheel_cudf_polars.sh"
+   cudf-polars-polars-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/wheels-test.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+@@ -163,7 +163,7 @@ jobs:
+       script: "ci/test_cudf_polars_polars_tests.sh"
+   narwhals-tests:
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/custom-job.yaml@cuda13.0
+     with:
+       build_type: ${{ inputs.build_type }}
+       branch: ${{ inputs.branch }}
+diff --git a/.github/workflows/trigger-breaking-change-alert.yaml b/.github/workflows/trigger-breaking-change-alert.yaml
+index 48bf37afc40..72751d071bb 100644
+--- a/.github/workflows/trigger-breaking-change-alert.yaml
++++ b/.github/workflows/trigger-breaking-change-alert.yaml
+@@ -12,7 +12,7 @@ jobs:
+   trigger-notifier:
+     if: contains(github.event.pull_request.labels.*.name, 'breaking')
+     secrets: inherit
+-    uses: rapidsai/shared-workflows/.github/workflows/breaking-change-alert.yaml@branch-25.10
++    uses: rapidsai/shared-workflows/.github/workflows/breaking-change-alert.yaml@cuda13.0
+     with:
+       sender_login: ${{ github.event.sender.login }}
+       sender_avatar: ${{ github.event.sender.avatar_url }}
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+index ab7a5731b69..35a896559cd 100644
+--- a/CONTRIBUTING.md
++++ b/CONTRIBUTING.md
+@@ -121,7 +121,7 @@ Instructions for a minimal build environment without conda are included below.
+ # create the conda environment (assuming in base `cudf` directory)
+ # note: RAPIDS currently doesn't support `channel_priority: strict`;
+ # use `channel_priority: flexible` instead
+-conda env create --name cudf_dev --file conda/environments/all_cuda-129_arch-x86_64.yaml
++conda env create --name cudf_dev --file conda/environments/all_cuda-130_arch-x86_64.yaml
+ # activate the environment
+ conda activate cudf_dev
+ ```
+diff --git a/README.md b/README.md
+index 04980005846..538a1b6d344 100644
+--- a/README.md
++++ b/README.md
+@@ -65,6 +65,10 @@ Be sure to select the appropriate cuDF package depending
+ on the major version of CUDA available in your environment:
+ 
+ ```bash
++# CUDA 13
++pip install cudf-cu13
++
++# CUDA 12
+ pip install cudf-cu12
+ ```
+ 
+@@ -73,7 +77,11 @@ pip install cudf-cu12
+ cuDF can be installed with conda (via [miniforge](https://github.com/conda-forge/miniforge)) from the `rapidsai` channel:
+ 
+ ```bash
+-conda install -c rapidsai -c conda-forge cudf=25.10
++# CUDA 13
++conda install -c rapidsai -c conda-forge cudf=25.10 cuda-version=13.0
++
++# CUDA 12
++conda install -c rapidsai -c conda-forge cudf=25.10 cuda-version=12.9
+ ```
+ 
+ We also provide [nightly Conda packages](https://anaconda.org/rapidsai-nightly) built from the HEAD
+diff --git a/conda/environments/all_cuda-130_arch-aarch64.yaml b/conda/environments/all_cuda-130_arch-aarch64.yaml
+new file mode 100644
+index 00000000000..bd29b08c758
+--- /dev/null
++++ b/conda/environments/all_cuda-130_arch-aarch64.yaml
+@@ -0,0 +1,103 @@
++# This file is generated by `rapids-dependency-file-generator`.
++# To make changes, edit ../../dependencies.yaml and run `rapids-dependency-file-generator`.
++channels:
++- rapidsai
++- rapidsai-nightly
++- conda-forge
++dependencies:
++- aiobotocore>=2.2.0
++- boto3>=1.21.21
++- botocore>=1.24.21
++- breathe>=4.35.0
++- c-compiler
++- cachetools
++- certifi
++- clang-tools==20.1.4
++- clang==20.1.4
++- cmake>=3.30.4
++- cramjam
++- cuda-cudart-dev
++- cuda-nvcc
++- cuda-nvrtc-dev
++- cuda-nvtx-dev
++- cuda-nvvm-tools
++- cuda-python>=13.0.1,<14.0a0
++- cuda-sanitizer-api
++- cuda-version=13.0
++- cupy>=13.6.0
++- cxx-compiler
++- cython>=3.0.3
++- dask-cuda==25.10.*,>=0.0.0a0
++- dlpack>=0.8,<1.0
++- doxygen=1.9.1
++- fastavro>=0.22.9
++- flatbuffers==24.3.25
++- fsspec>=0.6.0
++- gcc_linux-aarch64=14.*
++- hypothesis>=6.131.7
++- identify>=2.5.20
++- include-what-you-use==0.24.0
++- ipython
++- jupyter_client
++- libcurand-dev
++- libkvikio==25.10.*,>=0.0.0a0
++- libnvcomp-dev==5.0.0.6
++- libnvjitlink-dev
++- librdkafka>=2.8.0,<2.9.0a0
++- librmm==25.10.*,>=0.0.0a0
++- make
++- mmh3
++- moto>=4.0.8
++- msgpack-python
++- myst-nb
++- nanoarrow
++- nbconvert
++- nbformat
++- nbsphinx
++- ninja
++- notebook
++- numba-cuda>=0.19.1,<0.20.0a0
++- numba>=0.60.0,<0.62.0a0
++- numpy>=1.23,<3.0a0
++- numpydoc
++- nvidia-ml-py
++- nvtx>=0.2.1
++- openpyxl
++- packaging
++- pandas
++- pandas>=2.0,<2.4.0dev0
++- pandoc
++- polars>=1.28,<1.33
++- pre-commit
++- pyarrow>=14.0.0,<20.0.0a0
++- pydata-sphinx-theme>=0.15.4
++- pynvml>=12.0.0,<13.0.0a0
++- pytest
++- pytest-benchmark
++- pytest-cases>=3.8.2
++- pytest-cov
++- pytest-rerunfailures
++- pytest-xdist
++- python-confluent-kafka>=2.8.0,<2.9.0a0
++- python-xxhash
++- python>=3.10,<3.14
++- rapids-build-backend>=0.4.0,<0.5.0.dev0
++- rapids-dask-dependency==25.10.*,>=0.0.0a0
++- rapids-logger==0.1.*,>=0.0.0a0
++- rich
++- rmm==25.10.*,>=0.0.0a0
++- s3fs>=2022.3.0
++- scikit-build-core>=0.10.0
++- scipy
++- sphinx-autobuild
++- sphinx-copybutton
++- sphinx-markdown-tables
++- sphinx-remove-toctrees
++- sphinx>=8.1.0
++- sphinxcontrib-websupport
++- streamz
++- sysroot_linux-aarch64==2.28
++- typing_extensions>=4.0.0
++- zlib>=1.2.13
++- zstandard
++name: all_cuda-130_arch-aarch64
+diff --git a/conda/environments/all_cuda-130_arch-x86_64.yaml b/conda/environments/all_cuda-130_arch-x86_64.yaml
+new file mode 100644
+index 00000000000..4f06590e585
+--- /dev/null
++++ b/conda/environments/all_cuda-130_arch-x86_64.yaml
+@@ -0,0 +1,104 @@
++# This file is generated by `rapids-dependency-file-generator`.
++# To make changes, edit ../../dependencies.yaml and run `rapids-dependency-file-generator`.
++channels:
++- rapidsai
++- rapidsai-nightly
++- conda-forge
++dependencies:
++- aiobotocore>=2.2.0
++- boto3>=1.21.21
++- botocore>=1.24.21
++- breathe>=4.35.0
++- c-compiler
++- cachetools
++- certifi
++- clang-tools==20.1.4
++- clang==20.1.4
++- cmake>=3.30.4
++- cramjam
++- cuda-cudart-dev
++- cuda-nvcc
++- cuda-nvrtc-dev
++- cuda-nvtx-dev
++- cuda-nvvm-tools
++- cuda-python>=13.0.1,<14.0a0
++- cuda-sanitizer-api
++- cuda-version=13.0
++- cupy>=13.6.0
++- cxx-compiler
++- cython>=3.0.3
++- dask-cuda==25.10.*,>=0.0.0a0
++- dlpack>=0.8,<1.0
++- doxygen=1.9.1
++- fastavro>=0.22.9
++- flatbuffers==24.3.25
++- fsspec>=0.6.0
++- gcc_linux-64=14.*
++- hypothesis>=6.131.7
++- identify>=2.5.20
++- include-what-you-use==0.24.0
++- ipython
++- jupyter_client
++- libcufile-dev
++- libcurand-dev
++- libkvikio==25.10.*,>=0.0.0a0
++- libnvcomp-dev==5.0.0.6
++- libnvjitlink-dev
++- librdkafka>=2.8.0,<2.9.0a0
++- librmm==25.10.*,>=0.0.0a0
++- make
++- mmh3
++- moto>=4.0.8
++- msgpack-python
++- myst-nb
++- nanoarrow
++- nbconvert
++- nbformat
++- nbsphinx
++- ninja
++- notebook
++- numba-cuda>=0.19.1,<0.20.0a0
++- numba>=0.60.0,<0.62.0a0
++- numpy>=1.23,<3.0a0
++- numpydoc
++- nvidia-ml-py
++- nvtx>=0.2.1
++- openpyxl
++- packaging
++- pandas
++- pandas>=2.0,<2.4.0dev0
++- pandoc
++- polars>=1.28,<1.33
++- pre-commit
++- pyarrow>=14.0.0,<20.0.0a0
++- pydata-sphinx-theme>=0.15.4
++- pynvml>=12.0.0,<13.0.0a0
++- pytest
++- pytest-benchmark
++- pytest-cases>=3.8.2
++- pytest-cov
++- pytest-rerunfailures
++- pytest-xdist
++- python-confluent-kafka>=2.8.0,<2.9.0a0
++- python-xxhash
++- python>=3.10,<3.14
++- rapids-build-backend>=0.4.0,<0.5.0.dev0
++- rapids-dask-dependency==25.10.*,>=0.0.0a0
++- rapids-logger==0.1.*,>=0.0.0a0
++- rich
++- rmm==25.10.*,>=0.0.0a0
++- s3fs>=2022.3.0
++- scikit-build-core>=0.10.0
++- scipy
++- sphinx-autobuild
++- sphinx-copybutton
++- sphinx-markdown-tables
++- sphinx-remove-toctrees
++- sphinx>=8.1.0
++- sphinxcontrib-websupport
++- streamz
++- sysroot_linux-64==2.28
++- typing_extensions>=4.0.0
++- zlib>=1.2.13
++- zstandard
++name: all_cuda-130_arch-x86_64
+diff --git a/conda/recipes/cudf/recipe.yaml b/conda/recipes/cudf/recipe.yaml
+index cf85a1c8117..05b8f6f7b89 100644
+--- a/conda/recipes/cudf/recipe.yaml
++++ b/conda/recipes/cudf/recipe.yaml
+@@ -71,6 +71,10 @@ requirements:
+     - pandas >=2.0,<2.4.0dev0
+     - cupy >=13.6.0
+     - numba-cuda >=0.19.1,<0.20.0a0
++    # TODO: remove cuda-nvvm-tools once https://github.com/NVIDIA/numba-cuda/issues/430 is resolved
++    #       and we move the numba-cuda floor up to a version containing a fix for it
++    - if: cuda_major == "13"
++      then: cuda-nvvm-tools
+     - numba >=0.60.0,<0.62.0a0
+     - numpy >=1.23,<3.0a0
+     - pyarrow>=14.0.0,<20.0.0a0
+@@ -79,7 +83,9 @@ requirements:
+     - ${{ pin_compatible("rmm", upper_bound="x.x") }}
+     - fsspec >=0.6.0
+     - cuda-cudart
+-    - cuda-python >=12.9.2,<13.0a0
++    - if: cuda_major == "12"
++      then: cuda-python >=12.9.2,<13.0a0
++      else: cuda-python >=13.0.1,<14.0a0
+     - if: linux and x86_64
+       then:
+         - libcufile
+diff --git a/conda/recipes/pylibcudf/recipe.yaml b/conda/recipes/pylibcudf/recipe.yaml
+index 8bc859fd633..4273baf5fd3 100644
+--- a/conda/recipes/pylibcudf/recipe.yaml
++++ b/conda/recipes/pylibcudf/recipe.yaml
+@@ -70,7 +70,9 @@ requirements:
+     - libcudf =${{ version }}
+     - ${{ pin_compatible("rmm", upper_bound="x.x") }}
+     - fsspec >=0.6.0
+-    - cuda-python >=12.9.2,<13.0a0
++    - if: cuda_major == "12"
++      then: cuda-python >=12.9.2,<13.0a0
++      else: cuda-python >=13.0.1,<14.0a0
+     - nvtx >=0.2.1
+     - packaging
+   run_constraints:
+diff --git a/dependencies.yaml b/dependencies.yaml
+index 574940c8121..fe6d8dcf2bb 100644
+--- a/dependencies.yaml
++++ b/dependencies.yaml
+@@ -3,7 +3,7 @@ files:
+   all:
+     output: conda
+     matrix:
+-      cuda: ["12.9"]
++      cuda: ["12.9", "13.0"]
+       arch: [x86_64, aarch64]
+     includes:
+       - build_base
+@@ -545,6 +545,10 @@ dependencies:
+               cuda: "12.9"
+             packages:
+               - cuda-version=12.9
++          - matrix:
++              cuda: "13.0"
++            packages:
++              - cuda-version=13.0
+   cuda:
+     common:
+       - output_types: [conda]
+@@ -658,13 +662,14 @@ dependencies:
+     specific:
+       - output_types: [conda, requirements, pyproject]
+         matrices:
+-          - matrix: &run_pylibcudf_packages_all_cu12
++          - matrix:
+               cuda: "12.*"
+             packages:
+-              - &cuda_python_cu12 cuda-python>=12.9.2,<13.0a0
++              - cuda-python>=12.9.2,<13.0a0
++          # fallback to CUDA 13 versions if 'cuda' is '13.*' or not provided
+           - matrix:
+             packages:
+-              - *cuda_python_cu12
++              - cuda-python>=13.0.1,<14.0a0
+   run_cudf:
+     common:
+       - output_types: [conda, requirements, pyproject]
+@@ -683,10 +688,14 @@ dependencies:
+     specific:
+       - output_types: [conda, requirements, pyproject]
+         matrices:
+-          - matrix: {cuda: "12.*"}
+-            packages: &run_cudf_packages_all_cu12
++          - matrix:
++              cuda: "12.*"
++            packages:
+               - cuda-python>=12.9.2,<13.0a0
+-          - {matrix: null, packages: *run_cudf_packages_all_cu12}
++          # fallback to CUDA 13 versions if 'cuda' is '13.*' or not provided
++          - matrix:
++            packages:
++              - cuda-python>=13.0.1,<14.0a0
+       - output_types: [requirements, pyproject]
+         matrices:
+           - matrix:
+@@ -695,6 +704,12 @@ dependencies:
+             packages:
+               - nvidia-cuda-nvcc-cu12
+               - nvidia-cuda-nvrtc-cu12
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - nvidia-cuda-nvcc-cu13
++              - nvidia-cuda-nvrtc-cu13
+           - {matrix: null, packages: []}
+   run_cudf_polars:
+     common:
+@@ -789,9 +804,15 @@ dependencies:
+         # Using --constraints for pip install, so we list cupy multiple times
+         matrices:
+           - matrix:
++              cuda: "12.*"
+               dependencies: "oldest"
+             packages:
+               - cupy-cuda12x==13.6.0
++          - matrix:
++              cuda: "13.*"
++              dependencies: "oldest"
++            packages:
++              - cupy-cuda13x==13.6.0
+           - matrix:
+             packages:
+   test_python_dask_cudf:
+@@ -863,6 +884,7 @@ dependencies:
+               cuda: "12.*"
+             packages:
+               - pytorch>=2.4.0
++          # TODO: add a 13.x entry here when pytorch has CUDA 13 packages (https://github.com/pytorch/pytorch/issues/159779)
+           - matrix:
+             packages:
+   test_python_cudf_polars:
+@@ -896,6 +918,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - libcudf-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - libcudf-cu13==25.10.*,>=0.0.0a0
+           - {matrix: null, packages: [*libcudf_unsuffixed]}
+   depends_on_numba_cuda:
+     common:
+@@ -903,15 +930,26 @@ dependencies:
+         packages:
+         - numba-cuda>=0.19.1,<0.20.0a0
+     specific:
++      # TODO: remove cuda-nvvm-tools once https://github.com/NVIDIA/numba-cuda/issues/430 is resolved
++      #       and we move the numba-cuda floor up to a version containing a fix for it
++      - output_types: [conda]
++        matrices:
++          - matrix:
++              cuda: "13.*"
++            packages:
++              - cuda-nvvm-tools
++          - matrix:
++            packages:
+       - output_types: [requirements, pyproject]
+         matrices:
+           - matrix:
+               cuda: "12.*"
+             packages:
+-              - &numba_cuda_cu12 numba-cuda[cu12]>=0.19.1,<0.20.0a0
++              - numba-cuda[cu12]>=0.19.1,<0.20.0a0
++          # fallback to CUDA 13 versions if 'cuda' is '13.*' or not provided
+           - matrix:
+             packages:
+-              - *numba_cuda_cu12
++              - numba-cuda[cu13]>=0.19.1,<0.20.0a0
+   depends_on_pylibcudf:
+     common:
+       - output_types: conda
+@@ -930,6 +968,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - pylibcudf-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - pylibcudf-cu13==25.10.*,>=0.0.0a0
+           - {matrix: null, packages: [*pylibcudf_unsuffixed]}
+   depends_on_pylibcudf_pyarrow:
+     common:
+@@ -949,6 +992,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - pylibcudf-cu12[pyarrow]==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - pylibcudf-cu13[pyarrow]==25.10.*,>=0.0.0a0
+           - {matrix: null, packages: [*plc_unsuffixed]}
+   depends_on_cudf:
+     common:
+@@ -968,6 +1016,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - cudf-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - cudf-cu13==25.10.*,>=0.0.0a0
+           - {matrix: null, packages: [*cudf_unsuffixed]}
+   depends_on_cudf_kafka:
+     common:
+@@ -987,20 +1040,31 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - cudf_kafka-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - cudf_kafka-cu13==25.10.*,>=0.0.0a0
+           - {matrix: null, packages: [*cudf_kafka_unsuffixed]}
+   depends_on_cupy:
+     common:
+       - output_types: conda
+         packages:
+           - cupy>=13.6.0
++    # NOTE: This is intentionally not broken into groups by a 'cuda_suffixed' selector like
++    #       other packages with -cu{nn}x suffixes in this file.
++    #       All RAPIDS wheel builds (including in devcontainers) expect cupy to be suffixed.
+     specific:
+       - output_types: [requirements, pyproject]
+         matrices:
+           - matrix:
+               cuda: "12.*"
+-            packages: &cupy_packages_cu12
++            packages:
+               - cupy-cuda12x>=13.6.0
+-          - {matrix: null, packages: *cupy_packages_cu12}
++          # fallback to CUDA 13 versions if 'cuda' is '13.*' or not provided
++          - matrix:
++            packages:
++              - cupy-cuda13x>=13.6.0
+   depends_on_libkvikio:
+     common:
+       - output_types: conda
+@@ -1018,6 +1082,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - libkvikio-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - libkvikio-cu13==25.10.*,>=0.0.0a0
+           - matrix:
+             packages:
+               - *libkvikio_unsuffixed
+@@ -1039,6 +1108,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - librmm-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - librmm-cu13==25.10.*,>=0.0.0a0
+           - matrix:
+             packages:
+               - *librmm_unsuffixed
+@@ -1060,6 +1134,11 @@ dependencies:
+               cuda_suffixed: "true"
+             packages:
+               - rmm-cu12==25.10.*,>=0.0.0a0
++          - matrix:
++              cuda: "13.*"
++              cuda_suffixed: "true"
++            packages:
++              - rmm-cu13==25.10.*,>=0.0.0a0
+           - matrix:
+             packages:
+               - *rmm_unsuffixed
+diff --git a/python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml b/python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml
+index 98b4a31a391..6e01e034cf4 100644
+--- a/python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml
++++ b/python/cudf/cudf_pandas_tests/third_party_integration_tests/dependencies.yaml
+@@ -161,6 +161,10 @@ dependencies:
+               cuda: "12.9"
+             packages:
+               - cuda-version=12.9
++          - matrix:
++              cuda: "13.0"
++            packages:
++              - cuda-version=13.0
+   py_version:
+     specific:
+       - output_types: conda
+diff --git a/python/cudf/pyproject.toml b/python/cudf/pyproject.toml
+index 039e81742f8..0c6c84bdca1 100644
+--- a/python/cudf/pyproject.toml
++++ b/python/cudf/pyproject.toml
+@@ -19,11 +19,11 @@ license = { text = "Apache-2.0" }
+ requires-python = ">=3.10"
+ dependencies = [
+     "cachetools",
+-    "cuda-python>=12.9.2,<13.0a0",
+-    "cupy-cuda12x>=13.6.0",
++    "cuda-python>=13.0.1,<14.0a0",
++    "cupy-cuda13x>=13.6.0",
+     "fsspec>=0.6.0",
+     "libcudf==25.10.*,>=0.0.0a0",
+-    "numba-cuda[cu12]>=0.19.1,<0.20.0a0",
++    "numba-cuda[cu13]>=0.19.1,<0.20.0a0",
+     "numba>=0.60.0,<0.62.0a0",
+     "numpy>=1.23,<3.0a0",
+     "nvtx>=0.2.1",
+@@ -125,7 +125,7 @@ requires = [
+     "libcudf==25.10.*,>=0.0.0a0",
+     "librmm==25.10.*,>=0.0.0a0",
+     "ninja",
+-    "numba-cuda[cu12]>=0.19.1,<0.20.0a0",
++    "numba-cuda[cu13]>=0.19.1,<0.20.0a0",
+     "pylibcudf==25.10.*,>=0.0.0a0",
+     "rmm==25.10.*,>=0.0.0a0",
+ ] # This list was generated by `rapids-dependency-file-generator`. To make changes, edit ../../dependencies.yaml and run `rapids-dependency-file-generator`.
+diff --git a/python/dask_cudf/pyproject.toml b/python/dask_cudf/pyproject.toml
+index 55f319bc268..3b5f7a1d2e7 100644
+--- a/python/dask_cudf/pyproject.toml
++++ b/python/dask_cudf/pyproject.toml
+@@ -20,7 +20,7 @@ license = { text = "Apache-2.0" }
+ requires-python = ">=3.10"
+ dependencies = [
+     "cudf==25.10.*,>=0.0.0a0",
+-    "cupy-cuda12x>=13.6.0",
++    "cupy-cuda13x>=13.6.0",
+     "fsspec>=0.6.0",
+     "numpy>=1.23,<3.0a0",
+     "pandas>=2.0,<2.4.0dev0",
+diff --git a/python/pylibcudf/pyproject.toml b/python/pylibcudf/pyproject.toml
+index fb49c45a4a2..a76bbc36bae 100644
+--- a/python/pylibcudf/pyproject.toml
++++ b/python/pylibcudf/pyproject.toml
+@@ -18,7 +18,7 @@ authors = [
+ license = { text = "Apache-2.0" }
+ requires-python = ">=3.10"
+ dependencies = [
+-    "cuda-python>=12.9.2,<13.0a0",
++    "cuda-python>=13.0.1,<14.0a0",
+     "libcudf==25.10.*,>=0.0.0a0",
+     "nvtx>=0.2.1",
+     "packaging",
+@@ -39,12 +39,12 @@ classifiers = [
+ 
+ [project.optional-dependencies]
+ test = [
+-    "cupy-cuda12x>=13.6.0",
++    "cupy-cuda13x>=13.6.0",
+     "fastavro>=0.22.9",
+     "hypothesis>=6.131.7",
+     "mmh3",
+     "nanoarrow",
+-    "numba-cuda[cu12]>=0.19.1,<0.20.0a0",
++    "numba-cuda[cu13]>=0.19.1,<0.20.0a0",
+     "numba>=0.60.0,<0.62.0a0",
+     "pandas",
+     "pyarrow>=14.0.0,<20.0.0a0,!=17.0.0; platform_machine=='aarch64'",

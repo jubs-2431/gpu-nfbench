@@ -1,0 +1,14 @@
+{
+  "body": "In specific case, creating block pointer is very slow.\r\n\r\n![pointer](https://github.com/openai/triton/assets/7459074/cf5fb269-411c-4735-a674-66b6eedc9385)\r\n\r\n```\r\npointer:\r\n   y_size  x_size  block pointer  pointer block\r\n0    32.0    32.0       0.024209       0.025256\r\n1    64.0    64.0       0.025827       0.024142\r\n2   128.0   128.0       0.024124       0.025241\r\n3   256.0   256.0       0.147073       0.028446\r\n```\r\n\r\nWhen the size of block is 256, it takes 6x more time than pointer block.\r\nYou can check this code at [here](https://github.com/daemyung/gpups/blob/main/pointer.py) to reproduce it.\r\n",
+  "closed_at": "2023-09-17T13:41:59Z",
+  "comments": 13,
+  "created_at": "2023-09-15T03:43:38Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/2301",
+  "labels": [
+    "enhancement"
+  ],
+  "number": 2301,
+  "state": "closed",
+  "title": "'block_pointer' is slower than 'pointer block'",
+  "updated_at": "2023-09-17T14:51:15Z"
+}

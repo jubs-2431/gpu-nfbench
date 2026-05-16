@@ -1,0 +1,14 @@
+{
+  "body": "I have the following kernel:\r\n```python3\r\n@triton.jit\r\ndef unmasked_blend_kernel(\r\n    img1_ptr, img2_ptr, ratio: float, total_items: int, BLOCK_SIZE: tl.constexpr\r\n):\r\n    block_idx = tl.program_id(0)\r\n    offset = block_idx * BLOCK_SIZE\r\n    item_element_idxs = tl.arange(0, BLOCK_SIZE)\r\n    img1_item_ptrs = img1_ptr + offset + item_element_idxs\r\n    img2_item_ptrs = img2_ptr + offset + item_element_idxs\r\n\r\n    if offset + BLOCK_SIZE > total_items:\r\n        mask = item_element_idxs < total_items % BLOCK_SIZE\r\n        img1 = tl.load(img1_item_ptrs, mask=mask, other=0)\r\n        img2 = tl.load(img2_item_ptrs, mask=mask, other=0)\r\n        out = ratio * img1 + (1.0 - ratio) * img2\r\n        tl.store(img1_item_ptrs, out, mask=mask)\r\n    else:\r\n        img1 = tl.load(img1_item_ptrs)\r\n        img2 = tl.load(img2_item_ptrs)\r\n        out = ratio * img1 + (1.0 - ratio) * img2\r\n        tl.store(img1_item_ptrs, out)\r\n```\r\n\r\nGiven that this kernel is blending 2 uint8  tensors, I figured it would make sense to do the computation ` out = ratio * img1 + (1.0 - ratio) * img2`  since I don't need high precision.\r\n\r\nHowever, I can't figure out how to force the Triton compiler to do the computations in FP16.\r\nI tried doing:\r\n\r\n```python3\r\n        img1 = tl.load(img1_item_ptrs, mask=mask, other=0).to(tl.float16)\r\n        img2 = tl.load(img2_item_ptrs, mask=mask, other=0).to(tl.float16)\r\n```\r\nbut from looking at the generated PTX, it just seems like the float16s are just converted to float32s before the multiplication \r\noccurs.\r\n\r\nIs there a way I can force the Triton  compiler  to make the multiplications float16? (Or is this impossible for a good reason;  i.e maybe this is not what I actually want)?\r\n",
+  "closed_at": null,
+  "comments": 8,
+  "created_at": "2023-01-24T22:51:33Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/1090",
+  "labels": [
+    "help wanted"
+  ],
+  "number": 1090,
+  "state": "open",
+  "title": "[Question] How to force certain computations to occur in float16?",
+  "updated_at": "2025-10-15T14:38:35Z"
+}

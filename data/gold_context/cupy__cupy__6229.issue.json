@@ -1,0 +1,15 @@
+{
+  "body": "Since NumPy 1.22, `numpy.percentile` and `numpy.quantile` have new methods to estimate the percentile/quantile. \r\n\r\nhttps://numpy.org/devdocs/reference/generated/numpy.quantile.html\r\nhttps://numpy.org/devdocs/reference/generated/numpy.percentile.html\r\n\r\n`method`s that needs to be implemented:\r\n\r\n- [ ] `inverted_cdf`\r\n- [ ] `averaged_inverted_cdf`\r\n- [ ] `closest_observation`\r\n- [ ] `interpolated_inverted_cdf`\r\n- [ ] `hazen`\r\n- [ ] `weibull`\r\n- [ ] `median_unbiased`\r\n- [ ] `normal_unbiased`\r\n",
+  "closed_at": null,
+  "comments": 11,
+  "created_at": "2021-12-09T07:04:42Z",
+  "html_url": "https://github.com/cupy/cupy/issues/6229",
+  "labels": [
+    "contribution welcome",
+    "good first issue"
+  ],
+  "number": 6229,
+  "state": "open",
+  "title": "Support more interpolation methods in `cupy.percentile` and `cupy.quantile`",
+  "updated_at": "2026-01-14T16:12:20Z"
+}

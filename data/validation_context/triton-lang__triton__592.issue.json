@@ -1,0 +1,14 @@
+{
+  "body": "Repro(although may not be a minimal one): [conv_relu_conv_relu_float16.py](https://gist.github.com/pyjhzwh/d9666e36ec7bd7963a0252ddb9351fbc#file-conv_relu_conv_relu_float16-py), [conv_relu_conv_relu_float32.py](https://gist.github.com/pyjhzwh/d9666e36ec7bd7963a0252ddb9351fbc#file-conv_relu_conv_relu_float32-py)\r\n`call()` does the forward computation of \r\n```\r\ntorch.nn.Sequential(\r\n    nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),\r\n    nn.ReLU(inplace=True),\r\n    nn.Conv2d(64, 192, kernel_size=5, padding=2),\r\n    nn.ReLU(inplace=True),\r\n)\r\n```\r\nkernel 0 do the layout transformation (NCHW->NHWC), kernel 1 and kernel 2 are conv+relu fused kernel\r\nIt works fine when dtype=float32, but when dtype=16, it will throw `LLVM ERROR: Broken function found, compilation aborted!`",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2022-07-20T18:11:09Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/592",
+  "labels": [
+    "bug"
+  ],
+  "number": 592,
+  "state": "open",
+  "title": "Compilation error when dtype=float16, but no error when dtype=float32",
+  "updated_at": "2022-08-15T07:05:38Z"
+}

@@ -1,0 +1,41 @@
+{
+  "required_csv_columns": [
+    "blind_id",
+    "primary_failure_label",
+    "secondary_cause_labels_pipe_separated",
+    "is_true_numerical_failure",
+    "evidence_quote",
+    "confidence_high_medium_low"
+  ],
+  "allowed_primary_failure_labels": [
+    "nan_inf",
+    "overflow_underflow",
+    "precision_tolerance",
+    "dtype_casting",
+    "crash_compile",
+    "performance_only",
+    "not_numerical_failure",
+    "needs_review"
+  ],
+  "allowed_secondary_cause_labels": [
+    "memory_mask_bounds",
+    "compiler_codegen",
+    "async_race_ordering",
+    "hardware_backend",
+    "reduction_accumulation",
+    "api_semantics",
+    "environment_configuration",
+    "unknown"
+  ],
+  "allowed_true_failure_values": [
+    "yes",
+    "no",
+    "unclear"
+  ],
+  "allowed_confidence_values": [
+    "high",
+    "medium",
+    "low"
+  ],
+  "evaluation_script": "scripts/evaluate_llm_baseline_predictions.py"
+}

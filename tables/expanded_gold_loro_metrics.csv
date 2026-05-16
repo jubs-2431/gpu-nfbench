@@ -1,0 +1,8 @@
+model_or_mode,evaluation,answered_rows,coverage,accuracy,macro_f1
+candidate_weak_label,leave_one_repository_out,1191,1.000,0.537,0.447
+bm25_knn,leave_one_repository_out,1191,1.000,0.544,0.574
+naive_bayes,leave_one_repository_out,1191,1.000,0.545,0.507
+tfidf_logistic,leave_one_repository_out,1191,1.000,0.679,0.665
+tfidf_linear_svm,leave_one_repository_out,1191,1.000,0.726,0.711
+bigram_tfidf_logistic,leave_one_repository_out,1191,1.000,0.717,0.711
+expanded_gold_vote_ensemble,leave_one_repository_out,1191,1.000,0.715,0.705

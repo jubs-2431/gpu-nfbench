@@ -1,0 +1,6 @@
+subset,rows,observed_agreement,cohen_kappa
+all_rows,191,0.372,0.280
+both_high_confidence,29,0.759,0.624
+both_not_low_confidence,175,0.389,0.296
+true_failure_status_agrees,113,0.593,0.531
+primary_label_agrees,71,1.000,1.000

@@ -1,0 +1,14 @@
+{
+  "body": "It is better to have a feature like `numpy.seterr` to detect what computation cause numeric exception.\r\n\r\n* Check arguments for `nan`s and `inf`s after each kernel launch?\r\n* Can we utilize any CUDA-level support?",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2017-12-19T06:27:12Z",
+  "html_url": "https://github.com/cupy/cupy/issues/851",
+  "labels": [
+    "cat:feature"
+  ],
+  "number": 851,
+  "state": "open",
+  "title": "Provide errstate / seterr / geterr",
+  "updated_at": "2022-02-26T09:52:44Z"
+}

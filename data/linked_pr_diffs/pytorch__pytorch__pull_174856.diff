@@ -1,0 +1,225 @@
+diff --git a/test/distributed/test_symmetric_memory.py b/test/distributed/test_symmetric_memory.py
+index f316d7fc28ff9..ab9b0ecd6f2fa 100644
+--- a/test/distributed/test_symmetric_memory.py
++++ b/test/distributed/test_symmetric_memory.py
+@@ -10,6 +10,7 @@
+ import torch
+ import torch.distributed as dist
+ import torch.distributed._symmetric_memory as symm_mem
++from torch._C import FileCheck
+ from torch._C._autograd import DeviceType
+ from torch._C._distributed_c10d import _SymmetricMemory
+ from torch._inductor.utils import (
+@@ -1416,6 +1417,97 @@ def func_reuse_eager(x, w1, w2, w3):
+             msg="Compiled and eager (reuse) outputs do not match",
+         )
+ 
++    @skip_if_rocm_multiprocess  # requires registered-buffer support
++    @skip_if_lt_x_gpu(2)
++    @fresh_inductor_cache()
++    def test_output_buffer_reuse(self):
++        """
++        Verify that symm_mem ops are lowered via ExternKernelOut
++        (should_allocate()=True) so output buffers are visible to Inductor.
++        This is the foundation for subsequent PRs' P2P memory planning.
++        """
++        self._init_process()
++
++        N = 8
++        x = torch.rand(N, N, device=self.device)
++        w1 = torch.rand(N, N, device=self.device)
++        w2 = torch.rand(N, N, device=self.device)
++        w3 = torch.rand(N, N, device=self.device)
++
++        # Multi-layer TP pattern: mm -> allreduce, repeated 3 times.
++        def func(x, w1, w2, w3):
++            x = torch.mm(x, w1)
++            x = torch.ops.symm_mem.one_shot_all_reduce(x, "sum", "0")
++            x = torch.mm(x, w2)
++            x = torch.ops.symm_mem.one_shot_all_reduce(x, "sum", "0")
++            x = torch.mm(x, w3)
++            x = torch.ops.symm_mem.one_shot_all_reduce(x, "sum", "0")
++            return x
++
++        compiled = torch.compile(func, fullgraph=True)
++        code = run_and_get_triton_code(compiled, x, w1, w2, w3)
++
++        # Verify one_shot_all_reduce is converted to one_shot_all_reduce_out
++        # with out= parameter (ExternKernelOut, not FallbackKernel).
++        # Each mm + allreduce pair should produce an out= call for the allreduce.
++        FileCheck().check_count("one_shot_all_reduce_out", 3, exactly=True).run(code)
++
++        # Verify the out= parameter is present on allreduce calls.
++        out_calls = code.count(", out=")
++        self.assertGreaterEqual(
++            out_calls,
++            6,
++            f"Expected at least 6 out= calls (3 mm + 3 allreduce), got {out_calls}.",
++        )
++
++        # Output buffers should be reused across layers (ping-pong).
++        reuse_count = code.count("# reuse")
++        self.assertGreaterEqual(
++            reuse_count,
++            2,
++            f"Expected at least 2 buffer reuses, got {reuse_count}.",
++        )
++
++    @skip_if_rocm_multiprocess  # requires registered-buffer support
++    @skip_if_lt_x_gpu(2)
++    @fresh_inductor_cache()
++    def test_output_buffer_reuse_copy_variant(self):
++        """
++        Verify that one_shot_all_reduce_copy is also lowered via
++        ExternKernelOut through the manual out variant registry.
++        """
++        self._init_process()
++
++        N = 8
++        group_name = dist.group.WORLD.group_name
++        symm_buffer = symm_mem.empty(
++            N * N, device=self.device, dtype=torch.float32
++        ).view(N, N)
++        symm_mem.rendezvous(symm_buffer, group=group_name)
++
++        local_input = torch.rand(N, N, device=self.device)
++        w = torch.rand(N, N, device=self.device)
++
++        def func(symm_buffer, local_input, w):
++            x = torch.mm(local_input, w)
++            return torch.ops.symm_mem.one_shot_all_reduce_copy(
++                symm_buffer, x, "sum", "0"
++            )
++
++        compiled = torch.compile(func, fullgraph=True)
++        code = run_and_get_triton_code(compiled, symm_buffer, local_input, w)
++
++        # Verify one_shot_all_reduce_copy is converted to
++        # one_shot_all_reduce_copy_out with out= parameter.
++        FileCheck().check("one_shot_all_reduce_copy_out").run(code)
++
++        # Verify the out= parameter is present.
++        self.assertIn(
++            ", out=",
++            code,
++            "one_shot_all_reduce_copy_out should have out= parameter.",
++        )
++
+     @skip_if_rocm_multiprocess  # test requires support for registered buffers
+     @skip_if_lt_x_gpu(2)
+     @fresh_inductor_cache()
+diff --git a/torch/_inductor/comm_lowering.py b/torch/_inductor/comm_lowering.py
+index 60c710ccb6884..a7a344e901717 100644
+--- a/torch/_inductor/comm_lowering.py
++++ b/torch/_inductor/comm_lowering.py
+@@ -483,6 +483,18 @@ def register_symm_mem_lowerings():
+         log.info("symm_mem ops not available, skipping symm_mem lowerings")
+         return
+ 
++    from torch._library._out_variant import register_out_variant
++
++    # Register manual out variant mappings for symm_mem ops.
++    register_out_variant(
++        symm_mem.one_shot_all_reduce.default,
++        symm_mem.one_shot_all_reduce_out.default,
++    )
++    register_out_variant(
++        symm_mem.one_shot_all_reduce_copy.default,
++        symm_mem.one_shot_all_reduce_copy_out.default,
++    )
++
+     from .lowering import register_lowering
+ 
+     def _maybe_realize_symm_mem(
+diff --git a/torch/_inductor/ir.py b/torch/_inductor/ir.py
+index 87e322ab1651b..7d0e538af7d52 100644
+--- a/torch/_inductor/ir.py
++++ b/torch/_inductor/ir.py
+@@ -8718,32 +8718,37 @@ def create(cls, kernel: _OpOverloads, *args: Any, **kwargs: Any) -> FallbackKern
+             ) = cls.process_kernel(kernel, *args, **kwargs)
+ 
+         # Try to lower single output functional custom ops to their out-variant.
+-        if isinstance(kernel, torch._ops.OpOverload):
++        if isinstance(kernel, torch._ops.OpOverload) and isinstance(
++            example_output, torch.Tensor
++        ):
+             from torch._library._out_variant import (
+                 _is_functional,
+                 get_out_arg_names,
++                lookup_manual_out_variant,
+                 to_out_variant,
+             )
+ 
+-            if _is_functional(kernel._schema) and isinstance(
+-                example_output, torch.Tensor
+-            ):
++            out_op = None
++            if _is_functional(kernel._schema):
+                 out_op = to_out_variant(kernel)
+-                if out_op is not None and len(get_out_arg_names(out_op)) == 1:
+-                    layout = FixedLayout(
+-                        device=example_output.device,
+-                        dtype=example_output.dtype,
+-                        size=[*example_output.shape],
+-                        stride=[*example_output.stride()],
+-                    )
+-                    return ExternKernelOut(  # type: ignore[return-value]
+-                        layout=layout,
+-                        inputs=list(tensor_args),
+-                        constant_args=list(non_tensor_args),
+-                        kwargs=kwargs,
+-                        python_kernel_name=_make_out_variant_kernel_name(out_op),
+-                        op_overload=out_op,
+-                    )
++            if out_op is None:
++                out_op = lookup_manual_out_variant(kernel)
++
++            if out_op is not None and len(get_out_arg_names(out_op)) == 1:
++                layout = FixedLayout(
++                    device=example_output.device,
++                    dtype=example_output.dtype,
++                    size=[*example_output.shape],
++                    stride=[*example_output.stride()],
++                )
++                return ExternKernelOut(  # type: ignore[return-value]
++                    layout=layout,
++                    inputs=list(tensor_args),
++                    constant_args=list(non_tensor_args),
++                    kwargs=kwargs,
++                    python_kernel_name=_make_out_variant_kernel_name(out_op),
++                    op_overload=out_op,
++                )
+ 
+         # We need this extra check for input alignment since the example
+         # inputs we created are always aligned.
+diff --git a/torch/_library/_out_variant.py b/torch/_library/_out_variant.py
+index 693861daaa41a..9e6960fb08940 100644
+--- a/torch/_library/_out_variant.py
++++ b/torch/_library/_out_variant.py
+@@ -8,6 +8,26 @@
+ log = logging.getLogger(__name__)
+ 
+ 
++# Manual registry for ops whose out variant is not discoverable via
++# to_out_variant() (e.g. flat _out naming instead of .out overload).
++_manual_out_variant_registry: dict[torch._ops.OpOverload, torch._ops.OpOverload] = {}
++
++
++def register_out_variant(
++    functional_op: torch._ops.OpOverload,
++    out_op: torch._ops.OpOverload,
++) -> None:
++    """Register a functional op -> out variant mapping."""
++    _manual_out_variant_registry[functional_op] = out_op
++
++
++def lookup_manual_out_variant(
++    op: torch._ops.OpOverload,
++) -> torch._ops.OpOverload | None:
++    """Return the manually registered out variant for op, or None."""
++    return _manual_out_variant_registry.get(op)
++
++
+ def _is_functional(schema: torch._C.FunctionSchema) -> bool:
+     """
+     A schema is functional if no argument is written to and the name doesn't

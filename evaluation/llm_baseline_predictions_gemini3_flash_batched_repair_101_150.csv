@@ -1,0 +1,1561 @@
+blind_id,primary_failure_label,secondary_cause_labels,is_true_numerical_failure,evidence_quote,confidence,model,provider,elapsed_seconds,error,raw_response
+GNF-0101-ca19a99c,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0102-5bd04adc,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0103-f835a9bf,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0104-5a61566a,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0105-bbfb9d59,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0106-69df058d,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0107-36abe955,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0108-049dae8c,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0109-5b3bb56e,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0110-1c6064fd,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,33.491,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 496)","[
+  {
+    ""blind_id"": ""GNF-0101-ca19a99c"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""wsl Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0102-5bd04adc"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""When calculating the loss, the input data does not contain NaN, but the output contains NaN"",
+    ""confidence"
+GNF-0111-4b909a91,nan_inf,compiler_codegen,yes,"I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0112-9ee80d72,not_numerical_failure,api_semantics,no,"When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings.",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0113-e024c338,not_numerical_failure,unknown,no,"I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so.",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0114-9723251e,crash_compile,api_semantics,no,"if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0115-bd414dfb,precision_tolerance,compiler_codegen,yes,"When the chunk_size is large, this matrix multiplication is performed incorrectly. The results are both wrong and not deterministic.",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0116-96b537db,dtype_casting,api_semantics,yes,Looks like output dtype is incorrect when an operation has array and scalar inputs (see below). ... numba.njit(lambda A: A+1)(A).dtype Out[37]: dtype('int64') In [38]: (A+1).dtype Out[38]: dtype('int32'),high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0117-5c96ad33,nan_inf,api_semantics,yes,jax.scipy.special.ndtri returns positive infinity when the argument exceeds 1.0 and negative infinity when the argument is less than 0.0. ... It seems that it would be more appropriate to return NaN in these cases,high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0118-6cddc10b,not_numerical_failure,api_semantics,no,[Feature Request] Support __pow__ builtin ... NotImplementedError: visit_BinOp,high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0119-84e3156c,dtype_casting,api_semantics,no,"AssertionError('initial value for `qk` is of type <[64, 64], fp16>, but the then block redefines it as <[64, 64], fp32>') ... So how to represent numeric literals in fp16 or other type?",high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0120-3d8af802,not_numerical_failure,api_semantics,no,ValueError('Metadata mismatch found in `from_delayed`.\n\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`'),high,gemini-3-flash-preview,gemini_batched,21.037,,"[
+  {
+    ""blind_id"": ""GNF-0111-4b909a91"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I have a custom attention mask that gives incorrect/nan gradients for k_proj and v_proj when flex attention is compiled. ... Iteration 0: Outputs match: False, Max diff: 6.457781e+00 MISMATCH DETECTED!"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0112-9ee80d72"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When compiling the cupy.cuda.{thrust, cub} modules, a few deprecation warnings are raised. We should try to migrate the code to newer constructs in CCCL v3.x so as to eliminate the warnings."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0113-e024c338"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I think it would be helpful to add a testing mechanism based on assert_array_almost_equal_nulp. Or something similar to it, maybe an integer meaning a multiple of the finfo(...).eps or so."",
+    ""confidence"": 1.0
+  },
+  {
+    ""blind_id"": ""GNF-0114-9723251e"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if i do a simple query on a categorical column, i get an error stating that This error is usually caused by passing an argument of a type that is unsupported by the named function. ... TypingError Traceback (most recent call last)"",
+    ""confidence"": 0.9
+  },
+  {
+    ""blind_id"": ""GNF-0115-bd414dfb"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": """
+GNF-0121-d1cf86e9,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0122-2172f7de,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0123-b044c5aa,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0124-5e35db0b,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0125-29346792,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0126-2958d273,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0127-32017a62,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0128-c6e2544c,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0129-c9f64c60,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0130-957b5693,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,31.334,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 550)","[
+  {
+    ""blind_id"": ""GNF-0121-d1cf86e9"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""numba/np/ufunc/tbbpool.cpp:30:2: error: #error \""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required\"""",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0122-2172f7de"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical"
+GNF-0131-4b657811,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0132-01bc7af7,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0133-3e76eecf,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0134-2006d4e1,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0135-51861a93,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0136-a301f54e,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0137-1f5e2c55,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0138-73610007,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0139-08c1b395,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0140-0369d89c,needs_review,unknown,unclear,,low,gemini-3-flash-preview,gemini_batched,32.694,"parse_error: Expecting ',' delimiter: line 17 column 6 (char 512)","[
+  {
+    ""blind_id"": ""GNF-0131-4b657811"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Is there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?"",
+    ""confidence"": 5
+  },
+  {
+    ""blind_id"": ""GNF-0132-01bc7af7"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""so when the kernel runs twice, the first call modifies in_out_ptr0 which leads to the wrong value being loaded in the second call."",
+"
+GNF-0141-cd3b65ac,not_numerical_failure,api_semantics,no,"Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0142-fd6a822f,crash_compile,compiler_codegen,no,"it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors.",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0143-8c373d44,overflow_underflow,compiler_codegen,yes,"To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows.",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0144-bd760235,not_numerical_failure,api_semantics,no,"The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world.",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0145-13ae4b2a,performance_only,async_race_ordering,no,"I've noticed that the pipeline is gone, read_parquet operations from different threads/streams seem to interfere with each other... discovered two unnecessary synchronization points: one from CUDA synchronization and another from the GIL thread synchronization.",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0146-2fe36ae1,crash_compile,environment_configuration,no,"src/binaryop/binaryop.cpp.o compile failed jitify2 in cuda13... cuda 12.9.1 pass the compilation, but cuda 13.0.0 failed",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0147-77cef7ab,dtype_casting,api_semantics,no,Json reader doesn't seem to be inferring the dtype of a column which has floating values. It appears to be inferred as object dtype... 34.3e+304 is not [inferred correctly].,high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0148-5dbeb416,performance_only,hardware_backend,no,"Comparing to the CUBLAS performance, the performance of Triton GEMM is ~15% lower than the CUBLAS GEMM performance",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0149-305f23bb,crash_compile,environment_configuration,no,jax.nn.dot_product_attention fails on cudnn backend in JAX 0.7.2 CUDA 13... jaxlib._jax.XlaRuntimeError: INTERNAL,high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"
+GNF-0150-3c830fbd,performance_only,compiler_codegen,no,"In specific case, creating block pointer is very slow... When the size of block is 256, it takes 6x more time than pointer block.",high,gemini-3-flash-preview,gemini_batched,22.937,,"[
+  {
+    ""blind_id"": ""GNF-0141-cd3b65ac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Support numpy.isnan and numpy.isnat in cuda.jit kernels... Currently math.isnan is supported for checking for NaNs, but there's no way to check for NaTs easily"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0142-fd6a822f"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""it is giving me this error; surprisingly, the same code runs on 32-bit floating point numbers... After removing --xla_gpu_enable_custom_fusions=true, there are no errors."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0143-8c373d44"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""To compute (a * b) % c, if a * b is greater than max(int32_t), then the final result is incorrect... Triton directly translate to llvm.mul, which uses the 2-complements and overflows."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0144-bd760235"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The libcudf implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0145-13ae4b2a"",
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I've noticed that the pipeline is gone, read_parquet operations from different threads/stre"

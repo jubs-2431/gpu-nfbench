@@ -1,0 +1,441 @@
+diff --git a/cpp/src/io/parquet/compact_protocol_writer.cpp b/cpp/src/io/parquet/compact_protocol_writer.cpp
+index 28baad9c51c..f5ae262fa3f 100644
+--- a/cpp/src/io/parquet/compact_protocol_writer.cpp
++++ b/cpp/src/io/parquet/compact_protocol_writer.cpp
+@@ -150,7 +150,7 @@ size_t CompactProtocolWriter::write(const SchemaElement& s)
+   // if (isset.STRING or isset.MAP or isset.LIST or isset.ENUM or isset.DECIMAL or isset.DATE or
+   //    isset.TIME or isset.TIMESTAMP or isset.INTEGER or isset.UNKNOWN or isset.JSON or isset.BSON)
+   //    {
+-  if (isset.TIMESTAMP) { c.field_struct(10, s.logical_type); }
++  if (isset.TIMESTAMP or isset.TIME) { c.field_struct(10, s.logical_type); }
+   return c.value();
+ }
+ 
+diff --git a/cpp/src/io/parquet/page_data.cu b/cpp/src/io/parquet/page_data.cu
+index 6c314261a13..b36826002f4 100644
+--- a/cpp/src/io/parquet/page_data.cu
++++ b/cpp/src/io/parquet/page_data.cu
+@@ -876,15 +876,15 @@ static __device__ bool setupLocalPageInfo(page_state_s* const s,
+         case BOOLEAN:
+           s->dtype_len = 1;  // Boolean are stored as 1 byte on the output
+           break;
+-        case INT32:
++        case INT32: [[fallthrough]];
+         case FLOAT: s->dtype_len = 4; break;
+         case INT64:
+           if (s->col.ts_clock_rate) {
+             int32_t units = 0;
+-            if (s->col.converted_type == TIME_MILLIS or s->col.converted_type == TIMESTAMP_MILLIS) {
++            // Duration types are not included because no scaling is done when reading
++            if (s->col.converted_type == TIMESTAMP_MILLIS) {
+               units = cudf::timestamp_ms::period::den;
+-            } else if (s->col.converted_type == TIME_MICROS or
+-                       s->col.converted_type == TIMESTAMP_MICROS) {
++            } else if (s->col.converted_type == TIMESTAMP_MICROS) {
+               units = cudf::timestamp_us::period::den;
+             } else if (s->col.logical_type.TIMESTAMP.unit.isset.NANOS) {
+               units = cudf::timestamp_ns::period::den;
+@@ -894,7 +894,7 @@ static __device__ bool setupLocalPageInfo(page_state_s* const s,
+                                                            : (s->col.ts_clock_rate / units);
+             }
+           }
+-          // Fall through to DOUBLE
++          [[fallthrough]];
+         case DOUBLE: s->dtype_len = 8; break;
+         case INT96: s->dtype_len = 12; break;
+         case BYTE_ARRAY: s->dtype_len = sizeof(string_index_pair); break;
+@@ -910,8 +910,16 @@ static __device__ bool setupLocalPageInfo(page_state_s* const s,
+                        : s->dtype_len <= sizeof(int64_t) ? sizeof(int64_t)
+                                                          : sizeof(__int128_t);
+       } else if (data_type == INT32) {
+-        if (dtype_len_out == 1) s->dtype_len = 1;  // INT8 output
+-        if (dtype_len_out == 2) s->dtype_len = 2;  // INT16 output
++        if (dtype_len_out == 1) {
++          // INT8 output
++          s->dtype_len = 1;
++        } else if (dtype_len_out == 2) {
++          // INT16 output
++          s->dtype_len = 2;
++        } else if (s->col.converted_type == TIME_MILLIS) {
++          // INT64 output
++          s->dtype_len = 8;
++        }
+       } else if (data_type == BYTE_ARRAY && dtype_len_out == 4) {
+         s->dtype_len = 4;  // HASH32 output
+       } else if (data_type == INT96) {
+@@ -1670,7 +1678,12 @@ __global__ void __launch_bounds__(block_size) gpuDecodePageData(
+         } else if (dtype == INT96) {
+           gpuOutputInt96Timestamp(s, val_src_pos, static_cast<int64_t*>(dst));
+         } else if (dtype_len == 8) {
+-          if (s->ts_scale) {
++          if (s->dtype_len_in == 4) {
++            // Reading INT32 TIME_MILLIS into 64-bit DURATION_MILLISECONDS
++            // TIME_MILLIS is the only duration type stored as int32:
++            // https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#deprecated-time-convertedtype
++            gpuOutputFast(s, val_src_pos, static_cast<uint32_t*>(dst));
++          } else if (s->ts_scale) {
+             gpuOutputInt64Timestamp(s, val_src_pos, static_cast<int64_t*>(dst));
+           } else {
+             gpuOutputFast(s, val_src_pos, static_cast<uint2*>(dst));
+diff --git a/cpp/src/io/parquet/page_enc.cu b/cpp/src/io/parquet/page_enc.cu
+index 15bd4fe17e3..8a07ee419b4 100644
+--- a/cpp/src/io/parquet/page_enc.cu
++++ b/cpp/src/io/parquet/page_enc.cu
+@@ -1109,15 +1109,20 @@ __global__ void __launch_bounds__(128, 8)
+       if (t == 0) { s->cur = dst + total_len; }
+       if (is_valid) {
+         switch (physical_type) {
+-          case INT32:
++          case INT32: [[fallthrough]];
+           case FLOAT: {
+-            int32_t v;
+-            if (dtype_len_in == 4)
+-              v = s->col.leaf_column->element<int32_t>(val_idx);
+-            else if (dtype_len_in == 2)
+-              v = s->col.leaf_column->element<int16_t>(val_idx);
+-            else
+-              v = s->col.leaf_column->element<int8_t>(val_idx);
++            auto const v = [dtype_len = dtype_len_in,
++                            idx       = val_idx,
++                            col       = s->col.leaf_column,
++                            scale     = s->col.ts_scale == 0 ? 1 : s->col.ts_scale]() -> int32_t {
++              switch (dtype_len) {
++                case 8: return col->element<int64_t>(idx) * scale;
++                case 4: return col->element<int32_t>(idx) * scale;
++                case 2: return col->element<int16_t>(idx) * scale;
++                default: return col->element<int8_t>(idx) * scale;
++              }
++            }();
++
+             dst[pos + 0] = v;
+             dst[pos + 1] = v >> 8;
+             dst[pos + 2] = v >> 16;
+diff --git a/cpp/src/io/parquet/parquet_gpu.hpp b/cpp/src/io/parquet/parquet_gpu.hpp
+index c31a1531fa7..ea3678129ac 100644
+--- a/cpp/src/io/parquet/parquet_gpu.hpp
++++ b/cpp/src/io/parquet/parquet_gpu.hpp
+@@ -299,10 +299,12 @@ constexpr size_t kDictScratchSize    = (1 << kDictHashBits) * sizeof(uint32_t);
+ inline uint32_t __device__ int32_logical_len(type_id id)
+ {
+   switch (id) {
+-    case cudf::type_id::INT8:
++    case cudf::type_id::INT8: [[fallthrough]];
+     case cudf::type_id::UINT8: return 1;
+-    case cudf::type_id::INT16:
++    case cudf::type_id::INT16: [[fallthrough]];
+     case cudf::type_id::UINT16: return 2;
++    case cudf::type_id::DURATION_SECONDS: [[fallthrough]];
++    case cudf::type_id::DURATION_MILLISECONDS: return 8;
+     default: return 4;
+   }
+ }
+diff --git a/cpp/src/io/parquet/reader_impl.cu b/cpp/src/io/parquet/reader_impl.cu
+index 535641654a2..50893ebe583 100644
+--- a/cpp/src/io/parquet/reader_impl.cu
++++ b/cpp/src/io/parquet/reader_impl.cu
+@@ -130,12 +130,8 @@ type_id to_type_id(SchemaElement const& schema,
+     case parquet::UINT_32: return type_id::UINT32;
+     case parquet::UINT_64: return type_id::UINT64;
+     case parquet::DATE: return type_id::TIMESTAMP_DAYS;
+-    case parquet::TIME_MILLIS:
+-      return (timestamp_type_id != type_id::EMPTY) ? timestamp_type_id
+-                                                   : type_id::DURATION_MILLISECONDS;
+-    case parquet::TIME_MICROS:
+-      return (timestamp_type_id != type_id::EMPTY) ? timestamp_type_id
+-                                                   : type_id::DURATION_MICROSECONDS;
++    case parquet::TIME_MILLIS: return type_id::DURATION_MILLISECONDS;
++    case parquet::TIME_MICROS: return type_id::DURATION_MICROSECONDS;
+     case parquet::TIMESTAMP_MILLIS:
+       return (timestamp_type_id != type_id::EMPTY) ? timestamp_type_id
+                                                    : type_id::TIMESTAMP_MILLISECONDS;
+@@ -173,6 +169,11 @@ type_id to_type_id(SchemaElement const& schema,
+                                                  : type_id::TIMESTAMP_NANOSECONDS;
+   }
+ 
++  if (inferred_converted_type == parquet::UNKNOWN and physical == parquet::INT64 and
++      logical_type.TIME.unit.isset.NANOS) {
++    return type_id::DURATION_NANOSECONDS;
++  }
++
+   // is it simply a struct?
+   if (schema.is_struct()) { return type_id::STRUCT; }
+ 
+diff --git a/cpp/src/io/parquet/writer_impl.cu b/cpp/src/io/parquet/writer_impl.cu
+index f2089d27a87..a49dbcc703c 100644
+--- a/cpp/src/io/parquet/writer_impl.cu
++++ b/cpp/src/io/parquet/writer_impl.cu
+@@ -374,44 +374,53 @@ struct leaf_schema_fn {
+   template <typename T>
+   std::enable_if_t<std::is_same_v<T, cudf::duration_D>, void> operator()()
+   {
+-    col_schema.type           = Type::INT32;
+-    col_schema.converted_type = ConvertedType::TIME_MILLIS;
+-    col_schema.stats_dtype    = statistics_dtype::dtype_int64;
++    col_schema.type                                = Type::INT32;
++    col_schema.converted_type                      = ConvertedType::TIME_MILLIS;
++    col_schema.stats_dtype                         = statistics_dtype::dtype_int32;
++    col_schema.ts_scale                            = 24 * 60 * 60 * 1000;
++    col_schema.logical_type.isset.TIME             = true;
++    col_schema.logical_type.TIME.unit.isset.MILLIS = true;
+   }
+ 
+   template <typename T>
+   std::enable_if_t<std::is_same_v<T, cudf::duration_s>, void> operator()()
+   {
+-    col_schema.type           = Type::INT64;
+-    col_schema.converted_type = ConvertedType::TIME_MILLIS;
+-    col_schema.stats_dtype    = statistics_dtype::dtype_int64;
+-    col_schema.ts_scale       = 1000;
++    col_schema.type                                = Type::INT32;
++    col_schema.converted_type                      = ConvertedType::TIME_MILLIS;
++    col_schema.stats_dtype                         = statistics_dtype::dtype_int32;
++    col_schema.ts_scale                            = 1000;
++    col_schema.logical_type.isset.TIME             = true;
++    col_schema.logical_type.TIME.unit.isset.MILLIS = true;
+   }
+ 
+   template <typename T>
+   std::enable_if_t<std::is_same_v<T, cudf::duration_ms>, void> operator()()
+   {
+-    col_schema.type           = Type::INT64;
+-    col_schema.converted_type = ConvertedType::TIME_MILLIS;
+-    col_schema.stats_dtype    = statistics_dtype::dtype_int64;
++    col_schema.type                                = Type::INT32;
++    col_schema.converted_type                      = ConvertedType::TIME_MILLIS;
++    col_schema.stats_dtype                         = statistics_dtype::dtype_int32;
++    col_schema.logical_type.isset.TIME             = true;
++    col_schema.logical_type.TIME.unit.isset.MILLIS = true;
+   }
+ 
+   template <typename T>
+   std::enable_if_t<std::is_same_v<T, cudf::duration_us>, void> operator()()
+   {
+-    col_schema.type           = Type::INT64;
+-    col_schema.converted_type = ConvertedType::TIME_MICROS;
+-    col_schema.stats_dtype    = statistics_dtype::dtype_int64;
++    col_schema.type                                = Type::INT64;
++    col_schema.converted_type                      = ConvertedType::TIME_MICROS;
++    col_schema.stats_dtype                         = statistics_dtype::dtype_int64;
++    col_schema.logical_type.isset.TIME             = true;
++    col_schema.logical_type.TIME.unit.isset.MICROS = true;
+   }
+ 
+   //  unsupported outside cudf for parquet 1.0.
+   template <typename T>
+   std::enable_if_t<std::is_same_v<T, cudf::duration_ns>, void> operator()()
+   {
+-    col_schema.type           = Type::INT64;
+-    col_schema.converted_type = ConvertedType::TIME_MICROS;
+-    col_schema.stats_dtype    = statistics_dtype::dtype_int64;
+-    col_schema.ts_scale       = -1000;  // negative value indicates division by absolute value
++    col_schema.type                               = Type::INT64;
++    col_schema.stats_dtype                        = statistics_dtype::dtype_int64;
++    col_schema.logical_type.isset.TIME            = true;
++    col_schema.logical_type.TIME.unit.isset.NANOS = true;
+   }
+ 
+   template <typename T>
+diff --git a/cpp/src/io/statistics/statistics_type_identification.cuh b/cpp/src/io/statistics/statistics_type_identification.cuh
+index 10a7518aefa..9fc30c625aa 100644
+--- a/cpp/src/io/statistics/statistics_type_identification.cuh
++++ b/cpp/src/io/statistics/statistics_type_identification.cuh
+@@ -74,8 +74,7 @@ struct conversion_map<io_file_format::PARQUET, is_int96_timestamp::YES> {
+ template <>
+ struct conversion_map<io_file_format::PARQUET, is_int96_timestamp::NO> {
+   using types = std::tuple<std::pair<cudf::timestamp_s, cudf::timestamp_ms>,
+-                           std::pair<cudf::duration_s, cudf::duration_ms>,
+-                           std::pair<cudf::duration_ns, cudf::duration_us>>;
++                           std::pair<cudf::duration_s, cudf::duration_ms>>;
+ };
+ 
+ /**
+diff --git a/cpp/tests/io/parquet_test.cpp b/cpp/tests/io/parquet_test.cpp
+index 9bb2aa207e4..ba457e2738d 100644
+--- a/cpp/tests/io/parquet_test.cpp
++++ b/cpp/tests/io/parquet_test.cpp
+@@ -33,6 +33,7 @@
+ #include <cudf/strings/strings_column_view.hpp>
+ #include <cudf/table/table.hpp>
+ #include <cudf/table/table_view.hpp>
++#include <cudf/unary.hpp>
+ #include <cudf/utilities/span.hpp>
+ 
+ #include <src/io/parquet/compact_protocol_reader.hpp>
+@@ -43,6 +44,7 @@
+ #include <thrust/iterator/counting_iterator.h>
+ 
+ #include <fstream>
++#include <random>
+ #include <type_traits>
+ 
+ template <typename T, typename SourceElementT = T>
+@@ -462,7 +464,70 @@ TYPED_TEST(ParquetWriterNumericTypeTest, SingleColumnWithNulls)
+   CUDF_TEST_EXPECT_TABLES_EQUAL(expected, result.tbl->view());
+ }
+ 
+-TYPED_TEST(ParquetWriterChronoTypeTest, Chronos)
++template <typename mask_op_t>
++void test_durations(mask_op_t mask_op)
++{
++  std::default_random_engine generator;
++  std::uniform_int_distribution<int> distribution_d(0, 30);
++  auto sequence_d = cudf::detail::make_counting_transform_iterator(
++    0, [&](auto i) { return distribution_d(generator); });
++
++  std::uniform_int_distribution<int> distribution_s(0, 86400);
++  auto sequence_s = cudf::detail::make_counting_transform_iterator(
++    0, [&](auto i) { return distribution_s(generator); });
++
++  std::uniform_int_distribution<int> distribution(0, 86400 * 1000);
++  auto sequence = cudf::detail::make_counting_transform_iterator(
++    0, [&](auto i) { return distribution(generator); });
++
++  auto mask = cudf::detail::make_counting_transform_iterator(0, mask_op);
++
++  constexpr auto num_rows = 100;
++  // Durations longer than a day are not exactly valid, but cudf should be able to round trip
++  auto durations_d = cudf::test::fixed_width_column_wrapper<cudf::duration_D, int64_t>(
++    sequence_d, sequence_d + num_rows, mask);
++  auto durations_s = cudf::test::fixed_width_column_wrapper<cudf::duration_s, int64_t>(
++    sequence_s, sequence_s + num_rows, mask);
++  auto durations_ms = cudf::test::fixed_width_column_wrapper<cudf::duration_ms, int64_t>(
++    sequence, sequence + num_rows, mask);
++  auto durations_us = cudf::test::fixed_width_column_wrapper<cudf::duration_us, int64_t>(
++    sequence, sequence + num_rows, mask);
++  auto durations_ns = cudf::test::fixed_width_column_wrapper<cudf::duration_ns, int64_t>(
++    sequence, sequence + num_rows, mask);
++
++  auto expected = table_view{{durations_d, durations_s, durations_ms, durations_us, durations_ns}};
++
++  auto filepath = temp_env->get_temp_filepath("Durations.parquet");
++  cudf::io::parquet_writer_options out_opts =
++    cudf::io::parquet_writer_options::builder(cudf::io::sink_info{filepath}, expected);
++  cudf::io::write_parquet(out_opts);
++
++  cudf::io::parquet_reader_options in_opts =
++    cudf::io::parquet_reader_options::builder(cudf::io::source_info{filepath});
++  auto result = cudf::io::read_parquet(in_opts);
++
++  auto durations_d_got =
++    cudf::cast(result.tbl->view().column(0), cudf::data_type{cudf::type_id::DURATION_DAYS});
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(durations_d, durations_d_got->view());
++
++  auto durations_s_got =
++    cudf::cast(result.tbl->view().column(1), cudf::data_type{cudf::type_id::DURATION_SECONDS});
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(durations_s, durations_s_got->view());
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(durations_ms, result.tbl->view().column(2));
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(durations_us, result.tbl->view().column(3));
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(durations_ns, result.tbl->view().column(4));
++}
++
++TEST_F(ParquetWriterTest, Durations)
++{
++  test_durations([](auto i) { return true; });
++  test_durations([](auto i) { return (i % 2) != 0; });
++  test_durations([](auto i) { return (i % 3) != 0; });
++  test_durations([](auto i) { return false; });
++}
++
++TYPED_TEST(ParquetWriterTimestampTypeTest, Timestamps)
+ {
+   auto sequence = cudf::detail::make_counting_transform_iterator(
+     0, [](auto i) { return ((std::rand() / 10000) * 1000); });
+@@ -474,7 +539,7 @@ TYPED_TEST(ParquetWriterChronoTypeTest, Chronos)
+ 
+   auto expected = table_view{{col}};
+ 
+-  auto filepath = temp_env->get_temp_filepath("Chronos.parquet");
++  auto filepath = temp_env->get_temp_filepath("Timestamps.parquet");
+   cudf::io::parquet_writer_options out_opts =
+     cudf::io::parquet_writer_options::builder(cudf::io::sink_info{filepath}, expected);
+   cudf::io::write_parquet(out_opts);
+@@ -487,7 +552,7 @@ TYPED_TEST(ParquetWriterChronoTypeTest, Chronos)
+   CUDF_TEST_EXPECT_TABLES_EQUAL(expected, result.tbl->view());
+ }
+ 
+-TYPED_TEST(ParquetWriterChronoTypeTest, ChronosWithNulls)
++TYPED_TEST(ParquetWriterTimestampTypeTest, TimestampsWithNulls)
+ {
+   auto sequence = cudf::detail::make_counting_transform_iterator(
+     0, [](auto i) { return ((std::rand() / 10000) * 1000); });
+@@ -500,7 +565,7 @@ TYPED_TEST(ParquetWriterChronoTypeTest, ChronosWithNulls)
+ 
+   auto expected = table_view{{col}};
+ 
+-  auto filepath = temp_env->get_temp_filepath("ChronosWithNulls.parquet");
++  auto filepath = temp_env->get_temp_filepath("TimestampsWithNulls.parquet");
+   cudf::io::parquet_writer_options out_opts =
+     cudf::io::parquet_writer_options::builder(cudf::io::sink_info{filepath}, expected);
+   cudf::io::write_parquet(out_opts);
+diff --git a/python/cudf/cudf/tests/test_parquet.py b/python/cudf/cudf/tests/test_parquet.py
+index 2ac1dfda344..d3eceeddc10 100644
+--- a/python/cudf/cudf/tests/test_parquet.py
++++ b/python/cudf/cudf/tests/test_parquet.py
+@@ -2280,6 +2280,8 @@ def test_parquet_writer_statistics(tmpdir, pdf, add_nulls):
+         # pandas which interferes with series.max()/min()
+         for t in TIMEDELTA_TYPES:
+             pdf["col_" + t] = pd.Series(np.arange(len(pdf.index))).astype(t)
++        # pyarrow can't read values with non-zero nanoseconds
++        pdf["col_timedelta64[ns]"] = pdf["col_timedelta64[ns]"] * 1000
+ 
+     gdf = cudf.from_pandas(pdf)
+     if add_nulls:
+@@ -2662,3 +2664,57 @@ def test_parquet_writer_zstd():
+     else:
+         got = pd.read_orc(buff)
+         assert_eq(expected, got)
++
++
++def test_parquet_writer_time_delta_physical_type():
++    df = cudf.DataFrame(
++        {
++            "s": cudf.Series([1], dtype="timedelta64[s]"),
++            "ms": cudf.Series([2], dtype="timedelta64[ms]"),
++            "us": cudf.Series([3], dtype="timedelta64[us]"),
++            # 4K because Pandas/pyarrow don't support non-zero nanoseconds
++            # in Parquet files
++            "ns": cudf.Series([4000], dtype="timedelta64[ns]"),
++        }
++    )
++    buffer = BytesIO()
++    df.to_parquet(buffer)
++
++    got = pd.read_parquet(buffer)
++    expected = pd.DataFrame(
++        {
++            "s": ["00:00:01"],
++            "ms": ["00:00:00.002000"],
++            "us": ["00:00:00.000003"],
++            "ns": ["00:00:00.000004"],
++        },
++        dtype="str",
++    )
++    assert_eq(got.astype("str"), expected)
++
++
++def test_parquet_roundtrip_time_delta():
++    num_rows = 12345
++    df = cudf.DataFrame(
++        {
++            "s": cudf.Series(
++                random.sample(range(0, 200000), num_rows),
++                dtype="timedelta64[s]",
++            ),
++            "ms": cudf.Series(
++                random.sample(range(0, 200000), num_rows),
++                dtype="timedelta64[ms]",
++            ),
++            "us": cudf.Series(
++                random.sample(range(0, 200000), num_rows),
++                dtype="timedelta64[us]",
++            ),
++            "ns": cudf.Series(
++                random.sample(range(0, 200000), num_rows),
++                dtype="timedelta64[ns]",
++            ),
++        }
++    )
++    buffer = BytesIO()
++    df.to_parquet(buffer)
++    assert_eq(df, cudf.read_parquet(buffer))

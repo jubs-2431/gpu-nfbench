@@ -1,0 +1,12 @@
+{
+  "body": "Hi folks, wondering if there are any plans to add top-level dtypes for MX (https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf) to triton, specifically e8m0 and fp4x2? I saw that the new Blackwell tutorial is using `uint8` for these.\n \nWe recently added `torch.float8_e8m0fnu` to PyTorch (https://github.com/pytorch/pytorch/pull/147466), and are planning to add fp4 soon (https://github.com/pytorch/pytorch/issues/146414).  We are also thinking about a triton integration via torchinductor, and wanted to ask about your plans for representing these dtypes in triton.",
+  "closed_at": null,
+  "comments": 14,
+  "created_at": "2025-02-28T00:04:53Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/6054",
+  "labels": [],
+  "number": 6054,
+  "state": "open",
+  "title": "Microscaling dtypes in triton?",
+  "updated_at": "2025-07-11T03:21:10Z"
+}

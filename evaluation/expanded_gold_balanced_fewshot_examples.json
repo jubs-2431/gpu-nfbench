@@ -1,0 +1,968 @@
+{
+  "crash_compile": [
+    {
+      "id": "GNF-0080-d86cbc25",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] cudf-polars streaming-mode broadcast bug\ngithub_labels: bug\nissue_body_excerpt: Claude-generated description of the issue and repro: ``` \"\"\"Minimal repro: cudf-polars streaming-mode broadcast bug for `with_columns(pl.lit(<numpy_array>))` at >~1M rows. Setup: polars==1.38.1, cudf==26.04, on NVIDIA L40 / Ubuntu 22.04, CUDA 12.x Symptom: RuntimeError: Cannot broadcast columns of length nrows=N to target_length=N/2 Trigger: A LazyFrame whose `with_columns` adds a literal column built from a Series/numpy array of the same length as the source (i.e. a row-aligned column literal, not a scalar `pl.lit(value)`). At >~1M rows the streaming executor partitions the upstream into halves but does not partition the literal alongside; the subsequent broadcast then sees a full-length column being placed into a half-length partition and raises. Workaround: pl.GPUEngine(executor=\"in-memory\") # skips the streaming code path \"\"\" from __future__ import annotations import numpy as np import polars as pl def make_lf(n: int) -> pl.LazyFrame: return pl.LazyFrame({ \"key\": np.random.default_rng(0).integers(0, 100, size=n, dtype=np.int32), }).with_columns( pl.lit(np.arange(n, dtype=np.uint64)).alias(\"var_id\"), ) def try_collect(n: int, executor: str) -> str: engine = pl.GPUEngine(raise_on_fail=True, executor=executor) try: df = make_lf(n).collect(engine=engine) return f\"OK ({df.height} rows)\" except RuntimeError as e: return f\"FAIL: {e}\" if __name__ == \"__main__\": print(\"Polars:\", ...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "integers(0, 100, size=n, dtype=np",
+        "is_true_numerical_failure": "unclear",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0023-93595bc9",
+      "input": "repository: cupy/cupy\ntitle: `cupyx.scipy.special.erfcx` not working\ngithub_labels: contribution welcome|cat:numpy-compat|prio:medium\nissue_body_excerpt: ### Description I am running the following code using CuPy which crashes with the message: ``` Traceback (most recent call last): File \"/content/test-cupy-func.py\", line 21, in <module> w = wofz_gpu(z) ^^^^^^^^^^^ File \"/content/test-cupy-func.py\", line 15, in wofz_gpu return erfcx(-1j * z_gpu) ^^^^^^^^^^^^^^^^^^ File \"cupy/_core/_kernel.pyx\", line 1340, in cupy._core._kernel.ufunc.__call__ File \"cupy/_core/_kernel.pyx\", line 1660, in cupy._core._kernel._Ops.guess_routine TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx ``` ### To Reproduce ```py import cupy as cp from cupyx.scipy.special import erfcx def wofz_gpu(z) -> cp.ndarray: \"\"\"Compute the complex Faddeeva function on GPU for complex128 inputs. Args: z: Array-like input (NumPy or CuPy). Converted to CuPy complex128. Returns: CuPy array (complex128) containing w(z). \"\"\" z_gpu = cp.asarray(z, dtype=cp.complex128) return erfcx(-1j * z_gpu) if __name__ == \"__main__\": # Example: everything remains on GPU. z = cp.array([1.0 + 2.0j, -0.5 + 0.25j, 3.0 - 1.0j], dtype=cp.complex128) w = wofz_gpu(z) print(\"Input dtype:\", z.dtype) print(\"Output dtype:\", w.dtype) print(\"Output (GPU array):\", w) from scipy.special import wofz import numpy as np z = cp.asnumpy(z) # Move to CPU for SciPy w = wofz(z) print(\"Input dtype:\", z.dtype) print(\"Output dtype:\", w.dtype) print(\"Output (CPU array)...\ncomments_excerpt: Made a custom implementation that can deal with complex number arguments. [CuPy complex specials](https://github.com/dutta-alankar/cupy_complex_scpecials.git) Might be useful, but, right now, it is standalone and not integrated directly into CuPy. Thanks for reporting. I think xsf already has the complex overload. @steppi do you think you can guide @dutta-alankar to plumb it through? \ud83d\ude42 > Thanks for reporting. I think xsf already has the complex overload. [@steppi](https://github.com/steppi) do you think you can guide [@dutta-alankar](https://github.com/dutta-alankar) to plumb it through? \ud83d\ude42 Sure. I should have some time to help in around 10 days. > > Thanks for reporting. I think xsf already has the complex overload. [@steppi](https://github.com/steppi) do you think you can guide [@dutta-alankar](https://github.com/dutta-alankar) to plumb it through? \ud83d\ude42 > > Sure. I should have some time...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "guess_routine TypeError: Wrong type ((<class 'numpy",
+        "is_true_numerical_failure": "unclear",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "EGNF1000-0740-6d63996e",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] fillna with dataframe containing list dtypes fails\ngithub_labels: bug|0 - Backlog|Python\nbody_excerpt: **Describe the bug** fillna with dataframe containing list dtypes fails . **Steps/Code to reproduce bug** ```python3 import cudf s1 = cudf.Series(['game', 'game', None,None,None]) s2 = cudf.Series([[1], [1], None,None,None]) df = cudf.DataFrame({'_TYPE_':s1, 'h':s2}) c1 = cudf.Series([None,None, 'user', 'user', 'user']) c2 = cudf.Series([None, None, [2], [2], [2]]) subdf = cudf.DataFrame({'_TYPE_':c1, 'h':c2}) df.fillna(subdf) ``` ```python3 --------------------------------------------------------------------------- TypeError Traceback (most recent call last) Cell In [23], line 9 7 c2 = cudf.Series([None, None, [2], [2], [2]]) 8 subdf = cudf.DataFrame({'_TYPE_':c1, 'h':c2}) ----> 9 df.fillna(subdf) File /datasets/vjawa/miniconda3/envs/cugraph_dgl_dev/lib/python3.9/contextlib.py:79, in ContextDecorator.__call__.<locals>.inner(*args, **kwds) 76 @wraps(func) 77 def inner(*args, **kwds): 78 with self._recreate_cm(): ---> 79 return func(*args, **kwds) File /datasets/vjawa/miniconda3/envs/cugraph_dgl_dev/lib/python3.9/site-packages/cudf/core/indexed_frame.py:1842, in IndexedFrame.fillna(self, value, method, axis, inplace, limit) 1837 @_cudf_nvtx_annotate 1838 def fillna( 1839 self, va...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "python3 --------------------------------------------------------------------------- TypeError Traceback (most recent call last) Cell In [23], line 9 7 c2 = cudf.Series([None, None, [2], [2], [2]]) 8 subdf = cudf.DataFrame({'_TYPE_':c1, 'h':",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "EGNF1000-0302-95537cbd",
+      "input": "repository: cupy/cupy\ntitle: CURAND_STATUS_INITIALIZATION_FAILED\ngithub_labels: issue-checked\nbody_excerpt: ### Description Not sure this is actually a bug. We started having this error after a driver upgrade. ```python Traceback (most recent call last): File \"/opt/rh/rh-python36/root/usr/lib64/python3.6/runpy.py\", line 193, in _run_module_as_main \"__main__\", mod_spec) File \"/opt/rh/rh-python36/root/usr/lib64/python3.6/runpy.py\", line 85, in _run_code exec(code, run_globals) File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/spacy/__main__.py\", line 4, in <module> setup_cli() File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/spacy/cli/_util.py\", line 71, in setup_cli command(prog_name=COMMAND) File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/click/core.py\", line 829, in __call__ return self.main(*args, **kwargs) File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/click/core.py\", line 782, in main rv = self.invoke(ctx) File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/click/core.py\", line 1259, in invoke return _process_result(sub_ctx.command.invoke(sub_ctx)) File \"/opt/pythenv/envs/default/lib64/python3.6/site-packages/click/core.py\", line 1066, in invoke return ctx.invoke(self.callback, **ctx.params) File \"/opt/pythenv/envs/de...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "CURAND_STATUS_INITIALIZATION_FAILED ### Description Not sure this is actually a bug.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen|precision_tolerance"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "EGNF1000-0300-ae0dbb2d",
+      "input": "repository: apache/tvm\ntitle: [Bug] compile error\ngithub_labels: type: bug|needs-triage\nbody_excerpt: /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.h:116:8: error: unknown type name 'hipblasDatatype_t'; did you mean 'hipblasDiagType_t'? 116 | inline hipblasDatatype_t GetHipBlasDataType(DLDataType type) { | ^~~~~~~~~~~~~~~~~ | hipblasDiagType_t /data/richard/rocm-all-libs-build/rocm-install/include/hipblas/hipblas.h:259:3: note: 'hipblasDiagType_t' declared here 259 | } hipblasDiagType_t; | ^ In file included from /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.cc:23: /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.h:120:16: error: cannot initialize return object of type 'hipblasDiagType_t' with an rvalue of type 'hipDataType' 120 | return HIPBLAS_R_8I; | ^~~~~~~~~~~~ /data/richard/rocm-all-libs-build/rocm-install/include/hipblas/hipblas.h:25874:22: note: expanded from macro 'HIPBLAS_R_8I' 25874 | #define HIPBLAS_R_8I HIP_R_8I | ^~~~~~~~ In file included from /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.cc:23: /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.h:122:16: error: cannot initialize return object of type 'hipblasDiagType_t' with an r...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[Bug] compile error /home/richard/data/tvm-build/tvm/src/runtime/contrib/hipblas/hipblas_utils.h:116:8: error: unknown type name 'hipblasDatatype_t'; did you mean 'hipblasDiagType_t'?",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "apache/tvm"
+    },
+    {
+      "id": "EGNF1000-0295-dd1d05fb",
+      "input": "repository: triton-lang/triton\ntitle: Error running 06-fused-attention.py\ngithub_labels: help wanted\nbody_excerpt: Hi, I just compiled the newest master branch and tried to run `06-fused-attention.py` in tutorial by uncommenting the last line ``` bench_flash_attention.run(save_path='.', print_data=True) ``` However, I got these errors when running it: ``` Traceback (most recent call last): File \"06-fused-attention.py\", line 359, in <module> bench_flash_attention.run(save_path='.', print_data=True) File \"/work_1a/nyn/pkgs/triton/python/triton/testing.py\", line 308, in run self._run(bench, save_path, show_plots, print_data) File \"/work_1a/nyn/pkgs/triton/python/triton/testing.py\", line 263, in _run ret = self.fn(**x_args, **{bench.line_arg: y}, **bench.args) File \"06-fused-attention.py\", line 343, in bench_flash_attention ms = triton.testing.do_bench(fn, percentiles=None, warmup=warmup, rep=rep) File \"/work_1a/nyn/pkgs/triton/python/triton/testing.py\", line 137, in do_bench fn() File \"06-fused-attention.py\", line 342, in <lambda> fn = lambda: o.backward(do, retain_graph=True) File \"/data/home/nyn/miniconda3/envs/efm/lib/python3.8/site-packages/torch/_tensor.py\", line 396, in backward torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs) File \"/data/home/nyn/minicon...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Traceback (most recent call last): File \"06-fused-attention.py\", line 359, in <module> bench_flash_attention.run(save_path='.', print_data=True) File \"/work_1a/nyn/pkgs/triton/python/triton/testing.py\", line 308, in run self._run(bench, sa",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "EGNF1000-0291-7d9edfa8",
+      "input": "repository: cupy/cupy\ntitle: Failed to install with `poetry add cupy`\ngithub_labels: issue-checked\nbody_excerpt: ### Description Attempting to install with `poetry add cupy` in a near empty project (`poetry new spiky`) outputs a very large number of warnings and errors which ultimately leads to it failings to install. I've attached the full output as a zipped text file ([temp.zip](https://github.com/user-attachments/files/20714309/temp.zip)). I will highlight some key snippets but the full output is too large to be copied and pasted here. It starts with: ```text PS C:\\Users\\Jonathan\\Documents\\spiky> poetry add cupy Using version ^13.4.1 for cupy Updating dependencies Resolving dependencies... (0.1s) Package operations: 1 install, 0 updates, 0 removals - Installing cupy (13.4.1): Failed PEP517 build of a dependency failed Backend subprocess exited when trying to invoke build_wheel ``` and ends with: ```text Note: This error originates from the build backend, and is likely not a problem with poetry but one of the following issues with cupy (13.4.1) - not supporting PEP 517 builds B:build\\temp.win-amd64-cpython-313\\Release\\cupy\\cuda\\thrust.cp313-win_amd64.lib | LINK : fatal error LNK1104: cannot open file 'python313t.lib' | error: command 'C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Com...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Failed to install with `poetry add cupy` ### Description Attempting to install with `poetry add cupy` in a near empty project (`poetry new spiky`) outputs a very large number of warnings and errors which ultimately leads to it failings to i",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "EGNF1000-0290-12f94739",
+      "input": "repository: cupy/cupy\ntitle: Failed to import CuPy\ngithub_labels: cat:bug\nbody_excerpt: ### Description After installing cupy, the following error occurs when loading cupy: \\>>> import cupy Traceback (most recent call last): File \"/home/zhhuo/rl_llm_py_product/venv/lib64/python3.9/site-packages/cupy/__init__.py\", line 17, in <module> from cupy import _core # NOQA File \"/home/zhhuo/rl_llm_py_product/venv/lib64/python3.9/site-packages/cupy/_core/__init__.py\", line 3, in <module> from cupy._core import core # NOQA ImportError: libcudart.so.12: cannot open shared object file: No such file or directory The above exception was the direct cause of the following exception: Traceback (most recent call last): File \"<stdin>\", line 1, in <module> File \"/home/zhhuo/rl_llm_py_product/venv/lib64/python3.9/site-packages/cupy/__init__.py\", line 19, in <module> raise ImportError(f''' ImportError: ================================================================ Failed to import CuPy. If you installed CuPy via wheels (cupy-cudaXXX or cupy-rocm-X-X), make sure that the package matches with the version of CUDA or ROCm installed. On Linux, you may need to set LD_LIBRARY_PATH environment variable depending on how you installed CUDA/ROCm. On Windows, try setting CUDA_PATH environment varia...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Failed to import CuPy ### Description After installing cupy, the following error occurs when loading cupy: \\>>> import cupy Traceback (most recent call last): File \"/home/zhhuo/rl_llm_py_product/venv/lib64/python3.9/site-packages/cupy/__ini",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "cupy/cupy"
+    }
+  ],
+  "dtype_casting": [
+    {
+      "id": "GNF-0161-43f5b312",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Unable to write `timedelta64[s]` type correctly with parquet writer\ngithub_labels: bug|0 - Backlog|libcudf|cuIO\nissue_body_excerpt: **Describe the bug** Only when we have `timedelta64[s]` dtype for a column, the parquet writer seems to be writing it as a `timedelta64[ms]` column which is leading both cudf & pyarrow parquet readers to pickup the column type incorrectly. **Steps/Code to reproduce bug** Follow this guide http://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports to craft a minimal bug report. This helps us reproduce the issue you're having and resolve the issue more quickly. ```python In [1]: import cudf In [3]: df = cudf.DataFrame({\"seconds\": cudf.Series([1234, 3456, 32442], dtype='timedelta64[s]')}) In [4]: df Out[4]: seconds 0 0 days 00:20:34 1 0 days 00:57:36 2 0 days 09:00:42 In [5]: df.dtypes Out[5]: seconds timedelta64[s] dtype: object In [6]: df.to_parquet(\"a\") In [7]: cudf.read_parquet(\"a\") Out[7]: seconds 0 0 days 00:20:34 1 0 days 00:57:36 2 0 days 09:00:42 In [8]: cudf.read_parquet(\"a\").dtypes Out[8]: seconds timedelta64[ms] # Should be timedelta64[s] dtype: object In [9]: import pyarrow as pa In [10]: pa.parquet.read_table(\"a\") Out[10]: pyarrow.Table seconds: time32[ms] not null # Should be time32[s] ---- seconds: [[00:20:34.000,00:57:36.000,09:00:42.000]] # If we now try to write & read using pyarrow the dtype stays intact: In [11]: pa_table = df.to_arrow() In [12]: pa_table Out[12]: pyarrow.Table seconds: duration[s] ---- seconds: [[1234,3456,32442]] In [13]: pa.parqu...\ncomments_excerpt: Maybe a related PR previously worked on similar issue: https://github.com/rapidsai/cudf/pull/11854 [a_cudf.zip](https://github.com/rapidsai/cudf/files/11537765/a_cudf.zip) [a_pyarrow.zip](https://github.com/rapidsai/cudf/files/11537766/a_pyarrow.zip) This seems to be a problem where libcudf is not writing `datetime64[s]` or `timedelta64[s]` correctly. My testing shows that libcudf is also not roundtripping it faithfully: ``` import pyarrow as pa import cudf for type in [ 'timedelta64[s]', 'timedelta64[ms]', 'timedelta64[us]', 'timedelta64[ns]', 'datetime64[s]', 'datetime64[ms]', 'datetime64[us]', 'datetime64[ns]', ]: df = cudf.DataFrame({\"s\": cudf.Series([1234, 3456, 32442], dtype=type)}) df.to_parquet(\"a\") df2 = cudf.read_parquet(\"a\") df3 = pa.parquet.read_table(\"a\") print(df['s'].dtype, df2['s'].dtype, df3['s'].type) ``` output timedelta64[s] **timedelta64[ms] time32[ms]** timedelta...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "cuIO **Describe the bug** Only when we have `timedelta64[s]` dtype for a column, the parquet writer seems to be writing it as a `timedelta64[ms]` column which is leading both cudf & pyarrow parquet readers to pickup the ",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0149-305f23bb",
+      "input": "repository: jax-ml/jax\ntitle: CUDNN dot_product_attention fails in JAX CUDA13\ngithub_labels: bug|NVIDIA GPU\nissue_body_excerpt: ### Description jax.nn.dot_product_attention fails on cudnn backend in JAX 0.7.2 CUDA 13. Here's a quick repro: ```python import jax import jax.numpy as jnp qkv = jax.random.normal(jax.random.PRNGKey(42), (2, 8192, 4, 128), dtype=jnp.bfloat16) flash_attention_output = jax.nn.dot_product_attention( query=qkv, key=qkv, value=qkv, implementation='cudnn', is_causal=True, ) ``` This piece of code produces the following error: ``` Traceback (most recent call last): File \"/nfs/nest/program/scalax/cuda13/repro.py\", line 5, in <module> flash_attention_output = jax.nn.dot_product_attention( ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/home/young/miniforge3/envs/jax_cuda13/lib/python3.12/site-packages/jax/_src/nn/functions.py\", line 1238, in dot_product_attention out = cudnn_dot_product_attention( ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/home/young/miniforge3/envs/jax_cuda13/lib/python3.12/site-packages/jax/_src/cudnn/fused_attention_stablehlo.py\", line 2060, in dot_product_attention output = _dot_product_attention( ^^^^^^^^^^^^^^^^^^^^^^^ File \"/home/young/miniforge3/envs/jax_cuda13/lib/python3.12/site-packages/jax/_src/cudnn/fused_attention_stablehlo.py\", line 1219, in _dot_product_attention output = _dot_product_attention_fwd( ^^^^^^^^^^^^^^^^^^^^^^^^^^^ File \"/home/young/miniforge3/envs/jax_cuda13/lib/python3.12/site-packages/jax/_src/cudnn/fused_attention_stablehlo.py\", line 443, in _dot_produ...\ncomments_excerpt: @young-geng do you know what is the cudnn version here? cudnn 9.12 is the first version to support CUDA 13. > [@young-geng](https://github.com/young-geng) do you know what is the cudnn version here? cudnn 9.12 is the first version to support CUDA 13. The CUDNN version is 9.14 (91400 from `check_cudnn_version()`) I don't have immediate access to RTX 5090 rn, could you run again with env ` CUDNN_FRONTEND_LOG_FILE=fe.log CUDNN_FRONTEND_LOG_INFO=1 CUDNN_LOGLEVEL_DBG=3 CUDNN_LOGDEST_DBG=be.log` and attach the logs here? also could you check if your cudnn is built with CUDA 13.0. In general, I see cudart version != nvrtc version being the most common issue for cases which work on 12 TK but not on 13 TK, meaning that even CUDA runtime version is 13 but cuDNN is built with older version. > I don't have immediate access to RTX 5090 rn, could you run again with env ` CUDNN_FRONTEND_LOG_FILE=fe....",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "PRNGKey(42), (2, 8192, 4, 128), dtype=jnp",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0125-29346792",
+      "input": "repository: numba/numba\ntitle: NumPy 1.24 support\ngithub_labels: Task|numpy\nissue_body_excerpt: This is an issue stub to track support for NumPy 1.24. Anticipated release date (guessing based on previous release cadence) will be sometime near the end of 2022. Items to address: - [ ] `np.MachAr` removal: https://github.com/numpy/numpy/pull/22638 - [ ] Additional ufunc methods `resolve_dtypes()` and `_resolve_dtypes_and_context()`: https://github.com/numpy/numpy/pull/22422 - [ ] Specifying a timedelta dtype for the `sum()` method of arrays is no longer allowed: https://github.com/numpy/numpy/pull/22540 - [ ] Removal of `np.bool` - [ ] Removal of `np.float` - [ ] Some changes to exception messages we replicate (see `numba.tests.test_mathlib.TestMathLib.test_hypot`)\ncomments_excerpt: Need to accommodate: https://github.com/numpy/numpy/pull/22638 Need to update ufunc loop selection WRT https://github.com/numpy/numpy/pull/22422 (#8538 tracks). I've local patches for both those issues (not PR-ready, but having a quick test). Will push a branch if my local testing goes OK. Branch is here (very simple workarounds for now!): https://github.com/gmarkall/numba/tree/np-124 Errors with my branch at present: ``` ====================================================================== ERROR: test_sum_axis_dtype_kws (numba.tests.test_array_methods.TestArrayMethods) [Testing np.sum with timedelta64[M] input and timedelta64[M] output ] test sum with axis and dtype parameters over a whole range of dtypes ---------------------------------------------------------------------- Traceback (most recent call last): File \"/home/gmarkall/numbadev/numba/numba/tests/test_array_methods.py\", li...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "com/numpy/numpy/pull/22422 - [ ] Specifying a timedelta dtype for the `sum()` method of arrays is no longer allowed: https://github",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "async_race_ordering|reduction_accumulation|api_semantics"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0119-84e3156c",
+      "input": "repository: triton-lang/triton\ntitle: how to use numeric literal in fp16\ngithub_labels: \nissue_body_excerpt: code like this ```python qk = tl.zeros([BLOCK_M, BLOCK_N], dtype=tl.float16) for ...: qk += tl.where(mask, tl.dot(q, k, out_dtype=tl.float16), 0.0) ``` would trigger ```text AssertionError('initial value for `qk` is of type <[64, 64], fp16>, but the then block redefines it as <[64, 64], fp32>') ``` So how to represent numeric literals in fp16 or other type? Besides, why `tl.where` does not maintain type consistence of the two candidates?\ncomments_excerpt: What are the data types of q and k? > What are the data types of q and k? fp16 ``` if a_ty.is_fp32() or b_ty.is_fp32(): return tl.float32 ``` I think you have to explicitly specify that 0.0 is float16 in this case > ``` > if a_ty.is_fp32() or b_ty.is_fp32(): > return tl.float32 > ``` > > I think you have to explicitly specify that 0.0 is float16 in this case Yes\uff0cI wonders how to. Is there some special suffix to specify this is a float16 `0.0` like `0.0f, 0.0F, ...`? Oh I get it, maybe `tl.constexpr(0.0).to(tl.float16)` is okay. Have you solved it? > Oh I get it, maybe `tl.constexpr(0.0).to(tl.float16)` is okay. No. I cannot find a way to express numeric literal in fp16. I got through it with `tl.full(shape, value, dtype)`. After all, a tensor with all the same values is not expensive to use.",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "how to use numeric literal in fp16",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|reduction_accumulation|api_semantics"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0113-e024c338",
+      "input": "repository: cupy/cupy\ntitle: Create a numpy_cupy_allclose with `NULP` (or similar) mechanism\ngithub_labels: cat:enhancement|prio:medium\nissue_body_excerpt: While the current ability to pass a dict of dtypes to `rtol=` and `atol=` is nice, in practice it is used pretty rarely meaning that double precision routines are often tested with the same precision as single precision ones. This is mostly fine, since correctness errors should still fail, but it gives very little with respect to testing expected higher precision of `double` versions. I think it would be helpful to add a testing mechanism based on `assert_array_almost_equal_nulp`. Or something similar to it, maybe an integer meaning a multiple of the `finfo(...).eps` or so.\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "prio:medium While the current ability to pass a dict of dtypes to `rtol=` and `atol=` is nice, in practice it is used pretty rarely meaning that double precision routines are often tested with the same precision as singl",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "reduction_accumulation|api_semantics|environment_configuration"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0105-bbfb9d59",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Dask_cudf merge function returns too few rows\ngithub_labels: bug|Python|dask\nissue_body_excerpt: **Describe the bug** The dask_cudf merge functions returns too few rows when both the dtype of the column being merged on is mismatched (eg: `int64` on the left and `int32` on the right) _and_ when `npartitions>1` **Steps/Code to reproduce bug** Here's a reproducer showing that when the dtype is mismatched the number of rows returned is dependent on the number of partitions in the dataframes being merged: ```python import cupy as cp import cudf import dask_cudf dfa = cudf.DataFrame({\"a\":cp.random.randint(0,100,100000), \"b\":cp.random.normal(size=100000)}) dfb = cudf.DataFrame({\"a\":cp.random.randint(0,100,100000), \"c\":cp.random.normal(size=100000)}) dfa[\"a\"] = dfa[\"a\"].astype(\"int32\") dfb[\"a\"] = dfb[\"a\"].astype(\"int64\") ddfa = dask_cudf.from_cudf(dfa, npartitions=4) ddfb = dask_cudf.from_cudf(dfb, npartitions=4) print(\"npartitions:\") print(\"left: {}\".format(ddfa.npartitions)) print(\"right: {}\".format(ddfb.npartitions)) print(\"Number of rows in merge result:\") print(len(ddfa.merge(ddfb, how=\"inner\", on=\"a\"))) print(\"*\"*30) ddfa = ddfa.repartition(npartitions=3) ddfb = ddfb.repartition(npartitions=3) print(\"npartitions:\") print(\"left: {}\".format(ddfa.npartitions)) print(\"right: {}\".format(ddfb.npartitions)) print(\"Number of rows in merge result:\") print(len(ddfa.merge(ddfb, how=\"inner\", on=\"a\"))) print(\"*\"*30) ddfa = ddfa.repartition(npartitions=2) ddfb = ddfb.repartition(nparti...\ncomments_excerpt: Thanks for triaging and raising this @ChrisJar . I can confirm that i can reproduce this on my end too. Smaller minimal example for anyone interested. ```python import numpy as np import cudf import dask_cudf df_a = cudf.DataFrame({'a':[1, 2, 3, 4, 5], 'b':[0]*5}) df_a['a']=df_a['a'].astype(np.int32) df_b = cudf.DataFrame({'a':[5, 4, 3, 2, 1], 'c':[1]*5}) df_b['a']=df_b['a'].astype(np.int64) print(\"cudf\\n\",df_a.merge(df_b)) print(\"--\"*10) ddf_a = dask_cudf.from_cudf(df_a, npartitions=4) ddf_b = dask_cudf.from_cudf(df_b, npartitions=4) print(\"dask_cudf\\n\",ddf_a.merge(ddf_b).compute()) ``` ``` cudf a b c 0 1 0 1 1 2 0 1 2 3 0 1 3 4 0 1 4 5 0 1 -------------------- dask_cudf a b c 0 3 0 1 0 1 0 1 ``` Also note that this work with `dask_pandas` . ```python import numpy as np import pandas as pd import dask.dataframe df_a = pd.DataFrame({'a':[1, 2, 3, 4, 5], 'b':[0]*5}) df_a['a']=df_a['a']...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "ug** The dask_cudf merge functions returns too few rows when both the dtype of the column being merged on is mismatched (eg: `int64` on the left and `int32",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "async_race_ordering|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0081-5786ae97",
+      "input": "repository: jax-ml/jax\ntitle: Pallas Tutorial outputs RESOURCE_EXHAUSTED (Reopen)\ngithub_labels: bug|pallas\nissue_body_excerpt: ### Description #20008 persists. Opening a new issue, as I can't re-open the old one. The same goes for the matmul code in the [design doc](https://github.com/google/jax/blob/85cb16936c39e9b25326c21cfed19a28fc9ca643/docs/pallas/design.md), after fixing the typos to be ```PYTHON @partial(jax.jit, static_argnames=[\"block_shape\", \"activation\"]) def matmul(x, y, *, block_shape, activation): block_m, block_n, block_k = block_shape fused_matmul = pl.pallas_call(partial(matmul_kernel, block_k=block_k, activation=activation), grid=(2, 2), out_shape=jax.ShapeDtypeStruct((x.shape[0], y.shape[1],), jnp.float32), in_specs=[pl.BlockSpec(lambda i, j: (i, 0), (block_m, x.shape[1])), pl.BlockSpec(lambda i, j: (0, j), (y.shape[0], block_n))], out_specs=pl.BlockSpec(lambda i, j: (i, j), (block_m, block_n))) return fused_matmul(x, y) ``` Similarly, reducing the matrix size (as mentioned in the original post) to 128x128 masks the issue, but shouldn't be necessary on a DGX-H100. ### System info (python version, jaxlib version, accelerator, etc.) Reproduced on two systems (DGX-H100, local PC), with and without docker, with 0.4.25 and 0.4.23. Attaching one set of versions below: ``` jax 0.4.23 jax-triton 0.1.4 jaxlib 0.4.23+cuda12.cudnn89 nvidia-cublas-cu12 12.3.4.1 nvidia-cuda-cupti-cu12 12.3.101 nvidia-cuda-nvcc-cu12 12.3.107 nvidia-cuda-nvrtc-cu12 12.3.107 nvidia-cuda-runtime-cu12 12.3.101 nvid...\ncomments_excerpt: Unfortunately, even when reducing the matrix size to 128x128, a plain matmul kernel yields a maximal relative difference of 4.6x with the matmul example from the getting-started codebase. ```PYTHON import jax from functools import partial from jax.experimental import pallas as pl from jax import numpy as jnp import numpy as np # jax.config.update(\"jax_default_matmul_precision\", jax.lax.Precision.HIGHEST) def matmul_kernel(x_ref, y_ref, z_ref): z_ref[...] = x_ref[...] @ y_ref[...] def matmul(x: jax.Array, y: jax.Array): return pl.pallas_call(matmul_kernel, out_shape=jax.ShapeDtypeStruct((x.shape[0], y.shape[1]), x.dtype), grid=(2, 2), in_specs=[pl.BlockSpec(lambda i, j: (i, 0), (x.shape[0] // 2, x.shape[1])), pl.BlockSpec(lambda i, j: (0, j), (y.shape[0], y.shape[1] // 2))], out_specs=pl.BlockSpec(lambda i, j: (i, j), (x.shape[0] // 2, y.shape[1] // 2)))(x, y) k1, k2 = jax.random.split...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "dtype), grid=(2, 2), in_specs=[pl",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0077-892468a4",
+      "input": "repository: triton-lang/triton\ntitle: triton 3.0.0 got FP8 GEMM precision issue with CUDA sm89\ngithub_labels: \nissue_body_excerpt: ## The problem FP8 GEMM result not right: ![image](https://github.com/user-attachments/assets/5a0f6973-1f4d-4287-b602-f33fa5cc799d) ## How to reproduce * the code: see below * triton version: 3.0.0 * CUDA version: 12.4 * machine: L20 ```python # replace https://github.com/triton-lang/triton/blob/main/python/tutorials/03-matrix-multiplication.py#L373-L389 with this(only input value and shape changed) TORCH_HAS_FP8 = hasattr(torch, \"float8_e5m2\") if TORCH_HAS_FP8 and is_cuda(): torch.manual_seed(0) a = torch.randn((512, 8192), device=\"cuda\", dtype=torch.float16) b = torch.randn((512, 8192), device=\"cuda\", dtype=torch.float16) a = a.to(torch.float8_e5m2) # pre-transpose b for efficiency. b = b.T b = b.to(torch.float8_e5m2) a.fill_(1/32) b.fill_(3) triton_output = matmul(a, b) torch_output = torch.matmul(a.to(torch.float16), b.to(torch.float16)) print(f\"triton_output_with_fp8_inputs={triton_output}\") print(f\"torch_output_with_fp8_inputs={torch_output}\") if torch.allclose(triton_output, torch_output, atol=0.125, rtol=0): print(\"\u2705 Triton and Torch match\") else: print(\"\u274c Triton and Torch differ\") import sys sys.exit(0) ``` triton is installed by pip: ![image](https://github.com/user-attachments/assets/336ee8d1-d541-40a7-85c0-0d42b98024a8) ## More the same code passes the check and has no such issue for H800 + CUDA 12.4\ncomments_excerpt: Is there any progress on the issue? \ud83d\udc40 maybe it's because ada fp8 implementation has no non-fast accumulation.",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "0 got FP8 GEMM precision issue with CUDA sm89 ## The problem FP8 GEMM result not right: ![image](https:/",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "triton-lang/triton"
+    }
+  ],
+  "nan_inf": [
+    {
+      "id": "GNF-0170-78e2d436",
+      "input": "repository: cupy/cupy\ntitle: `cupy.mod` behaves differntly with `numpy.mod` on `inf`\ngithub_labels: cat:bug|prio:low\nissue_body_excerpt: ### Description `cupy.mod` behaves differntly with `numpy.mod` on `inf`. ### To Reproduce ```py import cupy as cp import numpy as np print(np.mod(np.array(1.), np.array(np.inf))) print(cp.mod(cp.array(1.), cp.array(cp.inf))) ``` Output: ```py 1.0 nan ``` ### Installation Wheel (`pip install cupy-***`) ### Environment ``` OS : Linux-6.8.0-49-generic-x86_64-with-glibc2.35 Python Version : 3.10.12 CuPy Version : 13.3.0 CuPy Platform : NVIDIA CUDA NumPy Version : 2.1.0 SciPy Version : 1.13.1 Cython Build Version : 0.29.36 Cython Runtime Version : 0.29.37 CUDA Root : /usr/local/cuda nvcc PATH : /usr/local/cuda/bin/nvcc CUDA Build Version : 12060 CUDA Driver Version : 12040 CUDA Runtime Version : 12060 (linked to CuPy) / 12020 (locally installed) CUDA Extra Include Dirs : [] cuBLAS Version : 120201 cuFFT Version : 11008 cuRAND Version : 10303 cuSOLVER Version : (11, 5, 2) cuSPARSE Version : 12101 NVRTC Version : (12, 2) Thrust Version : 200600 CUB Build Version : 200600 Jitify Build Version : <unknown> cuDNN Build Version : None cuDNN Version : None NCCL Build Version : None NCCL Runtime Version : None cuTENSOR Version : None cuSPARSELt Build Version : None Device 0 Name : NVIDIA GeForce RTX 4070 Laptop GPU Device 0 Compute Capability : 89 Device 0 PCI Bus ID : 0000:01:00.0 ``` ### Additional Information As [numpy doc](https://numpy.org/doc/2.0/reference/generated/numpy.mod.html) ...\ncomments_excerpt: `cupy.mod` is just a variable alias for calling the `cupy.remainder` function. We would need to change the remainder function for the inclusion of inf.",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "mod` on `inf` ### Description `cupy",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0147-77cef7ab",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Json reader is not correctly inferring a float column with a specific type of scientific notation\ngithub_labels: bug|libcudf|Python|cuIO\nissue_body_excerpt: **Describe the bug** Json reader doesn't seem to be inferring the dtype of a column which has floating values. It appears to be inferred as `object` dtype. The only different I see with resepect to other float columns being inferred correctly is the difference in scientific notation, i.e., `34.3e+09` is being inferred correctly but `34.3e+304` is not. **Steps/Code to reproduce bug** Attachment(Just rename the file to `temp.parquet` and load): [temp.parquet.zip](https://github.com/rapidsai/cudf/files/5426479/temp.parquet.zip) ```python >>> import pandas as pd >>> import cudf >>> pdf = pd.read_parquet('temp.parquet') >>> pdf 0 1 2 3 4 5 6 0 2.250622e+09 -6.494446e+307 -9.164551e+12 6735604693236 -119.0 1.0 -3.826755e+12 1 2.035766e+09 NaN -2.369047e+12 7574969090271 NaN NaN -5.743424e+12 2 1.939400e+09 -1.145175e+308 7.534900e+12 3628042478826 28.0 NaN -5.231790e+12 3 1.871836e+09 1.556428e+307 2.206686e+12 767786704906 -62.0 NaN NaN 4 9.807541e+07 NaN 1.257964e+12 -7919323897153 -96.0 NaN NaN 5 3.067252e+09 -1.678511e+308 4.968256e+12 5588109998021 -37.0 0.0 NaN 6 3.540629e+09 -1.599954e+307 1.356411e+12 8960674970810 NaN 1.0 -2.679076e+12 7 NaN NaN NaN -8605861346425 82.0 NaN 8.262327e+12 8 1.528666e+09 NaN NaN -3517479000461 40.0 0.0 NaN 9 NaN 9.992153e+307 -5.273377e+12 7975279208357 13.0 1.0 -2.294980e+12 >>> pdf.dtypes 0 float64 1 float64 2 float64 3 int64 4 float64 5 fl...\ncomments_excerpt: This issue has been marked rotten due to no recent activity in the past 90d. Please close this issue if no further response or action is needed. Otherwise, please respond with a comment indicating any updates or changes to the original issue and/or confirm this issue still needs to be addressed. This issue has been marked stale due to no recent activity in the past 30d. Please close this issue if no further response or action is needed. Otherwise, please respond with a comment indicating any updates or changes to the original issue and/or confirm this issue still needs to be addressed. This issue will be marked rotten if there is no activity in the next 60d.",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "035766e+09 NaN -2",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0141-cd3b65ac",
+      "input": "repository: numba/numba\ntitle: Support numpy.isnan and numpy.isnat in cuda.jit kernels\ngithub_labels: feature_request|CUDA|good first issue\nissue_body_excerpt: Currently math.isnan is supported for checking for `NaN`s, but there's no way to check for `NaT`s easily short of viewing as an int64 and comparing to the minimum value (-9223372036854775808). Simple reproducer: ```python import numpy as np from numba import cuda test_in = cuda.to_device(np.array([1,None,3], dtype='datetime64[ms]')) test_out = cuda.to_device(np.array([1,2,3])) @cuda.jit def test_datetime_nat(in_array, out_array): i = cuda.grid(1) if i < in_array.size: if np.isnat(in_array[i]): out_array[i] = 100 test_datetime_nat.forall(test_in.size)(test_in, test_out) ```\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "good first issue Currently math.isnan is supported for checking for `NaN`s, but there's no way to check for `NaT`s easily short of viewing as an int64 and comparing to the minimum value (-9223372036854775808).",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0128-c6e2544c",
+      "input": "repository: cupy/cupy\ntitle: [Discussion needed] Add ways to write `inf` and `nan` as literals in fused and user-defined kernels.\ngithub_labels: cat:feature\nissue_body_excerpt: ### Description Currently, literals such as `inf` and `nan` cannot be used inside a `ElementwiseKernel` or a fused kernel. To test whether that's the case, we can write down the following code. ```python @cp.fuse def test_inf_nan(arr): arr[:] = cp.inf arr[:] = cp.nan arr[:] = 0 return arr print(test_inf_nan(cp.linspace(0,4,10))) ``` The compiler will spit out two errors regarding the fused kernel: ``` error: identifier \"inf\" is undefined error: a value of type \"double (*)(const char *)\" cannot be used to initialize an entity of type \"const double\" ``` However, I am not so sure whether this is something that could be useful. Here are some of the pros and cons that I can think of: pros: - Functions that accept those literals will have a easier time when being fused. Such as `cupy.clip`. - It might be helpful for compile-time-optimizations. cons: - The actual use case for those literals is quite scarce. - We can always store those literals inside a variable and pass them into the kernels when calling the functions instead. Any suggestions would be appreciated, thanks in advance! ### Additional Information _No response_\ncomments_excerpt: I guess it's only a matter of float-to-string conversion here. https://github.com/cupy/cupy/blob/3ac3f9d6bffac33bccd236fc4306a2f83b90c4f5/cupy/_core/fusion.pyx#L121-L122 Maybe @asi1024 can better follow up on this :) @berryboy2012 Thank you for your reporting. Fixed in #7122! Thanks for the help! Another question though, if for some reason I want to write `inf` or `nan` inside a kernel such as `cupy.RawKernel`, do I just use things like `CUDART_INF_F` `CUDART_NAN_F` etc as mentioned in https://github.com/cupy/cupy/blob/master/cupy/_core/include/cupy/math_constants.h ? Yes, these constants should be available if you `#include <math_constants.h>` in RawKernrel.",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "[Discussion needed] Add ways to write `inf` and `nan` as literals in fused and user-defined kernels.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0126-2958d273",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] DataFrame.replace([inf, -inf], nan) mutates categorical column codes\ngithub_labels: bug\nissue_body_excerpt: **Describe the bug** For a cuDF DataFrame containing a categorical column with a custom `CategoricalDtype`, calling: ```python gdf.replace([cp.inf, -cp.inf], cp.nan) ``` can mutate the categorical column values/codes, even though the categorical column does not contain `inf` or `-inf`. This appears to happen when the categorical column has a larger number of categories. In the repro below, the categorical codes are deterministically changed after calling `DataFrame.replace`. **Steps/Code to reproduce bug** ```python import cudf import cupy as cp import numpy as np np.random.seed(42) n = 5 categories = [f\"cat_{i}\" for i in range(20)] category_values = np.random.choice(categories, size=n) gdf = cudf.DataFrame({ \"cat_col\": category_values, \"num_col\": np.random.uniform(0, 100, n).astype(cp.float64), }) gdf.loc[1:2, \"num_col\"] = cp.inf cat_dtype = cudf.CategoricalDtype( categories=sorted(categories), ordered=False, ) gdf[\"cat_col\"] = gdf[\"cat_col\"].astype(cat_dtype) before = gdf[\"cat_col\"].copy() before_codes = gdf[\"cat_col\"].cat.codes.copy() gdf2 = gdf.replace([cp.inf, -cp.inf], cp.nan) print(\"before:\") print(before) print(before_codes) print(\"after:\") print(gdf2[\"cat_col\"]) print(gdf2[\"cat_col\"].cat.codes) assert gdf2[\"cat_col\"].equals(before) assert gdf2[\"cat_col\"].cat.codes.equals(before_codes) ``` **Expected behavior** Only `num_col` should change. The categorical column `ca...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "replace([inf, -inf], nan) mutates categorical column codes **Describe the bug** For a cuDF DataFrame con",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0117-5c96ad33",
+      "input": "repository: jax-ml/jax\ntitle: `jax.scipy.special.ndtri` edge case behavior\ngithub_labels: bug\nissue_body_excerpt: ### Description `jax.scipy.special.ndtri` returns positive infinity when the argument exceeds `1.0` and negative infinity when the argument is less than `0.0`. ```python3 from jax import numpy as jnp from jax.scipy.special import ndtri ndtri(jnp.asarray(-1.)) # Array(-inf, dtype=float32) ndtri(jnp.asarray(2.)) # Array(inf, dtype=float32) ``` It seems that it would be more appropriate to return NaN in these cases (as `scipy.special.ndtri`, `torch.special.ndtri`, etc. do). This came up when adding support for JAX as an array API backend in SciPy. For more information, please see scipy/scipy#20085. ### System info (python version, jaxlib version, accelerator, etc.) ``` jax: 0.4.23 jaxlib: 0.4.23 numpy: 1.25.2 python: 3.10.12 (main, Nov 20 2023, 15:14:05) [GCC 11.4.0] jax.devices (1 total, 1 local): [cuda(id=0)] process_count: 1 $ nvidia-smi Tue Mar 26 04:33:34 2024 +---------------------------------------------------------------------------------------+ | NVIDIA-SMI 535.104.05 Driver Version: 535.104.05 CUDA Version: 12.2 | |-----------------------------------------+----------------------+----------------------+ | GPU Name Persistence-M | Bus-Id Disp.A | Volatile Uncorr. ECC | | Fan Temp Perf Pwr:Usage/Cap | Memory-Usage | GPU-Util Compute M. | | | | MIG M. | |=========================================+======================+======================| | 0 Tesla T4 Off | 00000000:00...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": ")) # Array(-inf, dtype=float32) ndtri(jnp",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0106-69df058d",
+      "input": "repository: jax-ml/jax\ntitle: dot_product_attention triggers FloatingPointError in convert_element_type with float64 mask and debug_infs=True\ngithub_labels: bug\nissue_body_excerpt: ### Description `jax.nn.dot_product_attention` triggers a `FloatingPointError` when `jax.debug_infs(True)` is enabled. The inputs are all zeros with `float64` dtype, and the mask is a simple boolean mask. The expected attention output should be finite, but JAX reports an invalid `inf` value in `convert_element_type`. Minimal reproducible example: ``` import sys try: import jax import jax.numpy as jnp import numpy as np except ImportError as e: print(f\"missing dep: {e}\") sys.exit(2) def main() -> int: T, S, K, N, H = 5, 7, 3, 6, 11 mask = np.r_[:S] <= S // 2 try: jax.config.update(\"jax_enable_x64\", True) with jax.debug_infs(True): out = jax.nn.dot_product_attention( np.zeros((T, N, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), np.zeros((S, K, H), dtype=np.float64), mask=mask, ) out.block_until_ready() print(\"NOT REPRODUCED: no FloatingPointError with debug_infs=True\") return 1 except FloatingPointError as e: print(f\"BUG REPRODUCED: FloatingPointError triggered: {e}\") return 0 except Exception as e: print(f\"NOT REPRODUCED: different exception {type(e).__name__}: {e}\") return 1 if __name__ == \"__main__\": raise SystemExit(main()) ``` ### System info (python version, jaxlib version, accelerator, etc.) ``` WARNING:2026-05-07 00:33:38,915:jax._src.xla_bridge:794: An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back t...\ncomments_excerpt: Fix in #37457",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "ention output should be finite, but JAX reports an invalid `inf` value in `convert_element_type",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0102-5bd04adc",
+      "input": "repository: jax-ml/jax\ntitle: When calculating the loss, the input data does not contain NaN, but the output contains NaN\ngithub_labels: bug\nissue_body_excerpt: ### Description Please specify `cuda:0` at the very beginning. ```python import torch import numpy as np import os import jax import jax import jax.numpy as jnp from jax import ops as jops from jax.nn import one_hot, sigmoid from jax import lax import jax.scipy.special as sc import optax if \"CONTEXT_DEVICE_TARGET\" in os.environ and os.environ['CONTEXT_DEVICE_TARGET'] == 'GPU': devices = os.environ['CUDA_VISIBLE_DEVICES'].split(\",\") device = devices[-2] final_device = \"cuda:\" + device else: final_device = 'cpu' from network.cv.yolov4.yolov4_pytorch import YOLOV4CspDarkNet53_torch as yolov4_torch def loss_yolo_jax(): from network.cv.yolov4.yolov4_pytorch import yolov4loss_jax yolo_obj = yolov4loss_jax() return yolo_obj y_true_0 = np.load('./yolo_out[0][0].npy') yolo_out1 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[0][1].npy') yolo_out2 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[0][2].npy') yolo_out3 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[1][0].npy') yolo_out4 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[1][1].npy') yolo_out5 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[1][2].npy') yolo_out6 = torch.from_numpy(y_true_0).to(final_device) y_true_0 = np.load('./yolo_out[2][0].npy') yolo_out7 = torch.from_numpy(y_tr...\ncomments_excerpt: Is there a MVC? This code doesn't run for me > Is there a MVC? This code doesn't run for me > Is there a MVC? This code doesn't run for me Where can't run it, in the beginning final_device to set it yourself, you can delete ```python if \u201cCONTEXT_DEVICE_TARGET\u201d in os.environ and os.environ['CONTEXT_DEVICE_TARGET'] == 'GPU': devices = os.environ['CUDA_VISIBLE_DEVICES'].split(\u201c,\u201d). devices = os.environ['CUDA_VISIBLE_DEVICES'].split(\u201c,\u201d) device = devices[-2] final_device = \u201ccuda:\u201d + device else: final_device = 'cuda:\u201d + device final_device = 'cpu' ``` Translated with DeepL.com (free version) Hi @CZXIANGOvO \u2013 it's going to be hard to help with specifics here absent an MVC (also known as a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)). If you're able to re-work your example so that others can run it and see the same errors you are seeing, then ...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "When calculating the loss, the input data does not contain NaN, but the output contains NaN ### Description Please specify `cuda:0` at the ver",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "jax-ml/jax"
+    }
+  ],
+  "not_numerical_failure": [
+    {
+      "id": "GNF-0061-039345f1",
+      "input": "repository: pytorch/pytorch\ntitle: [inductor] [cpu] `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor\ngithub_labels: oncall: pt2|oncall: cpu inductor\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug **symptom**: `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor. Note that graph break can eliminate errors. I guess some optimization between `Embedding` and `index_copy` is processed incorrectly on CPP backend **codegen backend**: only CPP ```python import torch import torch.nn as nn import torch.nn.functional as F from torch._inductor import config config.fallback_random = True torch.set_grad_enabled(False) torch.manual_seed(0) class Model(torch.nn.Module): def __init__(self): super().__init__() self.embedding = torch.nn.Embedding(num_embeddings=10, embedding_dim=4) def forward(self, x, indices): x_embed = self.embedding(x) # torch._dynamo.graph_break() # graph break can eliminate errors out = torch.index_copy(x_embed, dim=1, index=indices, source=x_embed) return out model = Model() x = torch.randint(0, 10, (4,)) indices = torch.tensor([3, 1, 0, 2]) inputs = [x, indices] def run_test(model, inputs, device, backend): torch.manual_seed(0) model = model.to(device) inputs = [x.to(device) for x in inputs] if backend != \"eager\": model = torch.compile(model, backend=backend) torch.manual_seed(0) output = model(*inputs) return output device = 'cpu' output = run_test(model, inputs, device, 'eager') c_output = run_test(model, inputs, device, 'inductor') print(torch.allclose(output, c_output, rtol=1e-3, atol=1e-3)) print(torch.m...\ncomments_excerpt: This may be caused by the reinplace optimization. Under inductor, index_copy is lowered to index_put, and the reinplace.py further optimizes it into index_put_. However, the reinplace logic does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation. As a result, this causes a read-write aliasing issue. If we add a check to skip such cases, the op remains as index_put, which internally performs a clone(), and the result remains consistent. Please feel free to correct me if I'm mistaken. https://github.com/pytorch/pytorch/blob/178515d0ff6833c8e9221482b2a650ab31e00019/torch/_inductor/fx_passes/reinplace.py#L342-L350 Just curious, only the CPP backend uses `reinplace optimization`? Because Triton backend looks good in this case?",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "index_copy` outputs inconsistent results on cpu inductor ### \ud83d\udc1b Describe the bug **symptom**: `torch",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "EGNF1000-0764-6ee6b355",
+      "input": "repository: rapidsai/cudf\ntitle: [FEA] A `cudf.dtype` function similar to `np.dtype(...)`\ngithub_labels: feature request|Python\nbody_excerpt: It would be useful to have a`cudf.dtype(...)` function that takes an arbitrary dtype-like object and coerces it to a dtype that we can handle. Specifcally, it should be a superset of `np.dtype()`, but also handle Pandas extension types, as well as our own [dtypes](https://github.com/rapidsai/cudf/blob/branch-21.10/python/cudf/cudf/core/dtypes.py). Some examples: * Passing a NumPy-like dtype yields a `np.dtype()` instance: ```python cudf.dtype(np.dtype(\"int8\")) -> np.dtype(\"int8\") cudf.dtype(np.int8) -> np.dtype(\"int8\") cudf.dtype(np.float16) -> np.dtype(\"float32\") ``` * Passing a Pandas extension type yields a corresponding NumPy type (since we use NumPy dtypes for our own \"nullable\" types): ```python cudf.dtype(pd.Int8Dtype()) -> np.dtype(\"int8\") cudf.dtype(pd.StringDtype()) -> np.dtype(\"object\") ``` * Passing a string alias yields the appropriate type: ```python cudf.dtype(\"int8\") -> np.dtype(\"int8\") cudf.dtype(\"Boolean\") -> np.dtype(\"bool\") ``` * Passing Python builtin types works (just like `np.dtype`) ```python cudf.dtype(int) -> np.dtype(\"int64\") cudf.dtype(float) -> np.dtype('float64\") ``` * Passing a cuDF type works: ```python cudf.dtype(cudf.ListDtype(\"int64\")) -> cudf....",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[FEA] A `cudf.dtype` function similar to `np.dtype(...)` It would be useful to have a`cudf.dtype(...)` function that takes an arbitrary dtype-like object and coerces it to a dtype that we can handle.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "dtype_casting|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "EGNF1000-0585-e83587d7",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Series setitem raises for safe cases in pandas compatibility mode\ngithub_labels: bug|Python|cudf.pandas\nbody_excerpt: **Describe the bug** Series setitem raises/converts dtypes to incorrect type if an empty slice is passed to iloc. See example below. This is the cause of various failures, some of which are: ``` \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer0-val0]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer0-val1]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer1-val0]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer1-val1]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer2-val0]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer2-val1]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer3-val0]\", \"tests/series/indexing/test_indexing.py::test_setitem_empty_indexer[indexer3-val1]\", ``` **Steps/Code to reproduce bug** ```python In [1]: import pandas as pd In [2]: df = pd.DataFrame({'a':[1, 2], 'b':\"x\"}) In [3]: df Out[3]: a b 0 1 x 1 2 x In [4]: df.loc[[]] = 1.5 In [5]: df Out[5]: a b 0 1 x 1 2 x In [6]: import cudf In [7]: cudf.set_option(\"mode.pandas_compatible\", True) In [8]: gdf = cudf.from_pand...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[BUG] Series setitem raises for safe cases in pandas compatibility mode **Describe the bug** Series setitem raises/converts dtypes to incorrect type if an empty slice is passed to iloc. See example below. This is the cause of various failur",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "EGNF1000-0508-87d6352f",
+      "input": "repository: jax-ml/jax\ntitle: Support FP8 GEMM kernels which are already support in OpenXLA.\ngithub_labels: enhancement\nbody_excerpt: Please: Support FP8 GEMM kernels which are already support in OpenXLA. When I ran nsys profiler the code below, I found there are all `sm90_xmma_gemm_f16f16_f16f32_f32_nn_n_tilesize128x256x32_warpgroupsize2x1x1_execute_segment_k_off_kernel__5x_cublas` kernels when calculate dense layer. It should be fp8 tensor core kernel which is already supported in cublas and OpenXLA, but not running fp16 kernel and then convert data type. Test code: ```python import time import jax import jax.numpy as jnp import flax # dtype=jnp.float8_e4m3fn dtype=jnp.float8_e5m2 a = jnp.ones((4096,4096*8),dtype=dtype) ram_kernel_init=lambda key,shape,dtype:jax.nn.initializers.normal()(key,shape,jnp.float32).astype(dtype) dense=flax.linen.Dense(5120*16, use_bias=False, dtype=dtype, param_dtype=dtype, kernel_init=ram_kernel_init) w = dense.init(jax.random.PRNGKey(0), a) dense.apply(w,a) start = time.time() for i in range(2): dense.apply(w,a) end = time.time() print(\"time: \", end-start) def f(x): return dense.apply(w,x) impl = jax.xla_computation(f)(a) print(impl.as_hlo_text()) ``` - [x] Check for duplicate requests. - [x] Describe your goal, and if possible provide a code snippet with a motivating example.",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Support FP8 GEMM kernels which are already support in OpenXLA.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "compiler_codegen|dtype_casting|api_semantics"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "EGNF1000-0299-027dd47a",
+      "input": "repository: apache/tvm\ntitle: [Bug] build arm on windows broken\ngithub_labels: type: bug|needs-triage\nbody_excerpt: Thanks for participating in the TVM community! We use https://discuss.tvm.ai for any general usage questions and discussions. The issue tracker is used for actionable items such as feature proposals discussion, roadmaps, and bug tracking. You are always welcomed to post on the forum first :smile_cat: Issues that are inactive for a period of time may get closed. We adopt this policy so that we won't lose track of actionable issues that may fall at the bottom of the pile. Feel free to reopen a new one if you feel there is an additional problem that needs attention when an old one gets closed. ### Expected behavior sucess build on arm windows ### Actual behavior I want to try mlc-llm opencl backend on arm windows and when I try to compile tvm I get the error. C:/Users/Administrator/wbq/git/mlc-llm/mlc-llm/3rdparty/tvm/src/runtime/builtin_fp16.cc:46:18: error: dllimport cannot be applied to non-inline function definition 46 | TVM_DLL uint16_t __gnu_f2h_ieee (float a) I'm using llvm17, and when I was using msvc, I would get another error that said I had a compiler error. Can you help me look at the error When I use LLVM's Clang, the above error will burst, and the error will be repor...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "The issue tracker is used for actionable items such as feature proposals discussion, roadmaps, and bug tracking.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "dtype_casting|precision_tolerance|api_feature_request|compiler_codegen"
+      },
+      "repository": "apache/tvm"
+    },
+    {
+      "id": "GNF-0162-297471a6",
+      "input": "repository: jax-ml/jax\ntitle: vjp3 + array refs produce incorrect gradient\ngithub_labels: bug\nissue_body_excerpt: ### Description Hey, I'm very excited with introduction of vjp3 + array refs for zero-memory-overhead gradient accumulation in JAX. I've tried to implement it in my training codebase and noticed that loss curves on vjp3+refs doesn't match original baseline. After some digging into, I've noticed that the problem occurs only when using vjp3 in conjunction with array refs, using only vjp3 without mutable arrays perfectly matches the baseline. I've come up with the following repro to demonstrate the issue: ```python import jax import jax.numpy as jnp from jax._src.api import vjp3 # another prototype of a user-facing api for VJPs with refs import jax.ref import functools NUM_LAYERS = 3 EMB_SIZE = 4*1024 NUM_MUBATCHES = 5 MUBATCH_SIZE = 7 USE_ARRAY_REFS = True def mubatch_loss(Ws, xs, ys): # Inner loop: scan over layers act, _ = jax.lax.scan(lambda xs, W: (jnp.tanh(jnp.dot(xs, W)), None), xs, Ws) ys_pred = jnp.mean(act, axis=-1) return jnp.mean((ys - ys_pred) ** 2) def process_batch(Ws, xs_batch, ys_batch, use_array_refs=USE_ARRAY_REFS): if use_array_refs: grad_acc = jax.array_ref(jnp.zeros_like(Ws)) def process_mubatch(_, xs_ys): xs, ys = xs_ys loss, mubatch_vjp = vjp3(lambda Ws: mubatch_loss(Ws, xs, ys), Ws) mubatch_vjp.with_refs(grad_acc)(jnp.ones_like(loss)) return (), loss else: def process_mubatch(grad_acc, xs_ys): xs, ys = xs_ys loss, mubatch_grad = jax.value_and_grad(mubat...\ncomments_excerpt: @mattjj I thought the state-discharged jaxpr resulting from USE_ARRAY_REFS={false,true} didn't differ other than in that the gradient accumulator was fed directly into the loop state, but I might be wrong. Will take a look. After some digging into and noticing some weird patterns in gradient norm's difference looks like I figured it out - gradient over scanned function is inverse. simply replacing the `batch_grad = jax.ref.freeze(grad_acc)` with `batch_grad = jax.ref.freeze(grad_acc)[::-1]` solves the issue Final code snippet: ```python import jax import jax.numpy as jnp from jax._src.api import vjp3 # another prototype of a user-facing api for VJPs with refs import jax.ref import functools NUM_LAYERS = 5 EMB_SIZE = 8 NUM_MUBATCHES = 5 MUBATCH_SIZE = 7 USE_ARRAY_REFS = True def mubatch_loss(Ws, xs, ys): # Inner loop: scan over layers act, _ = jax.lax.scan(lambda xs, W: (jnp.tanh(jnp.d...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "vjp3 + array refs produce incorrect gradient ### Description Hey, I'm very excited with introduction of vjp3 + array refs fo",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0063-a5f90bd9",
+      "input": "repository: pytorch/pytorch\ntitle: User-defined way to hook into Inductor autotuning (+ custom op)\ngithub_labels: feature|triaged|module: custom-operators|oncall: pt2|module: inductor|module: pt2-dispatcher\nissue_body_excerpt: We've seen some use cases for this: 1) A user has a user-defined triton kernel vs a sequence of PyTorch operations. They want inductor to select the \"best\" one in the situation. 2) A custom operators has some knobs that are exposed to inductor (some tunable parameters). Thoughts? cc @chauhang @penguinwu @voznesenskym @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @ipiszy @yf225 @chenyang78 @kadeng @muchulee8 @ColinPeppler @amjames @desertfire @aakhundov @bdhirsh\ncomments_excerpt: cc @coconutruben who (I think) has some PRs to make the autotuning more hackable from the user side (although not quite in the directions listed above). cc @SamGinzburg as we discussed smth along the lines of 1. before. Thanks for tagging me @aakhundov! yeah we discussed an idea for a similar feature although maybe with a slightly different use case originally. I think the idea that we discussed was that if a user provided the equivalent PyTorch code for a user-defined Triton kernel it would allow inductor to potentially fuse the user-defined Triton kernel with some other operator (or as mentioned replace it with the PyTorch ops while autotuning). This was in the context of the \"user-defined + inductor-generated Triton kernel fusion\"-line of work. The main downside of this proposal IIRC was that the equivalent PyTorch code may not be expressed in a way that would lead to efficient cod...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "User-defined way to hook into Inductor autotuning (+ custom op)",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0029-5f61e128",
+      "input": "repository: rapidsai/cudf\ntitle: [QST] TypeError: Argument 'real' has incorrect type (expected numpy.ndarray, got ndarray)\ngithub_labels: question\nissue_body_excerpt: Problem comes from line 62 inside function `my_func_single`. Code: ``` import sys, os import numpy as np try: import cudf.pandas cudf.pandas.install() except: print('cudf.pandas load failed') from cudf.pandas.module_accelerator import disable_module_accelerator import pandas as pd from random import randint from datetime import datetime, timedelta, date from functools import partial from concurrent.futures import ProcessPoolExecutor as Pool from multiprocessing import set_start_method import talib as tl def data_generation(nRows: int): ################## unimportant, for reproducing purpose ################### # This function generates the dataframe obj, which has 5 columns, and the data are sorted by WorkingDay and Minute ascendingly my_df = pd.DataFrame(data={'WorkingDay': ['2019-01-02', '2018-01-02', '2019-05-02', '2020-01-02', '2021-01-02'], 'name': ['albert', 'alex', 'alice', 'ben', 'bob'], 'Minute': ['09:00:00', '09:20:00', '08:00:00', '07:00:00', '09:30:00'], 'aaa': np. random.rand(5), 'bbb': np. random.rand(5)}) my_df = pd.concat([my_df for i in range(int(nRows/5))], axis=0) my_df['WorkingDay'] = my_df['WorkingDay'].map(lambda x: (date(randint(2010,2020), randint(1,4), randint(1,5))).strftime('%Y-%m-%d')) my_df['Minute'] = np.random.permutation(my_df['Minute'].values) my_df = my_df.sort_values(by=['WorkingDay', 'Minute'], inplace=False).reset_index(drop=True,inplace=...\ncomments_excerpt: This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas. See the feature issue here: https://github.com/rapidsai/cudf/issues/15397 The broad problem is that because numpy has a C API, providing proxied objects like with do with pandas and cudf.pandas is more difficult. As a consequence, although when you call `to_numpy()` on a cudf.pandas Series you get something that behaves like a numpy array, we do not answer \"yes\" to the question `isinstance(numpy_like_thing, np.ndarray)`. I'm going to leave this open for a little while I look into #14537 > This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas. See the feature issue here: #15397 > > The broad problem is that because numpy has a C API, providing proxied objects like with do with pandas and cudf.pandas is more difficult. > > As a consequence, although when you cal...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "[QST] TypeError: Argument 'real' has incorrect type (expected numpy",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    }
+  ],
+  "overflow_underflow": [
+    {
+      "id": "GNF-0188-931dcb6c",
+      "input": "repository: pytorch/pytorch\ntitle: [CUDA] AdaptiveAvgPool2d: START_IND macro causes int32 overflow \u2192 OOB read\ngithub_labels: module: crash|module: nn|module: cuda|triaged|module: 64-bit|module: edge cases|bot-triaged\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug ```python import torch x = torch.randn(1, 1, 47, 1).cuda() torch.nn.AdaptiveAvgPool2d((67108864, 1))(x) # no exception, silent corruption ``` ``` ========= COMPUTE-SANITIZER OK torch.Size([5, 1, 67108864, 5]) ========= Invalid __global__ read of size 4 bytes ========= at 0x1830 in void at::native::<unnamed>::adaptive_average_pool<float>(const T1 *, T1 *, int, int, int, int, long, long, long) ========= by thread (0,0,0) in block (0,4,0) ========= Address 0x7b1ca6ffff84 is out of bounds ========= and is 124 bytes before the nearest allocation at 0x7b1ca7000000 of size 2,097,152 bytes ========= Saved host backtrace up to driver entry point at kernel launch time ========= Host Frame:cuLaunchKernel [0x39df25] ========= in /lib/x86_64-linux-gnu/libcuda.so.1 ========= Host Frame: [0x15aa8] ``` ## Suggested fix ```c // AdaptiveAveragePooling.cu line 29 #define START_IND(a,b,c) ((int64_t)(a) / (b) * (c) + ((int64_t)(a) % (b)) * (c) / (b)) ``` ### Versions Collecting environment information... PyTorch version: 2.7.1+cu126 Is debug build: False CUDA used to build PyTorch: 12.6 ROCM used to build PyTorch: N/A OS: Ubuntu 22.04.5 LTS (x86_64) GCC version: (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0 Clang version: 14.0.0-1ubuntu1.1 CMake version: version 4.0.3 Libc version: glibc-2.35 Python version: 3.10.12 (main, Jan 26 2026, 14:55:28) [GCC 11.4.0] (64-bit runtime) Pyt...\ncomments_excerpt: hey il take a look at this tomorrow Sure, feel free to take it!",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "[CUDA] AdaptiveAvgPool2d: START_IND macro causes int32 overflow \u2192 OOB read ### \ud83d\udc1b Describe the bug ```python import torch x = torch",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0177-39a0d983",
+      "input": "repository: pytorch/pytorch\ntitle: Installation of `pytorch==2.6.0+cu124` doesn't install `triton` and `nvidia` libraries\ngithub_labels: module: binaries|triaged|needs design\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug On ubuntu 22.04, if we run the following command: ``` pip3.11 install --no-cache-dir --find-links https://download.pytorch.org/whl/torch/ torch==2.6.0+cu124 ``` This installs PyTorch from: ``` https://download.pytorch.org/whl/cu124_full/torch-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl.metadata ``` and this doesn't install the `nvidia` libraries and `triton` that should be dependencies. Doing the same with `torch==2.5.1+cu124` does install the correct dependencies so this seems to be a regression. ### Versions ``` PyTorch version: 2.6.0+cu124 Is debug build: False CUDA used to build PyTorch: 12.4 ROCM used to build PyTorch: N/A OS: Ubuntu 22.04.4 LTS (x86_64) GCC version: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0 Clang version: Could not collect CMake version: Could not collect Libc version: glibc-2.35 Python version: 3.11.0rc1 (main, Aug 12 2022, 10:02:14) [GCC 11.2.0] (64-bit runtime) Python platform: Linux-5.15.0-101-generic-x86_64-with-glibc2.35 Is CUDA available: True CUDA runtime version: 12.4.131 CUDA_MODULE_LOADING set to: LAZY GPU models and configuration: GPU 0: NVIDIA A100-SXM4-80GB GPU 1: NVIDIA A100-SXM4-80GB GPU 2: NVIDIA A100-SXM4-80GB GPU 3: NVIDIA A100-SXM4-80GB GPU 4: NVIDIA A100-SXM4-80GB GPU 5: NVIDIA A100-SXM4-80GB GPU 6: NVIDIA A100-SXM4-80GB GPU 7: NVIDIA A100-SXM4-80GB Nvidia driver version: 535.129.03 cuDNN version: Probably one of ...\ncomments_excerpt: As per https://pytorch.org/get-started/locally/ Correct pip install command for CUDA 12.4 builds are: ``` pip3 install torch ``` or ``` pip install torch --index-url https://download.pytorch.org/whl/cu124 ``` This is related to Special Wheel built for Colab integration: https://github.com/googlecolab/colabtools/issues/5045#issue-2788233189 We need to strip from including this wheel: https://download.pytorch.org/whl/cu124_full/torch-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl#sha256=0851a56527529b135e1f44e6b5826effb8f6a19368d9eaba9104d94a7b21affc in the https://download.pytorch.org/whl/torch/index.html @atalman Do we have any document/notiion on what should/should not be included in `https://download.pytorch.org/whl/torch`? (I remember seeing an issue long time ago about those `+foobar` suffixes and how they are incompatible with some versions of potery/UV I.e. following should work ```...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "fected Vulnerability Retbleed: Not affected Vulnerability Spec rstack overflow: Mitigation; safe RET Vulnerability Spec store bypass: Mitigation; Speculative",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0143-8c373d44",
+      "input": "repository: triton-lang/triton\ntitle: Triton int64 overflow bug\ngithub_labels: enhancement\nissue_body_excerpt: To compute `(a * b) % c`, if `a * b` is greater than `max(int32_t)`, then the final result is incorrect. Reproducer: https://github.com/Jokeren/triton-samples/blob/main/int64-mod.py\ncomments_excerpt: You are right. I am aware of this problem -- just need to come up with a proper fix that doesn't affect performance (int64 are expensive on GPUs). Right now Triton directly translate to `llvm.mul`, which uses the 2-complements and overflows. Casting inputs to a bigger int type before multiplying is the way to do it but my incur some overhead. I have started working on a fix, which includes specializing kernels so that `get_program_id(dim)` returns int16 on small grids, which would remove the performance overhead in most cases that matter :) Found a workaround. We can use (a.to(int64) * b) / c to force a cast. Need to issue warnings on these statements.",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "Triton int64 overflow bug To compute `(a * b) % c`, if `a * b` is greater than `max(int32_t)`, then t",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0140-0369d89c",
+      "input": "repository: triton-lang/triton\ntitle: RuntimeError when running matrix mutliplication example : CUDA: Error- invalid ptx\ngithub_labels: \nissue_body_excerpt: Hello, First: Thank you for this great piece of work! I installed triton from `pip`. When I try to run the matrix multiplication example, I get the error: `` RuntimeError: CUDA: Error- invalid ptx `` GPU: GeForce GTX 1080 Ti Output of `nvcc --version`: ``` nvcc: NVIDIA (R) Cuda compiler driver Copyright (c) 2005-2020 NVIDIA Corporation Built on Tue_Sep_15_19:10:02_PDT_2020 Cuda compilation tools, release 11.1, V11.1.74 Build cuda_11.1.TC455_06.29069683_0 ``` And more details from pytorch `collect_env.py`: ``` PyTorch version: 1.9.0+cu111 CUDA used to build PyTorch: 11.1 OS: Debian GNU/Linux 10 (buster) (x86_64) GCC version: (Debian 8.3.0-6) 8.3.0 Libc version: glibc-2.28 Python version: 3.7.3 (default, Jan 22 2021, 20:04:44) [GCC 8.3.0] (64-bit runtime) Python platform: Linux-4.19.0-16-amd64-x86_64-with-debian-10.10 CUDA runtime version: 11.1.74 GPU models and configuration: GPU 0: GeForce GTX 1080 Ti Nvidia driver version: 455.32.00 ``` Full trace: ``` ------------------------------------------------------------ RuntimeError Traceback (most recent call last) <ipython-input-37-c179406deb17> in <module> 2 a = torch.randn((51, 51), device='cuda', dtype=torch.float16) 3 b = torch.randn((51, 51), device='cuda', dtype=torch.float16) ----> 4 c_0 = matmul(a, b, activation=None) 5 c_1 = torch.matmul(a, b) 6 print(c_0) <ipython-input-36-f7a6e3ad6d5f> in matmul(a, b, activation) 13 a,...\ncomments_excerpt: Hey! FP16 on Pascal GPUs is not supported. More generally compute capability < 70 is not supported, though you can make it work by changing the datatype to fp16 and using block sizes that don't overflow shared memory Thank you for your quick answer! I did not realize this GPU was having compute capabilites < 7.0 I tested with a GPU V100S-PCIE-32GB which has compute capabilities 7.0 It does not error anymore but the output of the multiplication is _often_ incorrect. `triton.testing.allclose` returns False and the result of the matmul changes even with the fixed seed... Hmm this is very odd, given that the CI happens on a V100 and reliably passes. Is it with a fresh clone of the repo? No, it is a pip install. For some reason, I actually had changed the matrix shape, which caused the error. With the initial shape, it is fine. I changed the example code to reapply the mm a second time: ``...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "ork by changing the datatype to fp16 and using block sizes that don't overflow shared memory Thank you for your quick answer! I did not realize this GPU was h",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0124-5e35db0b",
+      "input": "repository: pytorch/pytorch\ntitle: torch.fft.rfft: Unsupported dtype BFloat16\ngithub_labels: module: cuda|triaged|module: bfloat16|needs design|module: fft\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug ```py import torch x = torch.rand((16, 64, 256), dtype=torch.bfloat16, device='cuda') f = torch.fft.rfft(x) # RuntimeError: Unsupported dtype BFloat16 ``` In my use-case this fft operation is on very long sequences, so it would save a lot of memory! Using FP16 leads to instability issues, so I would prefer using BF16 instead. Are there any plans to support this? [It looks like cuFFT supports BF16 already...](https://docs.nvidia.com/cuda/cufft/index.html#bfloat16-precision-cufft-transforms) ### Versions <details> <summary>Versions</summary> ``` PyTorch version: 2.1.2+cu121 Is debug build: False CUDA used to build PyTorch: 12.1 ROCM used to build PyTorch: N/A OS: Ubuntu 22.04.3 LTS (x86_64) GCC version: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0 Clang version: 14.0.6 CMake version: version 3.28.1 Libc version: glibc-2.35 Python version: 3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0] (64-bit runtime) Python platform: Linux-6.5.0-14-generic-x86_64-with-glibc2.35 Is CUDA available: True CUDA runtime version: 12.1.105 CUDA_MODULE_LOADING set to: LAZY GPU models and configuration: GPU 0: NVIDIA GeForce GTX 1080 Ti GPU 1: NVIDIA GeForce GTX 1080 Ti GPU 2: NVIDIA GeForce RTX 3090 Nvidia driver version: 535.146.02 cuDNN version: Probably one of the following: /usr/lib/x86_64-linux-gnu/libcudnn.so.8.9.5 /usr/lib/x86_64-linux-gnu/libcudn...\ncomments_excerpt: After looking through the code, I guess we would need a new `complex32_bf16` type (similar to `CUDA_C_16BF`) to handle this. Either that or we keep converting between `float16` and `bfloat16`, which would probably destroy any advantage gained from `bfloat16`. As even `complex32` seems to not be completely supported, I'm not sure what the chances are `bfloat16` support will arrive soon. I found this old issue (https://github.com/pytorch/pytorch/issues/95100) that runs into a similar problem w.r.t. missing `complex32_bfloat16` support. @ezyang Would you still be open for adding such a new dtype? The main problem is we don't /really/ want to have to add kernels for the rest of everything that complex bfloat16 would ostensibly support. If you want us to put in some bindings for a SIZEx2 strided bfloat16 tensor to cufft, I think probably would be accepted though. I'm not exactly clear on t...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "affected Vulnerability Retbleed: Vulnerable Vulnerability Spec rstack overflow: Vulnerable Vulnerability Spec store bypass: Vulnerable Vulnerability Spectre v",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0109-5b3bb56e",
+      "input": "repository: triton-lang/triton\ntitle: Encountering FileNotFoundError while Compiling Triton Kernel in Distributed Training\ngithub_labels: \nissue_body_excerpt: During the process of distributed training, I encountered the following problem when compiling Triton kernels: ``` Traceback (most recent call last): ...... File \"/mnt/petrelfs/caoweihan/anaconda3/envs/deepspeed/lib/python3.10/site-packages/triton/compiler/compiler.py\", line 482, in compile metadata_group[ir_filename] = fn_cache_manager.put(next_module, ir_filename) File \"/mnt/petrelfs/caoweihan/anaconda3/envs/deepspeed/lib/python3.10/site-packages/triton/runtime/cache.py\", line 109, in put os.replace(temp_path, filepath) FileNotFoundError: [Errno 2] No such file or directory: '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' -> '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir' ``` The above error only occurs during distributed training (multi-process), and both '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' and '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir' files do exist. Given that the intermediate results across different processes are identical, I attempted to replace: ```python # copy from https://github.com/openai/triton/blob/main/python/triton/runtime/cache.py#L129 os.replace(temp_path, filepath) ``` with: ```python try...\ncomments_excerpt: +1 with this issue +1 @HIT-cwh @SolenoidWGT A fix would be making a customized `CacheManager` by setting `os.environ[\"TRITON_CACHE_MANAGER\"] = '...'`. Reference: https://github.com/openai/triton/blob/main/python/triton/runtime/cache.py. In this manager, we only put the files from rank 0 and make a barrier for all ranks, e.g.: ``` class ModifiedCacheManager(FileCacheManager): def put(self, data, filename, binary=True) -> str: if not self.cache_dir: raise RuntimeError(\"Could not create or locate cache dir\") binary = isinstance(data, bytes) if not binary: data = str(data) assert self.lock_path is not None filepath = self._make_path(filename) # Random ID to avoid any collisions rnd_id = random.randint(0, 1000000) # we use the PID incase a bunch of these around so we can see what PID made it pid = os.getpid() # use tempfile to be robust against program interruptions # *** Rank 0 only *** i...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0082-a3d486ce",
+      "input": "repository: cupy/cupy\ntitle: import cupy 9.0.0a2 doesn't work on Windows 10\ngithub_labels: \nissue_body_excerpt: Thank you for using and contributing to CuPy! If your issue is a **request for support in using CuPy**, please post it on [Stack Overflow](https://stackoverflow.com/questions/tagged/cupy) or Google Groups ([en](https://groups.google.com/forum/#!forum/cupy) / [ja](https://groups.google.com/forum/#!forum/cupy-ja)). Developer team members are monitoring questions on these channels. If it is a bug report, please include the following information: * Conditions (you can just paste the output of `python -c 'import cupy; cupy.show_config()'`) - CuPy version **9.0.0a2** - OS/Platform: **Windows 10** - CUDA version: **10.2** - cuDNN/NCCL version (if applicable) * Code to reproduce ```python >>> import cupy ``` * Error messages, stack traces, or logs ```bash Traceback (most recent call last): File \"<stdin>\", line 1, in <module> File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\__init__.py\", line 57, in <module> from cupy import fft # NOQA File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\__init__.py\", line 1, in <module> from cupy.fft._fft import fft # NOQA File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\_fft.py\", line 9, in <module> from cupy.fft import config File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\config.py\", line 13, in <module> from cupy.fft._callback import get_current_callback_manager # NOQA File \"cupy\\f...\ncomments_excerpt: Hi @ma-sadeghi Thanks for reporting! This is surprising, could you help me debug it? I need to know the output of the following snippet on Windows: ```python import sysconfig sysconfig.get_config_var('CXX') ``` @leofang Thank you for your quick reply. It returns `None`. If it helps, when I install the stable version, `import cupy` works fine. Thanks! Right, this callback module is new, so it's not included in the v8 releases. I will push a fix. btw forgot to ask, though this is irrelevant of my planned fix (as the callback doesn't work on Windows anyway): Any chance you know the path to an MSVC compiler installed on your system, if there's one? I couldn't make sense of the output you reported. I don't think I have MSVC compiler installed Thank you for the feedback, we'll soon make a release including this fix as v9.0.0a3. > I don't think I have MSVC compiler installed Hi @ma-sadeghi I...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "is a **request for support in using CuPy**, please post it on [Stack Overflow](https://stackoverflow",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0048-07821d1f",
+      "input": "repository: cupy/cupy\ntitle: floating point errors\ngithub_labels: st:awaiting-author|issue-checked\nissue_body_excerpt: Odd discrepancies for simple maths without overflow potential where there shouldn't really be disagreement ```bash nvidia-docker run --rm -it cupy/cupy /bin/bash -c python ``` ```python import numpy as np import cupy as cp b = np.arange(1e3, dtype='float64'); b2=(b**2-b-5)/2.0 a = cp.arange(1e3, dtype='float64'); a2=(a**2-a-5)/2.0 print((a2==cp.array(b2)).mean().item()) 0.937 # should be 1 cp.show_config() ``` ``` CuPy Version : 7.0.0a1 CUDA Root : /usr/local/cuda CUDA Build Version : 9020 CUDA Driver Version : 10010 CUDA Runtime Version : 9020 cuDNN Build Version : 7402 cuDNN Version : 7402 NCCL Build Version : 2402 NCCL Runtime Version : 2402 ```\ncomments_excerpt: In CuPy v7.0.0a1, `**` operator calls `pow` function. https://github.com/cupy/cupy/blob/v7.0.0a1/cupy/core/_routines_math.pyx#L403-L417 Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#standard-functions > pow(x,y) | 2 (full range) We will change `**` to avoid using `pow`, so this behavior may change in the future (next) releases. (see #2204 for details) Didn't realise you wanted a response. #2204 is unrelated. Other libraries such as tensorflow-gpu have put effort into ensuring results match the cpu implementions (e.g. convolving with tensorflow or tensorflow-gpu or numpy produces the same values, even including precision errors)",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "floating point errors Odd discrepancies for simple maths without overflow potential where there shouldn't really be disagreement ```bash nvidia-docker ru",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    }
+  ],
+  "performance_only": [
+    {
+      "id": "EGNF1000-0994-14243767",
+      "input": "repository: rapidsai/cuml\ntitle: [FEA] Support cuDF dataframes with Decimal dtype columns as input to estimators\ngithub_labels: feature request|Tracker|inactive-30d|inactive-90d\nbody_excerpt: As cuDF continues to implement support for Decimal columns, we should accept Decimal columns as part of dataframe inputs to cuML estimators. In PySpark, we can do this with the following: ```python from pyspark.sql import SparkSession from pyspark.ml.classification import LogisticRegression from pyspark.sql.types import DecimalType from pyspark.ml.feature import VectorAssembler \u200b spark = SparkSession.builder \\ .master(\"local\") \\ .getOrCreate() \u200b df = (spark .createDataFrame([ [0.2,1,2.2,5,1], [0.3,2,3.2,4,0], [0.9,2,4.2,4,1] ], schema=[\"a\",\"b\",\"c\",\"d\", \"label\"]) ) \u200b df = (df .withColumn('a', df['a'].cast('decimal(3,2)')) .withColumn('b', df['b'].cast('decimal(3,2)')) .withColumn('c', df['c'].cast('decimal(3,2)')) .withColumn('d', df['d'].cast('decimal(3,2)')) ) \u200b assembler = VectorAssembler( inputCols=[\"a\", \"b\", \"c\", \"d\"], outputCol=\"features\") \u200b training = assembler.transform(df) \u200b lr = LogisticRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8) lrModel = lr.fit(training) print(\"Coefficients: \" + str(lrModel.coefficients)) print(\"Intercept: \" + str(lrModel.intercept)) Coefficients: [0.0,0.0,0.0,0.0] Intercept: 0.6931471805599453 ``` ```python import cudf import cuml impor...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[FEA] Support cuDF dataframes with Decimal dtype columns as input to estimators As cuDF continues to implement support for Decimal columns, we should accept Decimal columns as part of dataframe inputs to cuML estimators.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "dtype_casting|api_feature_request"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0354-b6ebc2c3",
+      "input": "repository: triton-lang/triton\ntitle: [\"RFC\"] Adding end-to-end regression tests\ngithub_labels: \nbody_excerpt: Looking through the repository, I was not able to find a place where to put end-to-end regression tests. I think it'd be great to take advantage of the reproducers provided in bug reports to add new regression tests. E.g., the code in issue #1601 would make a great regression test to accompany PR #1602. Is this already done anywhere and did I miss it? If not, is there any reason why we should not do that?",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[\"RFC\"] Adding end-to-end regression tests Looking through the repository, I was not able to find a place where to put end-to-end regression tests.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "EGNF1000-0353-7cb4c65c",
+      "input": "repository: numba/numba\ntitle: Slow prange/bad parallelization\ngithub_labels: performance|performance - run time\nbody_excerpt: Bug: `prange` does not lead to good parallelization. The following example runs an expensive function 100 times. * The serial implementation takes **0.39 seconds**. * A parallelized implementation with `multiprocessing.pool.ThreadPool` takes **0.068 seconds**. * A parallelized implementation with `prange` takes **0.23 seconds**. This is much worse than the ThreadPool implementation. Windows Task Manager shows 100% utilization on all 8 cores, so some kind of parallelization is happening. It just isn't working very well. ### Self-contained example ```python import time import numpy as np from multiprocessing.pool import ThreadPool from numba import njit, prange pool = ThreadPool() # This is an expensive function that will be called many times in parallel. # It is purely CPU-bound, so it should parallelize well. @njit(cache=True, nogil=True) def i_am_expensive(x, n): for _ in range(n): x = (x * 16553 + 27077) % 31849 return x # Baseline with multiprocessing.pool.ThreadPool, which parallelizes well. def call_expensive_function_many_times_threadpool(m, n): params = [(x, n) for x in np.arange(m)] return sum(pool.starmap(i_am_expensive, params)) # Calling function in parallel with pran...",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Slow prange/bad parallelization Bug: `prange` does not lead to good parallelization.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "EGNF1000-0273-5a5cd273",
+      "input": "repository: rapidsai/cuml\ntitle: Update README to have performance best practices tips and clear call out to benchmarks notebook.\ngithub_labels: \nbody_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Update README to have performance best practices tips and clear call out to benchmarks notebook.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0272-3649d788",
+      "input": "repository: rapidsai/cuml\ntitle: Transition to new array input validation system\ngithub_labels: \nbody_excerpt: This issue is to implement a new array input validation/normalization approach. We'd like to: - Better match sklearn's validation checks and errors - Improve array ingest correctness and performance - Remove the usage of `CumlArray` from processing code, instead relying on `cupy`/`cupyx.scipy.sparse` as our internal container",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "We'd like to: - Better match sklearn's validation checks and errors - Improve array ingest correctness and performance - Remove the usage of `CumlArray` from processing code, instead relying on `cupy`/`cupyx.scipy.sparse` as our internal co",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0270-db8a3ff2",
+      "input": "repository: jax-ml/jax\ntitle: any suggestions on how to improve performance for gradient step with odeint?\ngithub_labels: \nbody_excerpt: I have a large system of coupled ODEs (~280x16). The loss computation, which involves solving odes (I am using odeint from experimental), takes 163ms. The gradient step takes ~33 secs. It is a relatively straightforward parameter estimation problem. Except, one of the parameters is modeled by a neural network as a function of some input parameter.",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "any suggestions on how to improve performance for gradient step with odeint?",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "EGNF1000-0269-690306f7",
+      "input": "repository: jax-ml/jax\ntitle: `jax.numpy.linalg.norm(A, 2)` uses lax svd, which is slower than eigh\ngithub_labels: enhancement\nbody_excerpt: Is there a good reason to call the full SVD? [source](https://github.com/jax-ml/jax/blob/main/jax/_src/numpy/linalg.py#L1202) It's much slower than computing the operator 2-norm using the textbook method.",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "`jax.numpy.linalg.norm(A, 2)` uses lax svd, which is slower than eigh Is there a good reason to call the full SVD?",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "EGNF1000-0245-8db67c3b",
+      "input": "repository: triton-lang/triton\ntitle: High kernel launch overhead\ngithub_labels: \nbody_excerpt: Hey team, I'm suffering high triton kernel launch overhead. Here's my nsys capture: ![CleanShot 2023-11-10 at 10 28 53](https://github.com/openai/triton/assets/552990/d62f05c8-b00c-43fc-b1c7-0680a9988706) The kernel executes around 80us on GPU, however, it takes 220us to launch, which causes the performance degration. I've checked the kernel is compiled and cached, so it's pure triton jit launcher overhead. I noticed there's a [tracker issue](https://github.com/openai/triton/issues/1237) in the community, I wonder if there are any updates? Besides, I wonder if [aot compiler](https://github.com/openai/triton/blob/main/python/triton/tools/compile.py) could be a help? PS: in my scenario, the cuda graph is not an option (due to dynamic shaped inputs), so I have to reduce the kernel launch time.",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "High kernel launch overhead Hey team, I'm suffering high triton kernel launch overhead.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "triton-lang/triton"
+    }
+  ],
+  "precision_tolerance": [
+    {
+      "id": "GNF-0146-2fe36ae1",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] src/binaryop/binaryop.cpp.o compile failed jitify2 in cuda13\ngithub_labels: bug|libcudf\nissue_body_excerpt: **Describe the bug** It appears to be related to recent change https://github.com/rapidsai/cudf/pull/19561 cuda 12.9.1 pass the compilation, but cuda 13.0.0 failed below, ``` [2025-08-16T01:36:18.738Z] FAILED: CMakeFiles/cudf.dir/src/binaryop/binaryop.cpp.o [2025-08-16T01:36:18.738Z] /opt/rh/gcc-toolset-14/root/usr/bin/c++ -DBS_THREAD_POOL_ENABLE_PAUSE=1 -DCCCL_AVOID_SORT_UNROLL=1 -DCCCL_DISABLE_PDL -DCUB_DISABLE_NAMESPACE_MAGIC -DCUB_IGNORE_NAMESPACE_MAGIC_ERROR -DCUDA_API_PER_THREAD_DEFAULT_STREAM -DCUDF_LARGE_STRINGS_DISABLED -DCUDF_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_INFO -DCUDF_USE_PER_THREAD_DEFAULT_STREAM -DJITIFY_PRINT_LOG=0 -DKVIKIO_CUDA_FOUND -DKVIKIO_CUFILE_BATCH_API_FOUND -DKVIKIO_CUFILE_FOUND -DKVIKIO_CUFILE_STREAM_API_FOUND -DKVIKIO_CUFILE_VERSION_API_FOUND -DLIBCUDACXX_ENABLE_EXPERIMENTAL_MEMORY_RESOURCE -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_DISABLE_ABI_NAMESPACE -DTHRUST_FORCE_32_BIT_OFFSET_TYPE=1 -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -DTHRUST_IGNORE_ABI_NAMESPACE_ERROR -DZSTD_STATIC_LINKING_ONLY=0N -D_FILE_OFFSET_BITS=64 -I/home/jenkins/agent/workspace/jenkins-cudf_nightly-dev-github-1618-cuda13/cpp/build/_deps/dlpack-src/include -I/home/jenkins/agent/workspace/jenkins-cudf_nightly-dev-github-1618-cuda13/cpp/build/_deps/jitify-src -I/home/jenkins/agent/workspace/jenkins-cudf_nightly-dev-github-1618-cuda13/cpp/include -I/home/je...\ncomments_excerpt: cc @lamarrr Pending PR: https://github.com/NVIDIA/jitify/pull/147/ > Pending PR: [NVIDIA/jitify#147](https://github.com/NVIDIA/jitify/pull/147) hi @lamarrr what's the current status of the jitify update? thanks I'm now starting to introduce CUDA 13 CI here in `cudf`, and just observed the same thing there: https://github.com/rapidsai/cudf/pull/19768#issuecomment-3212084205 @pxLi ready to be merged Fix is up here: https://github.com/rapidsai/cudf/pull/19783",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "[BUG] src/binaryop/binaryop.cpp.o compile failed jitify2 in cuda13 bug|libcudf **Describe the bug** It appears to be related to recent change https://github.com/rapidsai/cudf/pull/19561 cuda 12.9.1 pass the compilation, ",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0065-e81a8790",
+      "input": "repository: numba/numba\ntitle: sum and np.sum() algorithm needs to catch up to improved upstream precision\ngithub_labels: feature_request\nissue_body_excerpt: This is a \"narrative\" type of bug report, aka \"search the code and compare\". No test cases are provided here. Python and NumPy has each changed their `sum()` implementations beyond ordinary linear summation. Specifically: * In https://github.com/python/cpython/issues/100425 (and linked, merged PRs), Python moves to a Neumaier algorithm over the previous naive summation. The slowdown was only 20%, which is probably because all the iterator stuff was taking most of the time... * In the above CPython issue it was mentioned that NumPy does a partial pairwise summation. This provides an improvement of precision in the average case for basically free. (A difference in order was previously noticed in https://github.com/numba/numba/issues/9819#issuecomment-2508969906.) ### Implementation considerations Neumaier is very serial because it has a loop-carried dependency. This can be ameliorated by computing partial sums, which also lends nicely to SIMD. That would introduce some difficulty in numeric reproduction *if* the lane count is dynamically determined. Doing it over the same lane count should always result in the same sequence of operations and be perfectly reproducible. Still, any performant choice (i.e. not 1) would produce results different from upstream. Pairwise is quite amenable to parallelization, from multi-node to multi-core to SIMD. There is again a possible reproducibi...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "sum() algorithm needs to catch up to improved upstream precision This is a \"narrative\" type of bug report, aka \"search the code and compare\"",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "EGNF1000-1000-ad891eb5",
+      "input": "repository: rapidsai/cuml\ntitle: [CI] SmoSolverTest failures in conda-cpp-tests (all environments)\ngithub_labels: bug|ci\nbody_excerpt: ## Summary Three SVM solver tests are failing in the C++ test suite for float precision. The failures occur across all conda-cpp-tests environments. **Failing test/component:** `SG_SVC_TEST` (SmoSolverTest/0) **Failure observed in:** - https://github.com/rapidsai/cuml/actions/runs/20170921300/job/57906774367?pr=7589 (ARM64, Ubuntu 22.04, A100) - https://github.com/rapidsai/cuml/actions/runs/20170921300/job/57906774395?pr=7589 (AMD64, Rocky Linux 8, L4) and many others ## Environment The failures are **independent of environment** ## Root Cause Analysis <!-- Root cause is unknown. -->",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[CI] SmoSolverTest failures in conda-cpp-tests (all environments) ## Summary Three SVM solver tests are failing in the C++ test suite for float precision.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "compiler_codegen"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0999-abb35ce7",
+      "input": "repository: rapidsai/cuml\ntitle: [QST] Mixed-Precision Support\ngithub_labels: \nbody_excerpt: Is mixed-precision or different datatypes supported? And if so, are there special additions necessary when training a model?",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[QST] Mixed-Precision Support Is mixed-precision or different datatypes supported?",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0998-e314dc05",
+      "input": "repository: rapidsai/cuml\ntitle: [BUG] Label-permutation invariance appears inconsistent for `homogeneity_score`, `completeness_score`, `v_measure_score`, and `mutual_info_score` in `cuml.metrics`\ngithub_labels: bug\nbody_excerpt: **Describe the bug** The following `cuml.metrics` clustering metrics change when class/cluster label identities are permuted (e.g., flipping 0 \u2194 1 in the predicted labels), whereas they should be invariant to any permutation of label values: - homogeneity_score - completeness_score - v_measure_score - mutual_info_score According to the scikit-learn definitions that cuML mirrors, these metrics are **independent of the absolute label values**\u2014a permutation of class or cluster labels must not change the score. This is documented for each metric and for the combined function in scikit-learn. [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html) In practice, with fixed `y_true` and `y_pred`, replacing `y_pred` by `1 - y_pred` yields substantially different scores (often ~4\u00d7 larger), indicating a violation of permutation invariance. **Steps/Code to reproduce bug** Minimal script (CPU NumPy arrays to avoid any host/device ambiguity). ``` import cupy as cp from cuml.metrics import ( homogeneity_score, completeness_score, mutual_info_score, v_measure_score ) y_true = cp.array([0, 0, 0, 1, 1, 0, 1]) y_pred = cp.array([1, 0, 1, 0, 1, 1, 0]...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "[BUG] Label-permutation invariance appears inconsistent for `homogeneity_score`, `completeness_score`, `v_measure_score`, and `mutual_info_score` in `cuml.metrics` **Describe the bug** The following `cuml.metrics` clustering metrics change",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0997-33f52248",
+      "input": "repository: rapidsai/cuml\ntitle: [BUG] Scipy 1.15 update causes failures in batched lbfgs pytest\ngithub_labels: bug|? - Needs Triage\nbody_excerpt: Updating SciPy to 1.15 causes the following (reproducible) unit test failure: ```python test_batched_lbfgs.py::test_batched_lbfgs_rosenbrock FAILED [100%] ================================================================================================================ FAILURES ================================================================================================================= ______________________________________________________________________________________________________ test_batched_lbfgs_rosenbrock ______________________________________________________________________________________________________ ... AssertionError: Not equal to tolerance rtol=1e-05, atol=0 Mismatched elements: 6 / 10 (60%) Max absolute difference among violations: 0.16360418 Max relative difference among violations: 0.16822389 ACTUAL: array([1.049671, 1.101809, 0.904425, 0.808934, 1.064853, 1.133886, 1.151977, 1.327039, 0.976585, 0.953717]) DESIRED: array([1.049671, 1.10181 , 0.986174, 0.972538, 1.064769, 1.133733, 1.152303, 1.327802, 0.976585, 0.953718]) ``` Marked it as xfail to unblock CI in #6207 while we look into it.",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "python test_batched_lbfgs.py::test_batched_lbfgs_rosenbrock FAILED [100%] ================================================================================================================ FAILURES ============================================",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "compiler_codegen|crash_compile"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0995-810e1a5c",
+      "input": "repository: rapidsai/cuml\ntitle: KMeans with `random_state` set isn't reproducible for `float32`\ngithub_labels: bug|algo: kmeans\nbody_excerpt: **What is your question?** Hi all, I encounter the consistency of KMeans implementation. While debugging a precision-related issue in cuml's KMeans, I noticed that setting a random seed does not ensure consistency in cuml's KMeans results. Upon further investigation, I found that this behavior is actually expected in [the test case](https://github.com/rapidsai/cuml/blob/branch-24.02/python/cuml/tests/test_kmeans.py#L71) for cuml's KMeans. Are there any known workarounds or planned fixes for this issue? And it is crucial for reproducible research and debugging. Thanks a lot! Yang",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "While debugging a precision-related issue in cuml's KMeans, I noticed that setting a random seed does not ensure consistency in cuml's KMeans results.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "unknown"
+      },
+      "repository": "rapidsai/cuml"
+    },
+    {
+      "id": "EGNF1000-0991-f1b709da",
+      "input": "repository: rapidsai/cuml\ntitle: [BUG] Treelite format needs to be updated to accommodate 32-bit and 64-bit floats\ngithub_labels: bug|? - Needs Triage\nbody_excerpt: **Describe the bug** #837 added Treelite as a submodule. Currently, Treelite uses single-precision floating-point (`float`) to store test thresholds and leaf outputs in decision trees. This is good for XGBoost models, but however, some other packages such as LightGBM use double-precision floating-point (`double`). **Steps/Code to reproduce bug** See dmlc/treelite#98, dmlc/treelite#95, where Treelite is not able to match prediction results for LightGBM models. Due to semantics of floating-point numbers, there is always truncation whenever we convert between `float` and `double`. As part of 1.0 release of Treelite (dmlc/treelite#111), I'd like to propose an update to the exchange format to support multiple data types. This way, the Treelite exchange format will represent LightGBM models faithfully. I'll post an update when a concrete proposal is ready. @canonizer",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "expanded_1000"
+      },
+      "output": {
+        "evidence_quote": "Currently, Treelite uses single-precision floating-point (`float`) to store test thresholds and leaf outputs in decision trees.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "api_feature_request"
+      },
+      "repository": "rapidsai/cuml"
+    }
+  ]
+}

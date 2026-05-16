@@ -1,0 +1,25 @@
+model_or_mode,evaluation,answered_rows,coverage,accuracy,macro_f1,notes
+base_text_bm25_knn,stratified_5fold_full_coverage,191,1.000,0.356,0.185,Flat classifier.
+base_text_naive_bayes,stratified_5fold_full_coverage,191,1.000,0.403,0.231,Flat classifier.
+base_text_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.487,0.243,Flat classifier.
+base_text_tfidf_linear_svm,stratified_5fold_full_coverage,191,1.000,0.503,0.270,Flat classifier.
+base_text_bigram_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.471,0.228,Flat classifier.
+candidate_features_bm25_knn,stratified_5fold_full_coverage,191,1.000,0.366,0.184,Flat classifier.
+candidate_features_naive_bayes,stratified_5fold_full_coverage,191,1.000,0.429,0.247,Flat classifier.
+candidate_features_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.518,0.262,Flat classifier.
+candidate_features_tfidf_linear_svm,stratified_5fold_full_coverage,191,1.000,0.492,0.253,Flat classifier.
+candidate_features_bigram_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.492,0.242,Flat classifier.
+diff_features_bm25_knn,stratified_5fold_full_coverage,191,1.000,0.351,0.174,Flat classifier.
+diff_features_naive_bayes,stratified_5fold_full_coverage,191,1.000,0.424,0.229,Flat classifier.
+diff_features_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.482,0.233,Flat classifier.
+diff_features_tfidf_linear_svm,stratified_5fold_full_coverage,191,1.000,0.487,0.242,Flat classifier.
+diff_features_bigram_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.461,0.224,Flat classifier.
+candidate_plus_diff_features_bm25_knn,stratified_5fold_full_coverage,191,1.000,0.366,0.185,Flat classifier.
+candidate_plus_diff_features_naive_bayes,stratified_5fold_full_coverage,191,1.000,0.429,0.234,Flat classifier.
+candidate_plus_diff_features_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.508,0.249,Flat classifier.
+candidate_plus_diff_features_tfidf_linear_svm,stratified_5fold_full_coverage,191,1.000,0.513,0.257,Flat classifier.
+candidate_plus_diff_features_bigram_tfidf_logistic,stratified_5fold_full_coverage,191,1.000,0.492,0.244,Flat classifier.
+weak_candidate_no_needs_review_fallback,full_coverage_no_abstain,191,1.000,0.466,0.355,Replaces needs_review with augmented TF-IDF SVM prediction.
+two_stage_hierarchical_augmented_tfidf_svm,stratified_5fold_full_coverage,191,1.000,0.503,0.241,"Stage 1 predicts numeric/performance-or-not/crash group, stage 2 predicts primary label."
+full_coverage_no_needs_review_deterministic_ensemble,full_coverage_no_abstain,191,1.000,0.529,0.267,Vote over no-needs weak label and augmented deterministic models only.
+full_coverage_no_needs_review_with_local_llm_ensemble,full_coverage_no_abstain,191,1.000,0.518,0.266,"Vote over no-needs weak label, augmented deterministic models, and local LLM outputs."

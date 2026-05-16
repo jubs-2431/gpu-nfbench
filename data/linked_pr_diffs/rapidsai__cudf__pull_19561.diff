@@ -1,0 +1,333 @@
+diff --git a/conda/environments/all_cuda-129_arch-aarch64.yaml b/conda/environments/all_cuda-129_arch-aarch64.yaml
+index b53ce1f224e..ce67a5abbca 100644
+--- a/conda/environments/all_cuda-129_arch-aarch64.yaml
++++ b/conda/environments/all_cuda-129_arch-aarch64.yaml
+@@ -41,6 +41,7 @@ dependencies:
+ - libcurand-dev
+ - libkvikio==25.10.*,>=0.0.0a0
+ - libnvcomp-dev==4.2.0.11
++- libnvjitlink-dev
+ - librdkafka>=2.8.0,<2.9.0a0
+ - librmm==25.10.*,>=0.0.0a0
+ - make
+diff --git a/conda/environments/all_cuda-129_arch-x86_64.yaml b/conda/environments/all_cuda-129_arch-x86_64.yaml
+index 4d1af2746ac..04178f88b83 100644
+--- a/conda/environments/all_cuda-129_arch-x86_64.yaml
++++ b/conda/environments/all_cuda-129_arch-x86_64.yaml
+@@ -42,6 +42,7 @@ dependencies:
+ - libcurand-dev
+ - libkvikio==25.10.*,>=0.0.0a0
+ - libnvcomp-dev==4.2.0.11
++- libnvjitlink-dev
+ - librdkafka>=2.8.0,<2.9.0a0
+ - librmm==25.10.*,>=0.0.0a0
+ - make
+diff --git a/conda/recipes/libcudf/recipe.yaml b/conda/recipes/libcudf/recipe.yaml
+index 814a304ebef..3e97dc84a7d 100644
+--- a/conda/recipes/libcudf/recipe.yaml
++++ b/conda/recipes/libcudf/recipe.yaml
+@@ -68,6 +68,7 @@ cache:
+       - cuda-nvrtc-dev
+       - cuda-nvtx-dev
+       - libcurand-dev
++      - libnvjitlink-dev
+       - if: linux and x86_64
+         then:
+           - libcufile-dev
+diff --git a/cpp/cmake/Modules/JitifyPreprocessKernels.cmake b/cpp/cmake/Modules/JitifyPreprocessKernels.cmake
+index 388c748c694..7c27920ee28 100644
+--- a/cpp/cmake/Modules/JitifyPreprocessKernels.cmake
++++ b/cpp/cmake/Modules/JitifyPreprocessKernels.cmake
+@@ -33,6 +33,8 @@ function(jit_preprocess_files)
+     get_filename_component(jit_output_directory "${ARG_OUTPUT}" DIRECTORY)
+     list(APPEND JIT_PREPROCESSED_FILES "${ARG_OUTPUT}")
+ 
++    get_filename_component(ARG_OUTPUT_DIR "${ARG_OUTPUT}" DIRECTORY)
++
+     # Note: need to pass _FILE_OFFSET_BITS=64 in COMMAND due to a limitation in how conda builds
+     # glibc
+     add_custom_command(
+@@ -43,8 +45,7 @@ function(jit_preprocess_files)
+       COMMAND ${CMAKE_COMMAND} -E make_directory "${jit_output_directory}"
+       COMMAND
+         "${CMAKE_COMMAND}" -E env LD_LIBRARY_PATH=${CUDAToolkit_LIBRARY_DIR}
+-        $<TARGET_FILE:jitify_preprocess> ${ARG_FILE} -o
+-        ${CUDF_GENERATED_INCLUDE_DIR}/include/jit_preprocessed_files -i -std=c++20
++        $<TARGET_FILE:jitify_preprocess> ${ARG_FILE} -o ${ARG_OUTPUT_DIR} -i -std=c++20
+         -remove-unused-globals -D_FILE_OFFSET_BITS=64 -D__CUDACC_RTC__ -DCUDF_RUNTIME_JIT
+         -I${CUDF_SOURCE_DIR}/include -I${CUDF_SOURCE_DIR}/src ${includes}
+         --no-preinclude-workarounds --no-replace-pragma-once
+diff --git a/cpp/cmake/thirdparty/get_jitify.cmake b/cpp/cmake/thirdparty/get_jitify.cmake
+index d98abdf8824..b6f11e30d28 100644
+--- a/cpp/cmake/thirdparty/get_jitify.cmake
++++ b/cpp/cmake/thirdparty/get_jitify.cmake
+@@ -1,5 +1,5 @@
+ # =============================================================================
+-# Copyright (c) 2020-2022, NVIDIA CORPORATION.
++# Copyright (c) 2020-2025, NVIDIA CORPORATION.
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ # in compliance with the License. You may obtain a copy of the License at
+@@ -18,8 +18,8 @@
+ function(find_and_configure_jitify)
+   rapids_cpm_find(
+     jitify 2.0.0
+-    GIT_REPOSITORY https://github.com/rapidsai/jitify.git
+-    GIT_TAG jitify2
++    GIT_REPOSITORY https://github.com/NVIDIA/jitify.git
++    GIT_TAG 70783a3ad7b0cad2992a26a1ebf8fbe3d6b44e25 # jitify2 branch as of 5th Aug 2025
+     GIT_SHALLOW TRUE
+     DOWNLOAD_ONLY TRUE
+   )
+diff --git a/cpp/src/binaryop/jit/kernel.cu b/cpp/src/binaryop/jit/kernel.cu
+index dc021ea99a6..2951178af97 100644
+--- a/cpp/src/binaryop/jit/kernel.cu
++++ b/cpp/src/binaryop/jit/kernel.cu
+@@ -28,7 +28,7 @@
+ #include <cuda/std/type_traits>
+ 
+ // clang-format off
+-#include "binaryop/jit/operation-udf.hpp"
++#include <binaryop/jit/operation-udf.hpp>
+ // clang-format on
+ 
+ namespace cudf {
+diff --git a/cpp/src/jit/accessors.cuh b/cpp/src/jit/accessors.cuh
+index 705028ddedd..adfb9ea7328 100644
+--- a/cpp/src/jit/accessors.cuh
++++ b/cpp/src/jit/accessors.cuh
+@@ -15,13 +15,13 @@
+  */
+ 
+ #pragma once
+-#include "jit/span.cuh"
+-
+ #include <cudf/column/column_device_view_base.cuh>
+ #include <cudf/types.hpp>
+ 
+ #include <cuda/std/cstddef>
+ 
++#include <jit/span.cuh>
++
+ #include <cstddef>
+ 
+ namespace cudf {
+diff --git a/cpp/src/jit/cache.hpp b/cpp/src/jit/cache.hpp
+index 1772134bb90..00ad23ace5a 100644
+--- a/cpp/src/jit/cache.hpp
++++ b/cpp/src/jit/cache.hpp
+@@ -15,6 +15,8 @@
+  */
+ 
+ #pragma once
++#pragma GCC diagnostic ignored "-Wignored-attributes"  // Work-around for JITIFY2's false-positive
++                                                       // warnings when compiled with GCC13
+ 
+ #include <cudf/utilities/export.hpp>
+ 
+diff --git a/cpp/src/jit/helpers.hpp b/cpp/src/jit/helpers.hpp
+index 5b2427575b0..65e28e9c39a 100644
+--- a/cpp/src/jit/helpers.hpp
++++ b/cpp/src/jit/helpers.hpp
+@@ -15,12 +15,11 @@
+  */
+ #pragma once
+ 
+-#include "jit/span.cuh"
+-
+ #include <cudf/column/column.hpp>
+ #include <cudf/column/column_device_view.cuh>
+ #include <cudf/detail/utilities/cuda_memcpy.hpp>
+ 
++#include <jit/span.cuh>
+ #include <jit_preprocessed_files/transform/jit/kernel.cu.jit.hpp>
+ 
+ namespace cudf {
+diff --git a/cpp/src/rolling/jit/kernel.cu b/cpp/src/rolling/jit/kernel.cu
+index 12219a286f7..9b4f11ebdb6 100644
+--- a/cpp/src/rolling/jit/kernel.cu
++++ b/cpp/src/rolling/jit/kernel.cu
+@@ -14,13 +14,13 @@
+  * limitations under the License.
+  */
+ 
+-#include "rolling/detail/rolling_jit.hpp"
+-#include "rolling/jit/operation.hpp"
+-
+ #include <cudf/detail/utilities/grid_1d.cuh>
+ #include <cudf/types.hpp>
+ #include <cudf/utilities/bit.hpp>
+ 
++#include <rolling/detail/rolling_jit.hpp>
++#include <rolling/jit/operation.hpp>
++
+ namespace cudf {
+ namespace rolling {
+ namespace jit {
+diff --git a/cpp/src/rolling/jit/operation.hpp b/cpp/src/rolling/jit/operation.hpp
+index 3be739ec5bf..51cd0a6b121 100644
+--- a/cpp/src/rolling/jit/operation.hpp
++++ b/cpp/src/rolling/jit/operation.hpp
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2019-2024, NVIDIA CORPORATION.
++ * Copyright (c) 2019-2025, NVIDIA CORPORATION.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -16,10 +16,10 @@
+ 
+ #pragma once
+ 
+-#include "rolling/jit/operation-udf.hpp"
+-
+ #include <cudf/types.hpp>
+ 
++#include <rolling/jit/operation-udf.hpp>
++
+ struct rolling_udf_ptx {
+   template <typename OutType, typename InType>
+   static OutType operate(InType const* in_col, cudf::size_type start, cudf::size_type count)
+diff --git a/cpp/src/stream_compaction/filter/filter.cu b/cpp/src/stream_compaction/filter/filter.cu
+index 9369eee30d4..a518b566c97 100644
+--- a/cpp/src/stream_compaction/filter/filter.cu
++++ b/cpp/src/stream_compaction/filter/filter.cu
+@@ -14,11 +14,6 @@
+  * limitations under the License.
+  */
+ 
+-#include "jit/cache.hpp"
+-#include "jit/helpers.hpp"
+-#include "jit/parser.hpp"
+-#include "jit/span.cuh"
+-
+ #include <cudf/column/column.hpp>
+ #include <cudf/column/column_device_view.cuh>
+ #include <cudf/column/column_factories.hpp>
+@@ -37,6 +32,10 @@
+ #include <cuda/std/iterator>
+ #include <thrust/copy.h>
+ 
++#include <jit/cache.hpp>
++#include <jit/helpers.hpp>
++#include <jit/parser.hpp>
++#include <jit/span.cuh>
+ #include <jit_preprocessed_files/stream_compaction/filter/jit/kernel.cu.jit.hpp>
+ 
+ #include <utility>
+@@ -175,7 +174,7 @@ void launch_filter_kernel(jitify2::ConfiguredKernel& kernel,
+ 
+   std::array<void*, 3> args{&outputs_ptr, &inputs_ptr, &p_user_data};
+ 
+-  kernel->launch(args.data());
++  kernel->launch_raw(args.data());
+ }
+ 
+ void perform_checks(column_view base_column,
+diff --git a/cpp/src/stream_compaction/filter/jit/kernel.cu b/cpp/src/stream_compaction/filter/jit/kernel.cu
+index 524c389aaae..07aeebee688 100644
+--- a/cpp/src/stream_compaction/filter/jit/kernel.cu
++++ b/cpp/src/stream_compaction/filter/jit/kernel.cu
+@@ -14,9 +14,6 @@
+  * limitations under the License.
+  */
+ 
+-#include "jit/accessors.cuh"
+-#include "jit/span.cuh"
+-
+ #include <cudf/column/column_device_view_base.cuh>
+ #include <cudf/detail/utilities/grid_1d.cuh>
+ #include <cudf/strings/string_view.cuh>
+@@ -26,6 +23,9 @@
+ 
+ #include <cuda/std/cstddef>
+ 
++#include <jit/accessors.cuh>
++#include <jit/span.cuh>
++
+ // clang-format off
+ // This header is an inlined header that defines the GENERIC_FILTER_OP function. It is placed here
+ // so the symbols in the headers above can be used by it.
+diff --git a/cpp/src/transform/jit/kernel.cu b/cpp/src/transform/jit/kernel.cu
+index 5c8068f0bc7..b3647e374c5 100644
+--- a/cpp/src/transform/jit/kernel.cu
++++ b/cpp/src/transform/jit/kernel.cu
+@@ -14,9 +14,6 @@
+  * limitations under the License.
+  */
+ 
+-#include "jit/accessors.cuh"
+-#include "jit/span.cuh"
+-
+ #include <cudf/column/column_device_view_base.cuh>
+ #include <cudf/detail/utilities/grid_1d.cuh>
+ #include <cudf/strings/string_view.cuh>
+@@ -26,6 +23,9 @@
+ 
+ #include <cuda/std/cstddef>
+ 
++#include <jit/accessors.cuh>
++#include <jit/span.cuh>
++
+ // clang-format off
+ // This header is an inlined header that defines the GENERIC_FILTER_OP function. It is placed here
+ // so the symbols in the headers above can be used by it.
+diff --git a/cpp/src/transform/transform.cpp b/cpp/src/transform/transform.cpp
+index 9c7fc4772b4..ad3c6bf15c6 100644
+--- a/cpp/src/transform/transform.cpp
++++ b/cpp/src/transform/transform.cpp
+@@ -14,12 +14,6 @@
+  * limitations under the License.
+  */
+ 
+-#include "jit/cache.hpp"
+-#include "jit/helpers.hpp"
+-#include "jit/parser.hpp"
+-#include "jit/span.cuh"
+-#include "jit/util.hpp"
+-
+ #include <cudf/column/column.hpp>
+ #include <cudf/column/column_device_view.cuh>
+ #include <cudf/column/column_factories.hpp>
+@@ -32,6 +26,11 @@
+ 
+ #include <rmm/cuda_stream_view.hpp>
+ 
++#include <jit/cache.hpp>
++#include <jit/helpers.hpp>
++#include <jit/parser.hpp>
++#include <jit/span.cuh>
++#include <jit/util.hpp>
+ #include <jit_preprocessed_files/transform/jit/kernel.cu.jit.hpp>
+ 
+ namespace cudf {
+@@ -125,7 +124,7 @@ void launch_column_output_kernel(jitify2::ConfiguredKernel& kernel,
+ 
+   std::array<void*, 3> args{&outputs_ptr, &inputs_ptr, &p_user_data};
+ 
+-  kernel->launch(args.data());
++  kernel->launch_raw(args.data());
+ }
+ 
+ template <typename T>
+@@ -152,7 +151,7 @@ void launch_span_kernel(jitify2::ConfiguredKernel& kernel,
+ 
+   std::array<void*, 3> args{&outputs_ptr, &inputs_ptr, &p_user_data};
+ 
+-  kernel->launch(args.data());
++  kernel->launch_raw(args.data());
+ }
+ 
+ std::tuple<rmm::device_buffer, size_type> make_transform_null_mask(
+diff --git a/dependencies.yaml b/dependencies.yaml
+index 37883b03b4f..8411fa111a7 100644
+--- a/dependencies.yaml
++++ b/dependencies.yaml
+@@ -569,6 +569,7 @@ dependencies:
+               - cuda-nvrtc-dev
+               - cuda-nvtx-dev
+               - libcurand-dev
++              - libnvjitlink-dev
+       - output_types: conda
+         matrices:
+           - matrix:

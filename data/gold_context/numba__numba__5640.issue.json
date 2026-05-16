@@ -1,0 +1,15 @@
+{
+  "body": "v0.49.0\r\n\r\nA guvectorized function fails to broadcast when the target is CUDA but works as expected when the target is CPU.\r\n\r\n```python\r\nfrom numba import guvectorize\r\nimport numpy as np\r\n\r\ndef dot(a, b, result):\r\n    x = 0\r\n\r\n    for i in range(len(a)):\r\n        x += a[i] * b[i]\r\n\r\n    result[0] = x\r\n\r\n\r\nargs = \"int64[:], int64[:], int64[:]\", \"(n),(n)->()\"\r\ndot_cuda = guvectorize(*args, target=\"cuda\")(dot)\r\ndot_cpu = guvectorize(*args)(dot)\r\n\r\na = np.arange(6).reshape(3, 1, 2)\r\nb = np.arange(8).reshape(1, 4, 2)\r\n\r\ndot_cuda(a, b)\r\n```\r\n```\r\nValueError                                Traceback (most recent call last)\r\n<ipython-input-5-2b6f351e5aeb> in <module>\r\n----> 1 dot_cuda(a, b)\r\n\r\n~/miniconda/envs/x/lib/python3.8/site-packages/numba/np/ufunc/deviceufunc.py in __call__(self, *args, **kws)\r\n    648                                      args, kws)\r\n    649         callsteps.prepare_inputs()\r\n--> 650         indtypes, schedule, outdtype, kernel = self._schedule(\r\n    651             callsteps.norm_inputs, callsteps.output)\r\n    652         callsteps.adjust_input_types(indtypes)\r\n\r\n~/miniconda/envs/x/lib/python3.8/site-packages/numba/np/ufunc/deviceufunc.py in _schedule(self, inputs, out)\r\n    661     def _schedule(self, inputs, out):\r\n    662         input_shapes = [a.shape for a in inputs]\r\n--> 663         schedule = self.engine.schedule(input_shapes)\r\n    664 \r\n    665         # find kernel\r\n\r\n~/miniconda/envs/x/lib/python3.8/site-packages/numba/np/ufunc/deviceufunc.py in schedule(self, ishapes)\r\n    610                 else:\r\n    611                     fmt = \"arg #%d: outer dimension mismatch\"\r\n--> 612                     raise ValueError(fmt % (i + 1,))\r\n    613 \r\n    614         return GUFuncSchedule(self, inner_shapes, oshapes, loopdims, pinned)\r\n\r\nValueError: arg #1: outer dimension mismatch\r\n```\r\nnumba.np.ufunc.deviceufunc.GUFuncEngine.schedule locals:\r\n```python\r\n{'self': <numba.np.ufunc.deviceufunc.GUFuncEngine object at 0x7f9c10c11400>,\r\n 'ishapes': [(3, 1, 2), (1, 4, 2)],\r\n 'symbolmap': {'n': 2},\r\n 'outer_shapes': [(3, 1), (1, 4)],\r\n 'inner_shapes': [(2,), (2,)],\r\n 'argn': 2,\r\n 'shape': (1, 4, 2),\r\n 'symbols': ('n',),\r\n 'inner_ndim': 1,\r\n 'fmt': 'arg #%d: outer dimension mismatch',\r\n 'inner_shape': (2,),\r\n 'outer_shape': (1, 4),\r\n 'axis': 2,\r\n 'dim': 2,\r\n 'sym': 'n',\r\n 'oshapes': [()],\r\n 'outsig': (),\r\n 'oshape': [],\r\n 'sizes': [3, 4],\r\n 'largest_i': 1,\r\n 'loopdims': (1, 4),\r\n 'pinned': [False, False],\r\n 'i': 0,\r\n 'd': (3, 1)}\r\n```\r\nWorks as expected when the target is CPU:\r\n```python\r\ndot_cpu(a, b)\r\n```\r\n```\r\narray([[ 1,  3,  5,  7],\r\n       [ 3, 13, 23, 33],\r\n       [ 5, 23, 41, 59]])\r\n```",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2020-04-28T10:27:39Z",
+  "html_url": "https://github.com/numba/numba/issues/5640",
+  "labels": [
+    "bug",
+    "CUDA"
+  ],
+  "number": 5640,
+  "state": "open",
+  "title": "guvectorize-CUDA broadcast fail",
+  "updated_at": "2020-05-04T17:51:27Z"
+}

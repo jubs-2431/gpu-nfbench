@@ -1,0 +1,14 @@
+{
+  "body": "I get the error in the title on some code that's essentially just doing a matmul. I've found that when the inner dimension k is 32, everything is fine. When k is 64 I get the error below.\r\n\r\nInterestingly this code used to work on previous pre release versions of triton. I even built the mlir branch (before it was merged) and had this code running without issue.\r\n\r\n```python\r\n>       mod, func, n_regs, n_spills = cuda_utils.load_binary(self.metadata[\"name\"], self.asm[\"cubin\"], self.shared, device)\r\nE       RuntimeError: Triton Error [CUDA]: an illegal memory access was encountered\r\n```\r\nI have `num_warps = 4 if k<= 64 else 8` and tried setting `num_stages` to 1,2,3 and 4 with no effect.\r\n\r\nAny hints as to what could've changed recently or how to fix?\r\n",
+  "closed_at": null,
+  "comments": 11,
+  "created_at": "2023-03-08T16:41:38Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/1302",
+  "labels": [
+    "bug"
+  ],
+  "number": 1302,
+  "state": "open",
+  "title": "RuntimeError: Triton Error [CUDA]: an illegal memory access was encountered",
+  "updated_at": "2025-09-06T23:26:31Z"
+}

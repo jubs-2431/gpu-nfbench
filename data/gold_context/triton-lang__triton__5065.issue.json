@@ -1,0 +1,12 @@
+{
+  "body": "\r\n## The problem\r\n\r\nFP8 GEMM result not right:\r\n\r\n![image](https://github.com/user-attachments/assets/5a0f6973-1f4d-4287-b602-f33fa5cc799d)\r\n\r\n## How to reproduce\r\n\r\n* the code: see below\r\n* triton version: 3.0.0\r\n* CUDA version: 12.4\r\n* machine: L20\r\n\r\n```python\r\n# replace https://github.com/triton-lang/triton/blob/main/python/tutorials/03-matrix-multiplication.py#L373-L389 with this(only input value and shape changed)\r\nTORCH_HAS_FP8 = hasattr(torch, \"float8_e5m2\")\r\nif TORCH_HAS_FP8 and is_cuda():\r\n    torch.manual_seed(0)\r\n    a = torch.randn((512, 8192), device=\"cuda\", dtype=torch.float16)\r\n    b = torch.randn((512, 8192), device=\"cuda\", dtype=torch.float16)\r\n    a = a.to(torch.float8_e5m2)\r\n    # pre-transpose b for efficiency.\r\n    b = b.T\r\n    b = b.to(torch.float8_e5m2)\r\n\r\n    a.fill_(1/32)\r\n    b.fill_(3)\r\n    triton_output = matmul(a, b)\r\n    torch_output = torch.matmul(a.to(torch.float16), b.to(torch.float16))\r\n    print(f\"triton_output_with_fp8_inputs={triton_output}\")\r\n    print(f\"torch_output_with_fp8_inputs={torch_output}\")\r\n    if torch.allclose(triton_output, torch_output, atol=0.125, rtol=0):\r\n        print(\"\u2705 Triton and Torch match\")\r\n    else:\r\n        print(\"\u274c Triton and Torch differ\")\r\n\r\nimport sys\r\nsys.exit(0)\r\n```\r\n\r\ntriton is installed by pip:\r\n ![image](https://github.com/user-attachments/assets/336ee8d1-d541-40a7-85c0-0d42b98024a8)\r\n\r\n## More\r\n\r\nthe same code passes the check and has no such issue for H800 + CUDA 12.4\r\n",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2024-11-05T02:03:31Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/5065",
+  "labels": [],
+  "number": 5065,
+  "state": "open",
+  "title": "triton 3.0.0 got FP8 GEMM precision issue with CUDA sm89",
+  "updated_at": "2025-03-21T12:57:14Z"
+}

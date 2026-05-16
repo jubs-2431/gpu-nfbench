@@ -1,0 +1,1390 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+GNF-0001-f56f80f3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.31,precision_tolerance,compiler_codegen|api_semantics,yes,low,Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits.,"{
+  ""blind_id"": ""GNF-0001-f56f80f3"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits."",
+  ""confidence"": ""low""
+}",
+GNF-0002-16e149fe,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.76,not_numerical_failure,hardware_backend|api_semantics,unclear,low,"Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type).","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""hardware_backend"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type)."",
+  ""confidence"": ""low""
+}",
+GNF-0003-eaa63fac,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.89,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve<(unsigned int)128, (unsigned int)32, (unsigned int)2, (unsigned int)96, (bool)1, thrust::transform_iterator<cudf::detail::make_pair_function<cudf::experimental::row::hash::device_row_hasher<cudf::hashing::detail::default_hash, ...","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve<(unsigned int)128, (unsigned int)32, (unsigned int)2, (unsigned int)96, (bool)1, thrust::transform_iterator<cudf::detail::make_pair_function<cudf::experimental::row::hash::device_row_hasher<cudf::hashing::detail::default_hash, ..."",
+  ""confidence"": ""low""
+}",
+GNF-0004-e5162a33,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.22,precision_tolerance,api_semantics|environment_configuration,yes,low,"RuntimeError: Expected out tensor to have dtype float, but got c10::BFloat16 instead","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""RuntimeError: Expected out tensor to have dtype float, but got c10::BFloat16 instead"",
+  ""confidence"": ""low""
+}",
+GNF-0005-80aeca70,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.85,overflow_underflow,compiler_codegen|hardware_backend,yes,high,"float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded.","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded."",
+  ""confidence"": ""high""
+}",
+GNF-0006-82eaa858,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.96,precision_tolerance,memory_mask_bounds|environment_configuration,yes,high,while higher precision works just fine.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""while higher precision works just fine."",
+  ""confidence"": ""high""
+}",
+GNF-0007-5a435abf,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.24,needs_review,api_semantics|environment_configuration,yes,high,the second randint does not modify the returned value.,"{
+  ""primary_failure_label"": ""async_race_ordering"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the second randint does not modify the returned value."",
+  ""confidence"": ""high""
+}",
+GNF-0008-4625af98,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.61,nan_inf,memory_mask_bounds|api_semantics,yes,high,"The datetime values in the csv files are being written only upto seconds level precision, thus ignoring any sub-second data.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The datetime values in the csv files are being written only upto seconds level precision, thus ignoring any sub-second data."",
+  ""confidence"": ""high""
+}",
+GNF-0009-f786b33b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.04,precision_tolerance,compiler_codegen|api_semantics,unclear,low,"The issue seems to be that kwargs aren't considered when producing the args for compilation, this patch seems to fix it:","{
+  ""blind_id"": ""GNF-0009-f786b33b"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The issue seems to be that kwargs aren't considered when producing the args for compilation, this patch seems to fix it:"",
+  ""confidence"": ""low""
+}",
+GNF-0010-ff390b39,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.66,not_numerical_failure,environment_configuration,unclear,low,WARNING: using slow attention.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""WARNING: using slow attention."",
+  ""confidence"": ""low""
+}",
+GNF-0011-0a961578,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.45,overflow_underflow,memory_mask_bounds|hardware_backend,yes,high,"product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32"",
+  ""confidence"": ""high""
+}",
+GNF-0012-d3d20064,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.74,needs_review,compiler_codegen|api_semantics,unclear,medium,"Something like CUDA's atomicAdd, atomicMin, etc would be helpful.","{
+  ""blind_id"": ""GNF-0012-d3d20064"",
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Something like CUDA's atomicAdd, atomicMin, etc would be helpful."",
+  ""confidence"": ""medium""
+}",
+GNF-0013-bd88dbb3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.08,precision_tolerance,compiler_codegen,unclear,low,"I believe it's not a bug. Try: ` X_block_ptr = tl.advance(X_block_ptr, (block_size, 0))` I am already using that.","{
+  ""blind_id"": ""GNF-0013-bd88dbb3"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""I believe it's not a bug. Try: ` X_block_ptr = tl.advance(X_block_ptr, (block_size, 0))` I am already using that."",
+  ""confidence"": ""low""
+}",
+GNF-0014-9fb698b0,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.30,not_numerical_failure,api_semantics|environment_configuration,unclear,low,You can register a FlopCounterMode formula via HOP.py_impl(FlopCounterMode),"{
+  ""blind_id"": ""GNF-0014-9fb698b0"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""You can register a FlopCounterMode formula via HOP.py_impl(FlopCounterMode)"",
+  ""confidence"": ""low""
+}",
+GNF-0015-04273d95,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.18,nan_inf,memory_mask_bounds|api_semantics,yes,low,Seeing as bfloat16 works I suspect that you might just be running out of range since float16's max normal value is 65504,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Seeing as bfloat16 works I suspect that you might just be running out of range since float16's max normal value is 65504"",
+  ""confidence"": ""low""
+}",
+GNF-0016-7e125a4d,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.43,not_numerical_failure,api_semantics|environment_configuration,yes,high,'ttng.tensormap_create' op pipeliner doesn't know how to predicate this op.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""'ttng.tensormap_create' op pipeliner doesn't know how to predicate this op."",
+  ""confidence"": ""high""
+}",
+GNF-0017-f27cd16b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.75,not_numerical_failure,api_semantics,yes,high,"results in: $ python repro.py Traceback (most recent call last): File ""repro.py"", line 9, in <module> assert arr.stream == stream AssertionError ","{
+  ""blind_id"": ""GNF-0017-f27cd16b"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""results in: $ python repro.py Traceback (most recent call last): File \""repro.py\"", line 9, in <module> assert arr.stream == stream AssertionError "",
+  ""confidence"": ""high""
+}",
+GNF-0018-86e41701,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.33,nan_inf,memory_mask_bounds,unclear,low,Also interesting is that the segfault seems to occur during test gathering as oppose to running the test cases.,"{
+  ""blind_id"": ""GNF-0018-86e41701"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Also interesting is that the segfault seems to occur during test gathering as oppose to running the test cases."",
+  ""confidence"": ""low""
+}",
+GNF-0019-965637d3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.03,nan_inf,compiler_codegen|hardware_backend,yes,high,The error is related to `dw_chnl` which is allocated but never used and also the mbarriers in it are never invalidated.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The error is related to `dw_chnl` which is allocated but never used and also the mbarriers in it are never invalidated."",
+  ""confidence"": ""high""
+}",
+GNF-0020-322072f7,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.10,not_numerical_failure,compiler_codegen|hardware_backend,unclear,low,"CUPY_NVCC_GENERATE_CODE=""arch=compute_61,code=sm_61""","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""CUPY_NVCC_GENERATE_CODE=\""arch=compute_61,code=sm_61\"""",
+  ""confidence"": ""low""
+}",
+GNF-0021-ebaa6477,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.49,precision_tolerance,api_semantics,yes,low,Output: [[nan nan] [nan nan]] [[nan nan] [nan inf]],"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Output: [[nan nan] [nan nan]] [[nan nan] [nan inf]]"",
+  ""confidence"": ""low""
+}",
+GNF-0022-a403f994,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.05,precision_tolerance,compiler_codegen|hardware_backend,yes,high,"We can route the kernels based on the reduction dimension (N), using the crossover point observed in the data.","{
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+    ""is_true_numerical_failure"": ""yes"",
+    ""evidence_quote"": ""We can route the kernels based on the reduction dimension (N), using the crossover point observed in the data."",
+    ""confidence"": ""high""
+}",
+GNF-0023-93595bc9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.69,nan_inf,api_semantics,yes,low,"TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx"",
+  ""confidence"": ""low""
+}",
+GNF-0024-543e6651,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.27,nan_inf,api_semantics,yes,high,torch.std_mean seems to return `inf` if the input array contains also normal number.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""torch.std_mean seems to return `inf` if the input array contains also normal number."",
+  ""confidence"": ""high""
+}",
+GNF-0025-d23b5aed,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.99,not_numerical_failure,compiler_codegen|hardware_backend,unclear,low,For this to work with CUDA you will need the 0.57RC: https://numba.discourse.group/t/ann-numba-0-57-0rc1-and-llvmlite-0-40-0rc1/1879,"{
+  ""blind_id"": ""GNF-0025-d23b5aed"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""For this to work with CUDA you will need the 0.57RC: https://numba.discourse.group/t/ann-numba-0-57-0rc1-and-llvmlite-0-40-0rc1/1879"",
+  ""confidence"": ""low""
+}",
+GNF-0026-8ee693c5,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.78,nan_inf,memory_mask_bounds,unclear,low,Nvidia-smi usage shoots to a max state here:,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Nvidia-smi usage shoots to a max state here:"",
+  ""confidence"": ""low""
+}",
+GNF-0027-933bf558,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.44,not_numerical_failure,api_semantics|environment_configuration,yes,high,"I see, thanks for explanation.","{
+  ""blind_id"": ""GNF-0027-933bf558"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I see, thanks for explanation."",
+  ""confidence"": ""high""
+}",
+GNF-0028-64f6040c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.09,nan_inf,api_semantics|environment_configuration,yes,low,"While I _think_ libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""While I _think_ libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum."",
+  ""confidence"": ""low""
+}",
+GNF-0029-5f61e128,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.82,dtype_casting,api_semantics,yes,high,"Although when you call `to_numpy()` on a cudf.pandas Series you get something that behaves like a numpy array, we do not answer ""yes"" to the question `isinstance(numpy_like_thing, np.ndarray`).","{
+  ""blind_id"": ""GNF-0029-5f61e128"",
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Although when you call `to_numpy()` on a cudf.pandas Series you get something that behaves like a numpy array, we do not answer \""yes\"" to the question `isinstance(numpy_like_thing, np.ndarray`)."",
+  ""confidence"": ""high""
+}",
+GNF-0030-a4314978,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.13,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,high,"when the same Tensor is passed to two (or more) positional tensor arguments of a `torch.autograd.Function.apply(...)`, and the backward returns different values for those positions (e.g. `None` for one slot and a tensor for another), `torch.compile` produces a graph that drops one of the per-slot gradient contributions.","{
+  ""blind_id"": ""GNF-0030-a4314978"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""when the same Tensor is passed to two (or more) positional tensor arguments of a `torch.autograd.Function.apply(...)`, and the backward returns different values for those positions (e.g. `None` for one slot and a tensor for another), `torch.compile` produces a graph that drops one of the per-slot gradient contributions."",
+  ""confidence"": ""high""
+}",
+GNF-0031-dff9514d,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.45,performance_only,api_semantics|environment_configuration,unclear,low,We should output these values in the `numba -s` output for diagnostics.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""We should output these values in the `numba -s` output for diagnostics."",
+  ""confidence"": ""low""
+}",
+GNF-0032-76c19db8,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.46,precision_tolerance,api_semantics|environment_configuration,unclear,low,"cp.testing.assert_allclose(cu_x2, x.view(dtype))","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""cp.testing.assert_allclose(cu_x2, x.view(dtype))"",
+  ""confidence"": ""low""
+}",
+GNF-0033-1f6d8975,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.74,precision_tolerance,api_semantics|environment_configuration,yes,high,"However, since I explicitly upcast x to fp32 before I do the matmul and I specified ieee precision, I was expecting triton to take the ieee path instead.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""However, since I explicitly upcast x to fp32 before I do the matmul and I specified ieee precision, I was expecting triton to take the ieee path instead."",
+  ""confidence"": ""high""
+}",
+GNF-0034-77cd048a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.65,nan_inf,memory_mask_bounds,yes,high,you may not be bounds checking correctly in the matmul.,"{
+  ""blind_id"": ""GNF-0034-77cd048a"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""you may not be bounds checking correctly in the matmul."",
+  ""confidence"": ""high""
+}",
+GNF-0035-1d6522c2,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.61,precision_tolerance,api_semantics|environment_configuration,yes,low,The output of the custom Function is not considered a view of its input.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The output of the custom Function is not considered a view of its input."",
+  ""confidence"": ""low""
+}",
+GNF-0036-b3e8f03a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.23,not_numerical_failure,environment_configuration,unclear,low,unhandled system error (run with NCCL_DEBUG=INFO for details),"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""unhandled system error (run with NCCL_DEBUG=INFO for details)"",
+  ""confidence"": ""low""
+}",
+GNF-0037-7af727c1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,5.14,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,"Invalid __shared__ read of size 0 bytes ========= at void cudf::io::parquet::detail::<unnamed>::gpuDecodePageDataFixed<unsigned char>(cudf::io::parquet::detail::PageInfo *, cudf::device_span<const cudf::io::parquet::detail::ColumnChunkDesc, (unsigned long)18446744073709551615>, unsigned long, unsigned long, unsigned int *)+0x9110 =========","{
+  ""blind_id"": ""GNF-0037-7af727c1"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Invalid __shared__ read of size 0 bytes ========= at void cudf::io::parquet::detail::<unnamed>::gpuDecodePageDataFixed<unsigned char>(cudf::io::parquet::detail::PageInfo *, cudf::device_span<const cudf::io::parquet::detail::ColumnChunkDesc, (unsigned long)18446744073709551615>, unsigned long, unsigned long, unsigned int *)+0x9110 ========="",
+  ""confidence"": ""low""
+}",
+GNF-0038-ba034dce,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.27,nan_inf,unknown,yes,low,"I think 8-bit, 32-bit mixed precision is not well supported yet.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""precision_tolerance""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I think 8-bit, 32-bit mixed precision is not well supported yet."",
+  ""confidence"": ""low""
+}",
+GNF-0039-1a4af8a4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.74,nan_inf,memory_mask_bounds,yes,low,"NVRTCError Traceback (most recent call last) File /anaconda/envs/rapids/lib/python3.13/site-packages/cupy/cuda/compiler.py:786, in _NVRTCProgram.compile(self, options, log_stream) 785 nvrtc.addNameExpression(self.ptr, ker) --> 786 nvrtc.compileProgram(self.ptr, options) 787 mapping = None","{
+  ""blind_id"": ""GNF-0039-1a4af8a4"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""NVRTCError Traceback (most recent call last) File /anaconda/envs/rapids/lib/python3.13/site-packages/cupy/cuda/compiler.py:786, in _NVRTCProgram.compile(self, options, log_stream) 785 nvrtc.addNameExpression(self.ptr, ker) --> 786 nvrtc.compileProgram(self.ptr, options) 787 mapping = None"",
+  ""confidence"": ""low""
+}",
+GNF-0040-5f558cf9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.75,performance_only,environment_configuration,unclear,low,"Within ~15 minutes, `test_triton_kernel_dtype_view_cfg_cpp_wrapper (__main__.KernelTests)` will be disabled in PyTorch CI for these platforms: rocm.","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Within ~15 minutes, `test_triton_kernel_dtype_view_cfg_cpp_wrapper (__main__.KernelTests)` will be disabled in PyTorch CI for these platforms: rocm."",
+  ""confidence"": ""low""
+}",
+GNF-0041-2e844e08,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.96,not_numerical_failure,memory_mask_bounds|compiler_codegen,unclear,low,"if 128 is `n`, then it would be greater than 112, but we're probably looking at mapping core counts incorrectly somehow.","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""if 128 is `n`, then it would be greater than 112, but we're probably looking at mapping core counts incorrectly somehow."",
+  ""confidence"": ""low""
+}",
+GNF-0042-938c1ba1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.06,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,TypeError: '_DimExpr' object cannot be interpreted as an integer,"{
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+    ""is_true_numerical_failure"": ""yes"",
+    ""evidence_quote"": ""TypeError: '_DimExpr' object cannot be interpreted as an integer"",
+    ""confidence"": ""low""
+}",
+GNF-0043-75ac4cd1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.05,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,high,skipped CUDA tests,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""skipped CUDA tests"",
+  ""confidence"": ""high""
+}",
+GNF-0044-58d8c7b3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.95,needs_review,environment_configuration|api_semantics,unclear,low,"If this is the error you see, I think there is room for improvement in the docs.","{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""If this is the error you see, I think there is room for improvement in the docs."",
+  ""confidence"": ""low""
+}",
+GNF-0045-d28f7a7d,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.54,precision_tolerance,api_semantics|environment_configuration,unclear,low,Has this been implemented already?,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Has this been implemented already?"",
+  ""confidence"": ""low""
+}",
+GNF-0046-21fccfc5,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.32,nan_inf,unknown,yes,low,errors are about 10-50x larger,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""precision_tolerance"", ""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""errors are about 10-50x larger"",
+  ""confidence"": ""low""
+}",
+GNF-0047-c6f710e5,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.15,overflow_underflow,api_semantics|environment_configuration,yes,high,source of problem is `a**b` invoking an integer exponential and causing undetected overflow.,"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""source of problem is `a**b` invoking an integer exponential and causing undetected overflow."",
+  ""confidence"": ""high""
+}",
+GNF-0048-07821d1f,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.69,precision_tolerance,api_semantics|environment_configuration,yes,low,"Error bounds for each function are documented in the following page: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#standard-functions > pow(x,y) | 2 (full range)","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Error bounds for each function are documented in the following page: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#standard-functions > pow(x,y) | 2 (full range)"",
+  ""confidence"": ""low""
+}",
+GNF-0049-80ab540f,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.98,nan_inf,memory_mask_bounds|compiler_codegen,yes,high,"It seems that a polynomial created with `p = cp.poly1d(cp.polyfit(x, y, N))` requires a float array `x` when calling via `p(x)` -- see code example below.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""It seems that a polynomial created with `p = cp.poly1d(cp.polyfit(x, y, N))` requires a float array `x` when calling via `p(x)` -- see code example below."",
+  ""confidence"": ""high""
+}",
+GNF-0050-b61f01c8,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,5.55,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""KeyError: Select({'avg_yearly': <DataType(polars=Decimal(precision=None, scale=6), plc=<type_id.DECIMAL128: 27>)>}, (NamedExpr(avg_yearly, UnaryFunction(<DataType(polars=Decimal(precision=None, scale=6), plc=<type_id.DECIMAL128: 27>)>, 'round', (2, 'half_to_even'), Cast(<DataType(polars=Decimal(precision=None, scale=6), plc=<type_id.DECIMAL128: 27>)>, BinOp(<DataType(polars=Float64, plc=<type_id.FLOAT64: 10>)>, <binary_operator.TRUE_DIV: 4>, Cast(<DataType(polars=Float64, plc=<type_id.FLOAT64: 10>)>, Agg(<DataType(polars=Decimal(precision=15, scale=2),",
+GNF-0051-53841ba4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.27,needs_review,compiler_codegen|api_semantics,unclear,low,"I don't think there's a way to obtain this via pip, will add as a feature request.","{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""I don't think there's a way to obtain this via pip, will add as a feature request."",
+  ""confidence"": ""low"" }",
+GNF-0052-c0b07407,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.19,not_numerical_failure,api_semantics|environment_configuration,yes,high,The issue disappears when using a single device.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue disappears when using a single device."",
+  ""confidence"": ""high""
+}",
+GNF-0053-9d7e3d51,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.79,nan_inf,memory_mask_bounds,yes,low,This should be undefined behavior.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""dtype_casting""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""This should be undefined behavior."",
+  ""confidence"": ""low""
+}",
+GNF-0054-d98d7afd,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.47,nan_inf,unknown,yes,low,I believe this is just due to the nature of floating point precision.,"{
+  ""blind_id"": ""GNF-0054-d98d7afd"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""precision_tolerance""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I believe this is just due to the nature of floating point precision."",
+  ""confidence"": ""low""
+}",
+GNF-0055-6da9303a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.01,precision_tolerance,api_semantics|environment_configuration,yes,low,out1[0] = inp[0] * 2.3 out2[0] = inp[0] + 1,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""out1[0] = inp[0] * 2.3 out2[0] = inp[0] + 1"",
+  ""confidence"": ""low""
+}",
+GNF-0056-d1d1b50f,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.16,overflow_underflow,api_semantics,yes,high,That means it's your responsibility to upcast the strides to 64-bit if you need the extra range.,"{
+  ""blind_id"": ""GNF-0056-d1d1b50f"",
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""That means it's your responsibility to upcast the strides to 64-bit if you need the extra range."",
+  ""confidence"": ""high""
+}",
+GNF-0057-44d428bb,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.14,crash_compile,async_race_ordering|hardware_backend,unclear,low,It does seem to hold the GIL (see the traceback above). I looked through the code as well and didn't spot any place where we are releasing the GIL: https://github.com/pytorch/pytorch/blob/main/torch/csrc/cuda/Module.cpp#L444.,"{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""async_race_ordering"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""It does seem to hold the GIL (see the traceback above). I looked through the code as well and didn't spot any place where we are releasing the GIL: https://github.com/pytorch/pytorch/blob/main/torch/csrc/cuda/Module.cpp#L444."",
+  ""confidence"": ""low""
+}",
+GNF-0058-03a80045,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.02,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,This is actually expected. Triton is not tuned for Turing.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This is actually expected. Triton is not tuned for Turing."",
+  ""confidence"": ""low""
+}",
+GNF-0059-b86722cb,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.38,needs_review,unknown,unclear,low,"if constraints.get(""num_stages"", None): num_stages = constraints[""num_stages""]","{
+  ""primary_failure_label"": ""assertion_error"",
+  ""secondary_cause_labels"": [""unknown""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""if constraints.get(\""num_stages\"", None): num_stages = constraints[\""num_stages\""]"",
+  ""confidence"": ""low""
+}",
+GNF-0060-3368e422,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.62,overflow_underflow,api_semantics,yes,high,"the intention is that if you want an integer value to be interpreted as an unsigned int, you need to convert it explicitly; e.g. >>> kw = {'min': 0, 'max': np.uint64(9223372036854775808)} >>> jnp.clip(jnp.asarray(0, dtype=jnp.uint64), **kw) Array(0, dtype=uint64)","{
+  ""blind_id"": ""GNF-0060-3368e422"",
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the intention is that if you want an integer value to be interpreted as an unsigned int, you need to convert it explicitly; e.g. >>> kw = {'min': 0, 'max': np.uint64(9223372036854775808)} >>> jnp.clip(jnp.asarray(0, dtype=jnp.uint64), **kw) Array(0, dtype=uint64)"",
+  ""confidence"": ""high""
+}",
+GNF-0061-039345f1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.68,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,high,"the reinplace optimization does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the reinplace optimization does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation."",
+  ""confidence"": ""high""
+}",
+GNF-0062-3cbef3ba,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.76,nan_inf,api_semantics|environment_configuration,unclear,low,"the problem is the ""meta"" column with the ""array"" type: it seems to be an array-of-records: `{","{
+  ""blind_id"": ""GNF-0062-3cbef3ba"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the problem is the \""meta\"" column with the \""array\"" type: it seems to be an array-of-records: `{"",
+  ""confidence"": ""low""
+}",
+GNF-0063-a5f90bd9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.78,needs_review,api_semantics|environment_configuration,unclear,low,the equivalent PyTorch code may not be expressed in a way that would lead to efficient codegen when compared to the user-defined Triton kernel I think?,"{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the equivalent PyTorch code may not be expressed in a way that would lead to efficient codegen when compared to the user-defined Triton kernel I think?"",
+  ""confidence"": ""low""
+}",
+GNF-0064-6c864f3b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.40,performance_only,api_semantics|environment_configuration,unclear,high,Triton is 4x faster than the PyTorch JIT.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Triton is 4x faster than the PyTorch JIT."",
+  ""confidence"": ""high""
+}",
+GNF-0065-e81a8790,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.19,precision_tolerance,api_semantics|environment_configuration,yes,medium,"Pairwise is quite amenable to parallelization, from multi-node to multi-core to SIMD.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Pairwise is quite amenable to parallelization, from multi-node to multi-core to SIMD."",
+  ""confidence"": ""medium""
+}",
+GNF-0066-103332ec,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.95,nan_inf,memory_mask_bounds|api_semantics,yes,low,The gradients differ a lot from the SDPA results.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The gradients differ a lot from the SDPA results."",
+  ""confidence"": ""low""
+}",
+GNF-0067-0064f2a6,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.63,nan_inf,api_semantics,yes,high,"print(cp.interp(x0_cp, x_cp, y_cp)) # [ 1., nan, inf, inf, 4.]","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""print(cp.interp(x0_cp, x_cp, y_cp)) # [ 1., nan, inf, inf, 4.]"",
+  ""confidence"": ""high""
+}",
+GNF-0068-abb65bf7,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.24,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,Grid size (1) < 2 * SM count (144) will likely result in GPU under utilization due to low occupancy.,"{
+  ""blind_id"": ""GNF-0068-abb65bf7"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Grid size (1) < 2 * SM count (144) will likely result in GPU under utilization due to low occupancy."",
+  ""confidence"": ""low""
+}",
+GNF-0069-88ed627b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.34,not_numerical_failure,environment_configuration,unclear,low,"It has never been implemented since the debut, so it is not a bug: https://github.com/cupy/cupy/blob/f05ce6a7b64ad35253a95d6d02e7481a4f3e700d/cupyx/scipy/sparse/_base.py#L43-L46","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""It has never been implemented since the debut, so it is not a bug: https://github.com/cupy/cupy/blob/f05ce6a7b64ad35253a95d6d02e7481a4f3e700d/cupyx/scipy/sparse/_base.py#L43-L46"",
+  ""confidence"": ""low""
+}",
+GNF-0070-0db7eac0,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.79,precision_tolerance,api_semantics|environment_configuration,yes,high,I have found this a very useful feature. For example it prevents the need to initialize different values when trying to find a max/min reduction (i.e. -inf vs +inf).,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I have found this a very useful feature. For example it prevents the need to initialize different values when trying to find a max/min reduction (i.e. -inf vs +inf)."",
+  ""confidence"": ""high""
+}",
+GNF-0071-ca4885e3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.49,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File ""...""","{
+  ""blind_id"": ""GNF-0071-ca4885e3"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File \""...\"""",
+  ""confidence"": ""low""
+}",
+GNF-0072-9fba4417,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.26,overflow_underflow,api_semantics|environment_configuration,yes,high,"If the values overflow `int` & `uint` types, they should be inferred as `string` column.","{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""If the values overflow `int` & `uint` types, they should be inferred as `string` column."",
+  ""confidence"": ""high""
+}",
+GNF-0073-9d1db2bf,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.48,nan_inf,memory_mask_bounds|compiler_codegen,yes,high,"Step 2: Apply filters to reduce ""OBVIOUS BAD"" config based on device capabilities, grid and per cta work information.","{
+  ""blind_id"": ""GNF-0073-9d1db2bf"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Step 2: Apply filters to reduce \""OBVIOUS BAD\"" config based on device capabilities, grid and per cta work information."",
+  ""confidence"": ""high""
+}",
+GNF-0074-c730bac3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.54,needs_review,environment_configuration,unclear,low,Likely Conda's poor package management for Cuda-CuDNN compatibility.,"{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Likely Conda's poor package management for Cuda-CuDNN compatibility."",
+  ""confidence"": ""low""
+}",
+GNF-0075-7d0d1d21,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.24,dtype_casting,api_semantics|environment_configuration,yes,low,TypeError: 'cupy.core.core.ndarray' object cannot be interpreted as an index,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: 'cupy.core.core.ndarray' object cannot be interpreted as an index"",
+  ""confidence"": ""low""
+}",
+GNF-0076-60dcd2da,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.46,nan_inf,compiler_codegen,unclear,low,it seems that the kernel is being called with an incorrect number of blocks (device_buffer.size() which is the size in bytes rather than the number of blocks).,"{
+  ""blind_id"": ""GNF-0076-60dcd2da"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""it seems that the kernel is being called with an incorrect number of blocks (device_buffer.size() which is the size in bytes rather than the number of blocks)."",
+  ""confidence"": ""low""
+}",
+GNF-0077-892468a4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.23,nan_inf,api_semantics|environment_configuration,yes,low,maybe it's because ada fp8 implementation has no non-fast accumulation.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""maybe it's because ada fp8 implementation has no non-fast accumulation."",
+  ""confidence"": ""low""
+}",
+GNF-0078-20f6032e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.65,precision_tolerance,compiler_codegen|api_semantics,yes,low,"Hence the coverage for NumPy is slowly continuously expanding, but limited.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Hence the coverage for NumPy is slowly continuously expanding, but limited."",
+  ""confidence"": ""low""
+}",
+GNF-0079-ec781ba7,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,6.61,needs_review,unknown,unclear,low,,"{
+  ""blind_id"": ""GNF-0079-ec781ba7"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""unknown""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""AddressSanitizer: stack-buffer-overflow on address 0x7ffe6bdfb750 at pc 0x559e3d547a39 bp 0x7ffe6bdfadf0 sp 0x7ffe6bdfade8 READ of size 8 at 0x7ffe6bdfb750 thread T0 #0 0x559e3d547a38 in mlir::ParseResult llvm::function_ref<mlir::ParseResult ()>::callback_fn<mlir::AsmParser::parse_op> (mlir::OpBuilder &op_builder, mlir::Operation *op) [inlined] <reps.0.0.0> :: mlir::ParseResult llvm::function_ref<mlir::ParseResult",
+GNF-0080-d86cbc25,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.84,nan_inf,memory_mask_bounds,yes,high,"Trigger: A LazyFrame whose `with_columns` adds a literal column built from a Series/numpy array of the same length as the source (i.e. a row-aligned column literal, not a scalar `pl.lit(value)`).","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Trigger: A LazyFrame whose `with_columns` adds a literal column built from a Series/numpy array of the same length as the source (i.e. a row-aligned column literal, not a scalar `pl.lit(value)`)."",
+  ""confidence"": ""high""
+}",
+GNF-0081-5786ae97,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,6.65,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Max relative difference: 4.6466436 # x: array([[ 1.119106, 6.592681, -6.125449, ..., -6.331781, -12.025826, 15.435001], [ 0.513045, -4.678412, 6.029325, ..., 0.53062 , 18.566563, -13.24138 ], [ -1.497669, -4.136811, 11.874069, ..., 2.772527, 0.57508 , -15.837502],... y: array([[ 1.116904, 6.59951 , -6.13182 , ..., -6.336188, -12.039021, 15.440063], [ 0.513",
+GNF-0082-a3d486ce,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.28,crash_compile,environment_configuration,unclear,low,"I don't think I have MSVC compiler installed Hi @ma-sadeghi I know nothing about CUDA + Windows, so I took a quick look at the [Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) and found that MSVC needs to be installed before installing CUDA Toolkit.","{
+  ""blind_id"": ""GNF-0082-a3d486ce"",
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""I don't think I have MSVC compiler installed Hi @ma-sadeghi I know nothing about CUDA + Windows, so I took a quick look at the [Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) and found that MSVC needs to be installed before installing CUDA Toolkit."",
+  ""confidence"": ""low""
+}",
+GNF-0083-c671b943,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.14,precision_tolerance,environment_configuration,yes,high,"Introduce a mechanism to enable/disable the fallback mode, e.g. to avoid unnoticed performance degradation due to hidden synchronizations and transfers.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Introduce a mechanism to enable/disable the fallback mode, e.g. to avoid unnoticed performance degradation due to hidden synchronizations and transfers."",
+  ""confidence"": ""high""
+}",
+GNF-0084-8e030aa9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.78,nan_inf,memory_mask_bounds|api_semantics,yes,high,"MAMGA is consistent with LAPACK (and, maybe, it just dispatches there).","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""MAMGA is consistent with LAPACK (and, maybe, it just dispatches there)."",
+  ""confidence"": ""high""
+}",
+GNF-0085-b4ddcf4b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.11,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,medium,Many (most?) decimal values are not exactly representable in a fixed-precision binary floating point representation.,"{
+  ""blind_id"": ""GNF-0085-b4ddcf4b"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Many (most?) decimal values are not exactly representable in a fixed-precision binary floating point representation."",
+  ""confidence"": ""medium""
+}",
+GNF-0086-61dd6010,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.49,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,"On GPU, both colab and my local machine has large INCONSISTENCY between runs. Sometimes even output a nan matrix.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""On GPU, both colab and my local machine has large INCONSISTENCY between runs. Sometimes even output a nan matrix."",
+  ""confidence"": ""low""
+}",
+GNF-0087-b5fe68e9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.61,needs_review,api_semantics|environment_configuration,yes,high,"subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence.","{
+  ""primary_failure_label"": ""hipBLASLt"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence."",
+  ""confidence"": ""high""
+}",
+GNF-0088-bbebe2a7,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.19,precision_tolerance,api_semantics,yes,high,"TypeError: can_cast() does not support Python ints, floats, and complex because the result used to depend on the value.","{
+  ""blind_id"": ""GNF-0088-bbebe2a7"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: can_cast() does not support Python ints, floats, and complex because the result used to depend on the value."",
+  ""confidence"": ""high""
+}",
+GNF-0089-074c6391,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.10,dtype_casting,api_semantics,unclear,low,"cupy.ndarray(x.shape, dtype=x.dtype, memptr=memptr_unowned, order=order)","{
+  ""blind_id"": ""GNF-0089-074c6391"",
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""cupy.ndarray(x.shape, dtype=x.dtype, memptr=memptr_unowned, order=order)"",
+  ""confidence"": ""low""
+}",
+GNF-0090-14f882db,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.57,precision_tolerance,environment_configuration,yes,high,deprecated the jit-unspilling feature in dask-cuda.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""deprecated the jit-unspilling feature in dask-cuda."",
+  ""confidence"": ""high""
+}",
+GNF-0091-f2cd4055,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.54,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,The emitted kernel is expecting the outer-dims (looped-over axes) are flattened so it can do a 1-D kernel configuration.,"{
+  ""blind_id"": ""GNF-0091-f2cd4055"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The emitted kernel is expecting the outer-dims (looped-over axes) are flattened so it can do a 1-D kernel configuration."",
+  ""confidence"": ""low""
+}",
+GNF-0092-350f027f,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.72,crash_compile,memory_mask_bounds,unclear,low,"p = torch.where(M == 0, float(""-inf""), p)","{
+  ""blind_id"": ""GNF-0092-350f027f"",
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""p = torch.where(M == 0, float(\""-inf\""), p)"",
+  ""confidence"": ""low""
+}",
+GNF-0093-6cb318e0,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.59,nan_inf,api_semantics,unclear,low,"It seems the way to do this, then, would be to use `jnp.arange(a.size) + a.size` as out of bounds indices","{
+  ""blind_id"": ""GNF-0093-6cb318e0"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""It seems the way to do this, then, would be to use `jnp.arange(a.size) + a.size` as out of bounds indices"",
+  ""confidence"": ""low""
+}",
+GNF-0094-5130df2b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.91,precision_tolerance,api_semantics|environment_configuration,unclear,low,being able to dispatch to the right gemm in a clean-ish way is good (i.e. e8m0 scales + e4m3 data -> mxfp8 gemm),"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""being able to dispatch to the right gemm in a clean-ish way is good (i.e. e8m0 scales + e4m3 data -> mxfp8 gemm)"",
+  ""confidence"": ""low""
+}",
+GNF-0095-e46f2dc5,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.03,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,"RuntimeError: Function torch::jit::(anonymous namespace)::DifferentiableGraphBackward returned an invalid gradient at index 0 - got [8, 1, 1024] but expected shape compatible with [8, 512, 1024]","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""RuntimeError: Function torch::jit::(anonymous namespace)::DifferentiableGraphBackward returned an invalid gradient at index 0 - got [8, 1, 1024] but expected shape compatible with [8, 512, 1024]"",
+  ""confidence"": ""low""
+}",
+GNF-0096-cc3502f6,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.10,crash_compile,compiler_codegen|hardware_backend,unclear,low,‘task_scheduler_init’ in namespace ‘tbb’ does not name a type,"{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""‘task_scheduler_init’ in namespace ‘tbb’ does not name a type"",
+  ""confidence"": ""low""
+}",
+GNF-0097-60602b2b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.35,precision_tolerance,api_semantics|environment_configuration,yes,high,The full numba approach allows for extension types to support null values.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The full numba approach allows for extension types to support null values."",
+  ""confidence"": ""high""
+}",
+GNF-0098-a1e24269,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.28,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"Most of the segfaults are appearing when the Python GIL is being reacquired, which we also find confusing.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Most of the segfaults are appearing when the Python GIL is being reacquired, which we also find confusing."",
+  ""confidence"": ""low""
+}",
+GNF-0099-8e08d802,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.56,crash_compile,async_race_ordering,unclear,low,"Not sure if you meant to use num_warps=2, it will also prevent using mmv5.","{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""async_race_ordering""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Not sure if you meant to use num_warps=2, it will also prevent using mmv5."",
+  ""confidence"": ""low""
+}",
+GNF-0100-a235b2dd,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.52,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,low,unimplemented code path UNREACHABLE executed at /home/shunting/ws/triton/lib/Conversion/TritonGPUToLLVM/ElementwiseOpToLLVM.cpp:254!,"{
+  ""blind_id"": ""GNF-0100-a235b2dd"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""unimplemented code path UNREACHABLE executed at /home/shunting/ws/triton/lib/Conversion/TritonGPUToLLVM/ElementwiseOpToLLVM.cpp:254!"",
+  ""confidence"": ""low""
+}",
+GNF-0101-ca19a99c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.39,performance_only,environment_configuration,unclear,low,Running it with a py file will result in the following error.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Running it with a py file will result in the following error."",
+  ""confidence"": ""low""
+}",
+GNF-0102-5bd04adc,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.42,nan_inf,api_semantics,yes,high,it just means that you're calling some function in your model in a way that is undefined to floating point precision.,"{
+  ""blind_id"": ""GNF-0102-5bd04adc"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""it just means that you're calling some function in your model in a way that is undefined to floating point precision."",
+  ""confidence"": ""high""
+}",
+GNF-0103-f835a9bf,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.52,not_numerical_failure,environment_configuration|hardware_backend,unclear,low,We don't support the PPC architecture ourselves and most likely don't have the engineer bandwidth to maintain such a build.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""We don't support the PPC architecture ourselves and most likely don't have the engineer bandwidth to maintain such a build."",
+  ""confidence"": ""low""
+}",
+GNF-0104-5a61566a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.52,not_numerical_failure,unknown,unclear,low,change make_tensor_descriptor -> make_block_ptr is ok > change make_tensor_descriptor -> make_block_ptr is ok It did work indeed.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""unknown""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""change make_tensor_descriptor -> make_block_ptr is ok > change make_tensor_descriptor -> make_block_ptr is ok It did work indeed."",
+  ""confidence"": ""low""
+}",
+GNF-0105-bbfb9d59,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.67,precision_tolerance,memory_mask_bounds|compiler_codegen,yes,low,"My immediate assumption is that ""int32"" and ""int64"" columns are hashing to different partitions, but I'll need to investigate a bit to say for sure.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""My immediate assumption is that \""int32\"" and \""int64\"" columns are hashing to different partitions, but I'll need to investigate a bit to say for sure."",
+  ""confidence"": ""low""
+}",
+GNF-0106-69df058d,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.37,nan_inf,api_semantics,yes,high,"The expected attention output should be finite, but JAX reports an invalid inf value in convert_element_type.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The expected attention output should be finite, but JAX reports an invalid inf value in convert_element_type."",
+  ""confidence"": ""high""
+}",
+GNF-0107-36abe955,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.01,nan_inf,memory_mask_bounds,yes,low,temp = (temp - temp.min())/(temp.max() - temp.min())*2-1,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""memory_mask_bounds""],
+    ""is_true_numerical_failure"": ""yes"",
+    ""evidence_quote"": ""temp = (temp - temp.min())/(temp.max() - temp.min())*2-1"",
+    ""confidence"": ""low""
+}",
+GNF-0108-049dae8c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.60,precision_tolerance,api_semantics,yes,low,"CuDF Result: 0 1 c0 {'a': 1, 'b': None} {'a': None, 'b': 2}","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""CuDF Result: 0 1 c0 {'a': 1, 'b': None} {'a': None, 'b': 2}"",
+  ""confidence"": ""low""
+}",
+GNF-0109-5b3bb56e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,5.28,not_numerical_failure,memory_mask_bounds|compiler_codegen,unclear,low,"The above error only occurs during distributed training (multi-process), and both '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' and '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir' files do exist.","{
+  ""blind_id"": ""GNF-0109-5b3bb56e"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The above error only occurs during distributed training (multi-process), and both '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir.tmp.pid_15735_304289' and '/mnt/petrelfs/caoweihan/.triton/cache/cff628804055ab05f902072733c9ab2d/_rms_norm_bwd_dx_fused.ttir' files do exist."",
+  ""confidence"": ""low""
+}",
+GNF-0110-1c6064fd,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.25,not_numerical_failure,environment_configuration,unclear,low,The NVIDIA driver's CUDA version is 12.4 which is older than the PTX compiler version 12.6.68.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The NVIDIA driver's CUDA version is 12.4 which is older than the PTX compiler version 12.6.68."",
+  ""confidence"": ""low""
+}",
+GNF-0111-4b909a91,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.93,nan_inf,memory_mask_bounds|compiler_codegen,yes,high,MISMATCH DETECTED! Iteration 0 - Attention Output Analysis ============================================================ Q region 1 (0:t): Max error: 1.335144e-05 Mean error: 5.607386e-07,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""MISMATCH DETECTED! Iteration 0 - Attention Output Analysis ============================================================ Q region 1 (0:t): Max error: 1.335144e-05 Mean error: 5.607386e-07"",
+  ""confidence"": ""high""
+}",
+GNF-0112-9ee80d72,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.20,performance_only,environment_configuration,unclear,low,CUB has superseded this interface in favor of the ArgMin interface that takes two separate iterators: one iterator to which the extremum is written and another iterator to which the index of the found extremum is written.,"{
+  ""blind_id"": ""GNF-0112-9ee80d72"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""CUB has superseded this interface in favor of the ArgMin interface that takes two separate iterators: one iterator to which the extremum is written and another iterator to which the index of the found extremum is written."",
+  ""confidence"": ""low""
+}",
+GNF-0113-e024c338,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.48,precision_tolerance,api_semantics,yes,high,assert_array_almost_equal_nulp,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""assert_array_almost_equal_nulp"",
+  ""confidence"": ""high""
+}",
+GNF-0114-9723251e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.42,nan_inf,api_semantics|environment_configuration,unclear,low,This error is usually caused by passing an argument of a type that is unsupported by the named function.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This error is usually caused by passing an argument of a type that is unsupported by the named function."",
+  ""confidence"": ""low""
+}",
+GNF-0115-bd414dfb,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.77,nan_inf,memory_mask_bounds,yes,high,The issue vanishes when `chunk_size=100`. Perhaps noteworthy is that the program completes faster than should be possible when the issue occurs.,"{
+  ""blind_id"": ""GNF-0115-bd414dfb"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue vanishes when `chunk_size=100`. Perhaps noteworthy is that the program completes faster than should be possible when the issue occurs."",
+  ""confidence"": ""high""
+}",
+GNF-0116-96b537db,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.09,precision_tolerance,api_semantics,yes,low,array's dtype should always have higher priority than scalar dtypes.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""array's dtype should always have higher priority than scalar dtypes."",
+  ""confidence"": ""low""
+}",
+GNF-0117-5c96ad33,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.48,nan_inf,api_semantics,yes,high,"It seems that it would be more appropriate to return NaN in these cases (as `scipy.special.ndtri`, `torch.special.ndtri`, etc. do).","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""It seems that it would be more appropriate to return NaN in these cases (as `scipy.special.ndtri`, `torch.special.ndtri`, etc. do)."",
+  ""confidence"": ""high""
+}",
+GNF-0118-6cddc10b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.92,precision_tolerance,api_semantics,unclear,low,Integers to negative integer powers are not allowed.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Integers to negative integer powers are not allowed."",
+  ""confidence"": ""low""
+}",
+GNF-0119-84e3156c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.11,precision_tolerance,api_semantics|environment_configuration,yes,low,I think you have to explicitly specify that 0.0 is float16 in this case,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""I think you have to explicitly specify that 0.0 is float16 in this case"",
+  ""confidence"": ""low""
+}",
+GNF-0120-3d8af802,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.04,not_numerical_failure,api_semantics|environment_configuration,unclear,low,ValueError('Metadata mismatch found in `from_delayed`.\n\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`'),"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""ValueError('Metadata mismatch found in `from_delayed`.\\n\\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`')"",
+  ""confidence"": ""low""
+}",
+GNF-0121-d1cf86e9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.56,crash_compile,compiler_codegen|hardware_backend,unclear,low,"TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required","{
+  ""blind_id"": ""GNF-0121-d1cf86e9"",
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""TBB version is too old, 2019 update 5, i.e. TBB_INTERFACE_VERSION >= 11005 required"",
+  ""confidence"": ""low""
+}",
+GNF-0122-2172f7de,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.44,precision_tolerance,api_semantics|environment_configuration,yes,low,Truncation is expected when the divisor has a scale that is equal-or-less-than the dividend.,"{
+  ""blind_id"": ""GNF-0122-2172f7de"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Truncation is expected when the divisor has a scale that is equal-or-less-than the dividend."",
+  ""confidence"": ""low""
+}",
+GNF-0123-b044c5aa,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.93,nan_inf,api_semantics,yes,low,"Unexpected XLA layout override: (XLA) DeviceLocalLayout(major_to_minor=(0, 1, 2, 3), _tiling=(), _sub_byte_element_size_in_bits=0) != DeviceLocalLayout(major_to_minor=(0, 2, 1, 3), _tiling=(), _sub_byte_element_size_in_bits=0) (User input layout)","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Unexpected XLA layout override: (XLA) DeviceLocalLayout(major_to_minor=(0, 1, 2, 3), _tiling=(), _sub_byte_element_size_in_bits=0) != DeviceLocalLayout(major_to_minor=(0, 2, 1, 3), _tiling=(), _sub_byte_element_size_in_bits=0) (User input layout)"",
+  ""confidence"": ""low""
+}",
+GNF-0124-5e35db0b,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.52,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,It looks like cuFFT supports BF16 already...,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""It looks like cuFFT supports BF16 already..."",
+  ""confidence"": ""low""
+}",
+GNF-0125-29346792,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.22,precision_tolerance,compiler_codegen|api_semantics,yes,low,TypeError: The `dtype` and `signature` arguments to ufuncs only select the general DType and not details such as the byte order or time unit.,"{
+  ""blind_id"": ""GNF-0125-29346792"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""TypeError: The `dtype` and `signature` arguments to ufuncs only select the general DType and not details such as the byte order or time unit."",
+  ""confidence"": ""low""
+}",
+GNF-0126-2958d273,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.05,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,"codes before: [16, 11, 6, 2, 17] codes after: [12, 7, 2, 18, 13]","{
+  ""blind_id"": ""GNF-0126-2958d273"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""codes before: [16, 11, 6, 2, 17] codes after: [12, 7, 2, 18, 13]"",
+  ""confidence"": ""low""
+}",
+GNF-0127-32017a62,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.99,not_numerical_failure,environment_configuration,unclear,low,it worked after restarting the computer with no other change.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""it worked after restarting the computer with no other change."",
+  ""confidence"": ""low""
+}",
+GNF-0128-c6e2544c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.55,precision_tolerance,compiler_codegen|api_semantics,yes,high,Functions that accept those literals will have a easier time when being fused.,"{
+  ""blind_id"": ""GNF-0128-c6e2544c"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Functions that accept those literals will have a easier time when being fused."",
+  ""confidence"": ""high""
+}",
+GNF-0129-c9f64c60,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.69,dtype_casting,api_semantics,unclear,low,The `to_strip` parameter here is expected to only be a `str` type.,"{
+  ""blind_id"": ""GNF-0129-c9f64c60"",
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The `to_strip` parameter here is expected to only be a `str` type."",
+  ""confidence"": ""low""
+}",
+GNF-0130-957b5693,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.05,crash_compile,memory_mask_bounds|compiler_codegen,unclear,low,E0714 16:40:03.040179 40365 pjrt_stream_executor_client.cc:2916] Execution of replica 0 failed: INTERNAL: jaxlib/gpu/solver_handle_pool.cc:37: operation gpusolverDnCreate(&handle) failed: cuSolver internal error,"{
+  ""blind_id"": ""GNF-0130-957b5693"",
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""E0714 16:40:03.040179 40365 pjrt_stream_executor_client.cc:2916] Execution of replica 0 failed: INTERNAL: jaxlib/gpu/solver_handle_pool.cc:37: operation gpusolverDnCreate(&handle) failed: cuSolver internal error"",
+  ""confidence"": ""low""
+}",
+GNF-0131-4b657811,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.13,needs_review,api_semantics|environment_configuration,unclear,low,The most robust solution is to create descriptors inside the kernel using `tl.make_tensor_descriptor()`.,"{
+  ""blind_id"": ""GNF-0131-4b657811"",
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The most robust solution is to create descriptors inside the kernel using `tl.make_tensor_descriptor()`."",
+  ""confidence"": ""low""
+}",
+GNF-0132-01bc7af7,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.48,not_numerical_failure,environment_configuration,unclear,low,"The autotuner runs the kernel multiple times, which is not safe to do for in-place kernels because the first run clobbers the input data.","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The autotuner runs the kernel multiple times, which is not safe to do for in-place kernels because the first run clobbers the input data."",
+  ""confidence"": ""low""
+}",
+GNF-0133-3e76eecf,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.13,nan_inf,memory_mask_bounds|api_semantics,unclear,low,"The range of uint8 is [0, 255] but int8 is [-128, 127] so this is not a safe type conversion and may overflow (e.g. try np.arange(256).astype(np.int8) and you will see all values >=128 have wrapped around to negative values)","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The range of uint8 is [0, 255] but int8 is [-128, 127] so this is not a safe type conversion and may overflow (e.g. try np.arange(256).astype(np.int8) and you will see all values >=128 have wrapped around to negative values)"",
+  ""confidence"": ""low""
+}",
+GNF-0134-2006d4e1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.75,precision_tolerance,api_semantics|environment_configuration,yes,high,"The static launcher appears to compress all pointer-typed Triton arguments to ""O"" and does not preserve or validate the original pointer element dtype (for example *fp16, *bf16, *fp32) before launch.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The static launcher appears to compress all pointer-typed Triton arguments to \""O\"" and does not preserve or validate the original pointer element dtype (for example *fp16, *bf16, *fp32) before launch."",
+  ""confidence"": ""high""
+}",
+GNF-0135-51861a93,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.67,not_numerical_failure,environment_configuration,unclear,low,PyTorch version: 2.5.1+cu124 Is debug build: False CUDA used to build PyTorch: 12.4 ROCM used to build PyTorch: N/A,"{
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [""environment_configuration""],
+    ""is_true_numerical_failure"": ""unclear"",
+    ""evidence_quote"": ""PyTorch version: 2.5.1+cu124 Is debug build: False CUDA used to build PyTorch: 12.4 ROCM used to build PyTorch: N/A"",
+    ""confidence"": ""low""
+}",
+GNF-0136-a301f54e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.44,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,"File ""cupy/_core/core.pyx"", line 1676, in cupy._core.core._ndarray_base.__array_ufunc__","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+    ""is_true_numerical_failure"": ""yes"",
+    ""evidence_quote"": ""File \""cupy/_core/core.pyx\"", line 1676, in cupy._core.core._ndarray_base.__array_ufunc__"",
+    ""confidence"": ""low""
+}",
+GNF-0137-1f5e2c55,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.15,precision_tolerance,compiler_codegen|hardware_backend,yes,low,Not sure if you've already implemented anything better.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Not sure if you've already implemented anything better."",
+  ""confidence"": ""low""
+}",
+GNF-0138-73610007,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.35,nan_inf,memory_mask_bounds,unclear,low,"For this kernel is it triggering the int64 path? or is it using int32 indexing, you can find this info in `INDEX_DTYPE`","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""For this kernel is it triggering the int64 path? or is it using int32 indexing, you can find this info in `INDEX_DTYPE`"",
+  ""confidence"": ""low""
+}",
+GNF-0139-08c1b395,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.20,nan_inf,compiler_codegen|hardware_backend,yes,high,RuntimeError: CUDA error: an illegal memory access was encountered,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""RuntimeError: CUDA error: an illegal memory access was encountered"",
+  ""confidence"": ""high""
+}",
+GNF-0140-0369d89c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.78,precision_tolerance,api_semantics|environment_configuration,unclear,low,"FP16 on Pascal GPUs is not supported. More generally compute capability < 70 is not supported, though you can make it work by changing the datatype to fp16 and using block sizes that don't overflow shared memory","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""FP16 on Pascal GPUs is not supported. More generally compute capability < 70 is not supported, though you can make it work by changing the datatype to fp16 and using block sizes that don't overflow shared memory"",
+  ""confidence"": ""low""
+}",
+GNF-0141-cd3b65ac,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.82,nan_inf,api_semantics,yes,high,Simple reproducer: `if np.isnat(in_array[i]): out_array[i] = 100`,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Simple reproducer: `if np.isnat(in_array[i]): out_array[i] = 100`"",
+  ""confidence"": ""high""
+}",
+GNF-0142-fd6a822f,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.82,precision_tolerance,hardware_backend|api_semantics,yes,low,the problem is in an XLA flag.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""hardware_backend"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""the problem is in an XLA flag."",
+  ""confidence"": ""low""
+}",
+GNF-0143-8c373d44,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.89,overflow_underflow,environment_configuration,yes,high,Casting inputs to a bigger int type before multiplying is the way to do it but my incur some overhead.,"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Casting inputs to a bigger int type before multiplying is the way to do it but my incur some overhead."",
+  ""confidence"": ""high""
+}",
+GNF-0144-bd760235,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.36,precision_tolerance,api_semantics|environment_configuration,yes,low,"dividing `DECIMAL64(200,-2)` by `DECIMAL64(300,-2)` (which is equivalent to `2.00 / 3.00`) gives a result of `DECIMAL64(0,0)` due to the implementation of `fixed_point<>::operator/()`","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""dividing `DECIMAL64(200,-2)` by `DECIMAL64(300,-2)` (which is equivalent to `2.00 / 3.00`) gives a result of `DECIMAL64(0,0)` due to the implementation of `fixed_point<>::operator/()`"",
+  ""confidence"": ""low""
+}",
+GNF-0145-13ae4b2a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.40,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"I've tried a few workarounds, but I haven't been able to eliminate these problems and overheads.","{
+  ""blind_id"": ""GNF-0145-13ae4b2a"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""I've tried a few workarounds, but I haven't been able to eliminate these problems and overheads."",
+  ""confidence"": ""low""
+}",
+GNF-0146-2fe36ae1,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.80,not_numerical_failure,compiler_codegen|hardware_backend,unclear,low,Fix is up here: https://github.com/rapidsai/cudf/pull/19783,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Fix is up here: https://github.com/rapidsai/cudf/pull/19783"",
+  ""confidence"": ""low""
+}",
+GNF-0147-77cef7ab,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.14,nan_inf,api_semantics|environment_configuration,yes,low,"The only different I see with respect to other float columns being inferred correctly is the difference in scientific notation, i.e., `34.3e+09` is being inferred correctly but `34.3e+304` is not.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The only different I see with respect to other float columns being inferred correctly is the difference in scientific notation, i.e., `34.3e+09` is being inferred correctly but `34.3e+304` is not."",
+  ""confidence"": ""low""
+}",
+GNF-0148-5dbeb416,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.78,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,"So, it looks like we are getting the expected performance?","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""So, it looks like we are getting the expected performance?"",
+  ""confidence"": ""low""
+}",
+GNF-0149-305f23bb,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.24,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,The CUDNN version is 9.14 (91400 from `check_cudnn_version()`),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The CUDNN version is 9.14 (91400 from `check_cudnn_version()`)"",
+  ""confidence"": ""low""
+}",
+GNF-0150-3c830fbd,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.12,performance_only,memory_mask_bounds|compiler_codegen,yes,low,"When the size of block is 256, it takes 6x more time than pointer block.","{
+  ""blind_id"": ""GNF-0150-3c830fbd"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""When the size of block is 256, it takes 6x more time than pointer block."",
+  ""confidence"": ""low""
+}",
+GNF-0151-5ccf24b2,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.31,precision_tolerance,compiler_codegen|api_semantics,yes,high,"The implementations are sufficiently acceptable along ""common"" paths, but are often not correctly implemented with respect to things like type promotion or error handling.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The implementations are sufficiently acceptable along \""common\"" paths, but are often not correctly implemented with respect to things like type promotion or error handling."",
+  ""confidence"": ""high""
+}",
+GNF-0152-d8097288,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.13,performance_only,hardware_backend|api_semantics,yes,low,"However, the above is 20x slower...","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""hardware_backend"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""However, the above is 20x slower..."",
+  ""confidence"": ""low""
+}",
+GNF-0153-0a1f22c0,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.69,needs_review,compiler_codegen,unclear,low,device kernel image is invalid,"{
+  ""blind_id"": ""GNF-0153-0a1f22c0"",
+  ""primary_failure_label"": ""device_kernel_image_is_invalid"",
+  ""secondary_cause_labels"": [""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""device kernel image is invalid"",
+  ""confidence"": ""low""
+}",
+GNF-0154-a389b1a4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.48,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"when `clear()` is called, the children columns are deleted, but their references still are stored in `columns`. That's what leads to the segfault, it tries to access a deleted object's reference.","{
+  ""blind_id"": ""GNF-0154-a389b1a4"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""when `clear()` is called, the children columns are deleted, but their references still are stored in `columns`. That's what leads to the segfault, it tries to access a deleted object's reference."",
+  ""confidence"": ""low""
+}",
+GNF-0155-6ad1750a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.64,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,"To get the best performance, we'd like to change the default to use the pool from rapidsmpf.","{
+  ""blind_id"": ""GNF-0155-6ad1750a"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""To get the best performance, we'd like to change the default to use the pool from rapidsmpf."",
+  ""confidence"": ""low""
+}",
+GNF-0156-b72349bc,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.13,precision_tolerance,memory_mask_bounds|compiler_codegen,unclear,low,The ahead of time lowering and compilation method for calculating the FLOPS described in (https://jax.readthedocs.io/en/latest/aot.html) returns -1 when applied to a flax.linen.Module involving convolution.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""The ahead of time lowering and compilation method for calculating the FLOPS described in (https://jax.readthedocs.io/en/latest/aot.html) returns -1 when applied to a flax.linen.Module involving convolution."",
+  ""confidence"": ""low""
+}",
+GNF-0157-7be66b56,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.32,precision_tolerance,api_semantics,yes,low,ComplexWarning: Casting complex values to real discards the imaginary part x = x.astype(numpy.float64),"{
+  ""blind_id"": ""GNF-0157-7be66b56"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""ComplexWarning: Casting complex values to real discards the imaginary part x = x.astype(numpy.float64)"",
+  ""confidence"": ""low""
+}",
+GNF-0158-41ca2b85,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.54,nan_inf,memory_mask_bounds|api_semantics,unclear,low,"the shape `(500, 1, 5, 3400)` is reshaped here to `(500, 80, 5, 3400) then ascontiguousarray is called.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the shape `(500, 1, 5, 3400)` is reshaped here to `(500, 80, 5, 3400) then ascontiguousarray is called."",
+  ""confidence"": ""low""
+}",
+GNF-0159-f17202a4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.52,performance_only,environment_configuration,unclear,low,"2026.04.24 Pytorch nightly wheel for Windows is non functional (LE: cuDNN DLLs are missing, manually adding them solves the issue)","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""2026.04.24 Pytorch nightly wheel for Windows is non functional (LE: cuDNN DLLs are missing, manually adding them solves the issue)"",
+  ""confidence"": ""low""
+}",
+GNF-0160-b61a834c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.93,nan_inf,api_semantics,yes,low,"b't0' <class 'bytes'> b'0' <class 'bytes'> [2024-04-12 18:31:09,911] torch.distributed.elastic.multiprocessing.api: [ERROR] failed (exitcode: -11)","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""b't0' <class 'bytes'> b'0' <class 'bytes'> [2024-04-12 18:31:09,911] torch.distributed.elastic.multiprocessing.api: [ERROR] failed (exitcode: -11)"",
+  ""confidence"": ""low""
+}",
+GNF-0161-43f5b312,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.34,nan_inf,api_semantics|environment_configuration,unclear,low,SECONDS is not as a valid `TimeUnit` in Parquet and hence converted to milliseconds by both cudf and arrow.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""SECONDS is not as a valid `TimeUnit` in Parquet and hence converted to milliseconds by both cudf and arrow."",
+  ""confidence"": ""low""
+}",
+GNF-0162-297471a6,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.26,nan_inf,memory_mask_bounds,yes,low,gradient over scanned function is inverse.,"{
+  ""blind_id"": ""GNF-0162-297471a6"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""gradient over scanned function is inverse."",
+  ""confidence"": ""low""
+}",
+GNF-0163-93b2beac,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.29,nan_inf,memory_mask_bounds|api_semantics,yes,high,"In this repro, the function `foo()` is mutating a tensor with overlapping data. This is undefined behavior ([docs](https://docs.pytorch.org/docs/stable/generated/torch.as_strided.html)), because there is a data race to perform the mutation, so you can get different results depending on the kernel that runs, and we end up with a different behavior under eager vs compile.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""In this repro, the function `foo()` is mutating a tensor with overlapping data. This is undefined behavior ([docs](https://docs.pytorch.org/docs/stable/generated/torch.as_strided.html)), because there is a data race to perform the mutation, so you can get different results depending on the kernel that runs, and we end up with a different behavior under eager vs compile."",
+  ""confidence"": ""high""
+}",
+GNF-0164-cdeaf26a,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.79,precision_tolerance,api_semantics,unclear,low,"Another hint is that if I use fp32 dot accumulation instead of fp16, the output will be correct.","{
+  ""blind_id"": ""GNF-0164-cdeaf26a"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Another hint is that if I use fp32 dot accumulation instead of fp16, the output will be correct."",
+  ""confidence"": ""low""
+}",
+GNF-0165-0b146b77,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.73,performance_only,environment_configuration,unclear,low,I wonder if we could add this information to CuPy's documentation as well?,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""I wonder if we could add this information to CuPy's documentation as well?"",
+  ""confidence"": ""low""
+}",
+GNF-0166-2dbedde8,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.13,performance_only,environment_configuration,unclear,low,"Given that CUDF 0.20 supports CUDA 11.0+, it should now be safe to remove this comment, and the `volatile` attributes.","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Given that CUDF 0.20 supports CUDA 11.0+, it should now be safe to remove this comment, and the `volatile` attributes."",
+  ""confidence"": ""low""
+}",
+GNF-0167-13076e98,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.66,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,This may indicate issues in tile mapping or launch configuration.,"{
+  ""blind_id"": ""GNF-0167-13076e98"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This may indicate issues in tile mapping or launch configuration."",
+  ""confidence"": ""low""
+}",
+GNF-0168-49dcb998,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.50,performance_only,unknown,unclear,high,the overhead should be much smaller,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""unknown""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the overhead should be much smaller"",
+  ""confidence"": ""high""
+}",
+GNF-0169-cf25d953,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.91,nan_inf,api_semantics|environment_configuration,yes,low,"The issue goes away when using a for-loop to iterate over layers instead, even though the parameter count is verified to be the same for both models.","{
+  ""blind_id"": ""GNF-0169-cf25d953"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The issue goes away when using a for-loop to iterate over layers instead, even though the parameter count is verified to be the same for both models."",
+  ""confidence"": ""low""
+}",
+GNF-0170-78e2d436,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.32,nan_inf,api_semantics|environment_configuration,yes,high,"Python's behavior `x1 % x2` Python 3.10.12 (main, Jul 29 2024, 16:56:48) [GCC 11.4.0] on linux Type ""help"", ""copyright"", ""credits"" or ""license"" for more information.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""api_semantics"", ""environment_configuration""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Python's behavior `x1 % x2` Python 3.10.12 (main, Jul 29 2024, 16:56:48) [GCC 11.4.0] on linux Type \""help\"", \""copyright\"", \""credits\"" or \""license\"" for more information."",
+  ""confidence"": ""high""
+}",
+GNF-0171-20358422,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.17,nan_inf,memory_mask_bounds|compiler_codegen,yes,low,Allocating 5945425920 bytes exceeds the memory limit of 4294967296 bytes.,"{
+  ""blind_id"": ""GNF-0171-20358422"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Allocating 5945425920 bytes exceeds the memory limit of 4294967296 bytes."",
+  ""confidence"": ""low""
+}",
+GNF-0172-1596bb30,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.07,nan_inf,memory_mask_bounds,yes,low,ynumel = 1068 E1105 12:22:10.548000 3864099 site-packages/torch/_inductor/runtime/triton_heuristics.py:803] ynumel = 1068,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""ynumel = 1068 E1105 12:22:10.548000 3864099 site-packages/torch/_inductor/runtime/triton_heuristics.py:803] ynumel = 1068"",
+  ""confidence"": ""low""
+}",
+GNF-0173-29d14bbd,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.42,dtype_casting,environment_configuration,unclear,low,This is not critical bug.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This is not critical bug."",
+  ""confidence"": ""low""
+}",
+GNF-0174-e7b5adf3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.00,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,Is there an environment variable one can set to get debug symbols for the compiled code?,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Is there an environment variable one can set to get debug symbols for the compiled code?"",
+  ""confidence"": ""low""
+}",
+GNF-0175-551fdc3c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.50,nan_inf,compiler_codegen|hardware_backend,yes,high,The consistent +2 offset (rather than random noise) suggests a JIT cache or compiled kernel selection error rather than a floating-point summation issue.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""hardware_backend""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The consistent +2 offset (rather than random noise) suggests a JIT cache or compiled kernel selection error rather than a floating-point summation issue."",
+  ""confidence"": ""high""
+}",
+GNF-0176-0884dd43,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.34,needs_review,environment_configuration|api_semantics,unclear,low,"if/when windows supports is added, that conversation would happen here, and it's a big undertaking and they'd have to get window dev boxes.","{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""if/when windows supports is added, that conversation would happen here, and it's a big undertaking and they'd have to get window dev boxes."",
+  ""confidence"": ""low""
+}",
+GNF-0177-39a0d983,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.32,needs_review,compiler_codegen|api_semantics,unclear,low,This is related to Special Wheel built for Colab integration: https://github.com/googlecolab/colabtools/issues/5045#issue-2788233189,"{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This is related to Special Wheel built for Colab integration: https://github.com/googlecolab/colabtools/issues/5045#issue-2788233189"",
+  ""confidence"": ""low""
+}",
+GNF-0178-7e3074ef,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.27,performance_only,environment_configuration|api_semantics,unclear,low,the effort is unknown and likely incredibly large.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the effort is unknown and likely incredibly large."",
+  ""confidence"": ""low""
+}",
+GNF-0179-0d2d153d,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.91,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,It's over 40% of the overhead with the kernel doing nothing.,"{
+  ""blind_id"": ""GNF-0179-0d2d153d"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""It's over 40% of the overhead with the kernel doing nothing."",
+  ""confidence"": ""low""
+}",
+GNF-0180-3e16cf7e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.72,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion."",
+  ""confidence"": ""low""
+}",
+GNF-0181-f206820c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.43,crash_compile,compiler_codegen|api_semantics,unclear,low,This kernel failed to be lowered from ttgir to llir in this line: https://github.com/triton-lang/triton/blob/b933f0fafe735ac21b1aa6f507336b0cafcc1bbb/python/triton/compiler/compiler.py#L288,"{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""This kernel failed to be lowered from ttgir to llir in this line: https://github.com/triton-lang/triton/blob/b933f0fafe735ac21b1aa6f507336b0cafcc1bbb/python/triton/compiler/compiler.py#L288"",
+  ""confidence"": ""low""
+}",
+GNF-0182-0943f7d0,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.08,precision_tolerance,environment_configuration|api_semantics,unclear,low,128 bit types for decimal cannot be used for the group by column.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""128 bit types for decimal cannot be used for the group by column."",
+  ""confidence"": ""low""
+}",
+GNF-0183-0f27bf2e,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,1.99,precision_tolerance,environment_configuration|api_semantics,yes,low,fastmath should be off by default.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""environment_configuration"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""fastmath should be off by default."",
+  ""confidence"": ""low""
+}",
+GNF-0184-5cb52bd8,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.66,performance_only,environment_configuration,unclear,low,Is there any conceptual issue we should be aware of there?,"{
+  ""blind_id"": ""GNF-0184-5cb52bd8"",
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""environment_configuration""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Is there any conceptual issue we should be aware of there?"",
+  ""confidence"": ""low""
+}",
+GNF-0185-120804a6,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.38,overflow_underflow,compiler_codegen,yes,high,std::bad_alloc: out of memory Aborted (core dumped),"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""std::bad_alloc: out of memory Aborted (core dumped)"",
+  ""confidence"": ""high""
+}",
+GNF-0186-6c92b3b9,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.67,overflow_underflow,memory_mask_bounds|api_semantics,yes,high,The array being indexed needs to have more than 2147483647 (signed int max) bytes.,"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""The array being indexed needs to have more than 2147483647 (signed int max) bytes."",
+  ""confidence"": ""high""
+}",
+GNF-0187-2664d182,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.47,performance_only,memory_mask_bounds|compiler_codegen,unclear,low,the extra data transfer just kills the performance (even if NVLinks are present),"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""the extra data transfer just kills the performance (even if NVLinks are present)"",
+  ""confidence"": ""low""
+}",
+GNF-0188-931dcb6c,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,4.04,nan_inf,memory_mask_bounds,yes,high,"Invalid __global__ read of size 4 bytes ========= at 0x1830 in void at::native::<unnamed>::adaptive_average_pool<float>(const T1 *, T1 *, int, int, int, int, long, long, long) ========= by thread (0,0,0) in block (0,4,0) ========= Address 0x7b1ca6ffff84 is out of bounds =========","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Invalid __global__ read of size 4 bytes ========= at 0x1830 in void at::native::<unnamed>::adaptive_average_pool<float>(const T1 *, T1 *, int, int, int, int, long, long, long) ========= by thread (0,0,0) in block (0,4,0) ========= Address 0x7b1ca6ffff84 is out of bounds ========="",
+  ""confidence"": ""high""
+}",
+GNF-0189-2fcb9ca4,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.75,nan_inf,memory_mask_bounds,yes,low,"E x and y nan location mismatch: E x: array([[[[5.650563, 5.505339, 4.453514], ...","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""E x and y nan location mismatch: E x: array([[[[5.650563, 5.505339, 4.453514], ..."",
+  ""confidence"": ""low""
+}",
+GNF-0190-3f4e1893,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,2.75,not_numerical_failure,memory_mask_bounds|compiler_codegen,yes,low,"Looks very similar to #9928 Looks like the same issue, fixed #9020.","{
+  ""blind_id"": ""GNF-0190-3f4e1893"",
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Looks very similar to #9928 Looks like the same issue, fixed #9020."",
+  ""confidence"": ""low""
+}",
+GNF-0191-cd071cce,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.27,nan_inf,memory_mask_bounds|compiler_codegen,yes,high,"One example of a case which is printed is when `i = 2147551327` and `i2 = -214741596`, which likely indicates a signed 32 bit integer overflow.","{
+  ""blind_id"": ""GNF-0191-cd071cce"",
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""One example of a case which is printed is when `i = 2147551327` and `i2 = -214741596`, which likely indicates a signed 32 bit integer overflow."",
+  ""confidence"": ""high""
+}",

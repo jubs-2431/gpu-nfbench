@@ -1,0 +1,104 @@
+diff --git a/.github/workflows/numba_linux-64_conda_builder.yml b/.github/workflows/numba_linux-64_conda_builder.yml
+index 0f39e8e1b34..c1d74031f35 100644
+--- a/.github/workflows/numba_linux-64_conda_builder.yml
++++ b/.github/workflows/numba_linux-64_conda_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_linux-64_conda_builder
+ 
+ on:
++  schedule:
++    - cron: '15 7 * * 6'  # Saturday 7:15 AM UTC - linux-64 conda
+   pull_request:
+     paths:
+       - .github/workflows/numba_linux-64_conda_builder.yml
+diff --git a/.github/workflows/numba_linux-64_wheel_builder.yml b/.github/workflows/numba_linux-64_wheel_builder.yml
+index a5a87a7a5ce..29b484c2992 100644
+--- a/.github/workflows/numba_linux-64_wheel_builder.yml
++++ b/.github/workflows/numba_linux-64_wheel_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_linux-64_wheel_builder
+ 
+ on:
++  schedule:
++    - cron: '30 7 * * 6'  # Saturday 7:30 AM UTC - linux-64 wheel
+   pull_request:
+     paths:
+       - .github/workflows/numba_linux-64_wheel_builder.yml
+diff --git a/.github/workflows/numba_linux-aarch64_conda_builder.yml b/.github/workflows/numba_linux-aarch64_conda_builder.yml
+index f47d62a0337..c1b94b94193 100644
+--- a/.github/workflows/numba_linux-aarch64_conda_builder.yml
++++ b/.github/workflows/numba_linux-aarch64_conda_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_linux-aarch64_conda_builder
+ 
+ on:
++  schedule:
++    - cron: '10 7 * * 6'  # Saturday 7:10 AM UTC - linux-aarch64 conda
+   pull_request:
+     paths:
+       - .github/workflows/numba_linux-aarch64_conda_builder.yml
+diff --git a/.github/workflows/numba_linux-aarch64_wheel_builder.yml b/.github/workflows/numba_linux-aarch64_wheel_builder.yml
+index c6d26ef593f..75cccd01782 100644
+--- a/.github/workflows/numba_linux-aarch64_wheel_builder.yml
++++ b/.github/workflows/numba_linux-aarch64_wheel_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_linux-aarch64_wheel_builder
+ 
+ on:
++  schedule:
++    - cron: '20 7 * * 6'  # Saturday 7:20 AM UTC - linux-aarch64 wheel
+   pull_request:
+     paths:
+       - .github/workflows/numba_linux-aarch64_wheel_builder.yml
+diff --git a/.github/workflows/numba_osx-arm64_conda_builder.yml b/.github/workflows/numba_osx-arm64_conda_builder.yml
+index 7ba64830a21..85cd73ecea6 100644
+--- a/.github/workflows/numba_osx-arm64_conda_builder.yml
++++ b/.github/workflows/numba_osx-arm64_conda_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_osx-arm64_conda_builder
+ 
+ on:
++  schedule:
++    - cron: '0 7 * * 6'  # Saturday 7:00 AM UTC - osx-arm64 conda (starts first to manage osx runner limit)
+   pull_request:
+     paths:
+       - .github/workflows/numba_osx-arm64_conda_builder.yml
+diff --git a/.github/workflows/numba_osx-arm64_wheel_builder.yml b/.github/workflows/numba_osx-arm64_wheel_builder.yml
+index 66e458e890f..1d376f9b0fe 100644
+--- a/.github/workflows/numba_osx-arm64_wheel_builder.yml
++++ b/.github/workflows/numba_osx-arm64_wheel_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_osx-arm64_wheel_builder
+ 
+ on:
++  schedule:
++    - cron: '5 7 * * 6'  # Saturday 7:05 AM UTC - osx-arm64 wheel (staggered to manage osx runner limit)
+   pull_request:
+     paths:
+       - .github/workflows/numba_osx-arm64_wheel_builder.yml
+diff --git a/.github/workflows/numba_win-64_conda_builder.yml b/.github/workflows/numba_win-64_conda_builder.yml
+index 342c589d83d..79f105d837d 100644
+--- a/.github/workflows/numba_win-64_conda_builder.yml
++++ b/.github/workflows/numba_win-64_conda_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_win-64_conda_builder
+ 
+ on:
++  schedule:
++    - cron: '45 7 * * 6'  # Saturday 7:45 AM UTC - win-64 conda
+   pull_request:
+     paths:
+       - .github/workflows/numba_win-64_conda_builder.yml
+diff --git a/.github/workflows/numba_win-64_wheel_builder.yml b/.github/workflows/numba_win-64_wheel_builder.yml
+index 04be6e105f6..2fd574f145a 100644
+--- a/.github/workflows/numba_win-64_wheel_builder.yml
++++ b/.github/workflows/numba_win-64_wheel_builder.yml
+@@ -1,6 +1,8 @@
+ name: numba_win-64_wheel_builder
+ 
+ on:
++  schedule:
++    - cron: '0 8 * * 6'  # Saturday 8:00 AM UTC - win-64 wheel
+   pull_request:
+     paths:
+       - .github/workflows/numba_win-64_wheel_builder.yml

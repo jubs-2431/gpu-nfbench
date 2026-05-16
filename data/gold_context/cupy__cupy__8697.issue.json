@@ -1,0 +1,15 @@
+{
+  "body": "### Description\n\nwhen trying to create a CuPy array with pinned memory we get a Type Error.\n\n`TypeError: Cannot convert cupy.cuda.pinned_memory.PinnedMemoryPointer to cupy.cuda.memory.MemoryPointer`\n\n### To Reproduce\n\n```py\nimport cupy\n\nwith cupy.cuda.using_allocator(cupy.get_default_pinned_memory_pool().malloc):\n    a = cupy.arange(10)\n```\n\n\n### Installation\n\nConda-Forge (`conda install ...`)\n\n### Environment\n\n```\nOS                           : Linux-5.15.0-1025-nvidia-x86_64-with-glibc2.35\nPython Version               : 3.12.2\nCuPy Version                 : 13.3.0\nCuPy Platform                : NVIDIA CUDA\nNumPy Version                : 2.1.2\nSciPy Version                : None\nCython Build Version         : 0.29.37\nCython Runtime Version       : None\nCUDA Root                    : /opt/nvidia/hpc_sdk/Linux_x86_64/24.9/compilers\nnvcc PATH                    : /opt/nvidia/hpc_sdk/Linux_x86_64/24.9/compilers/bin/nvcc\nCUDA Build Version           : 12060\nCUDA Driver Version          : 12040\nCUDA Runtime Version         : 12060 (linked to CuPy) / 12060 (locally installed)\nCUDA Extra Include Dirs      : ['/opt/conda/targets/x86_64-linux/include', '/opt/conda/include']\ncuBLAS Version               : (available)\ncuFFT Version                : 11300\ncuRAND Version               : 10307\ncuSOLVER Version             : (11, 7, 1)\ncuSPARSE Version             : (available)\nNVRTC Version                : (12, 6)\nThrust Version               : 200500\nCUB Build Version            : 200600\nJitify Build Version         : <unknown>\ncuDNN Build Version          : None\ncuDNN Version                : None\nNCCL Build Version           : 22304\nNCCL Runtime Version         : 21805\ncuTENSOR Version             : 20002\ncuSPARSELt Build Version     : None\nDevice 0 Name                : NVIDIA A100-SXM4-80GB\nDevice 0 Compute Capability  : 80\nDevice 0 PCI Bus ID          : 0000:C2:00.0\n```\n\n\n### Additional Information\n\n_No response_",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2024-10-25T21:01:02Z",
+  "html_url": "https://github.com/cupy/cupy/issues/8697",
+  "labels": [
+    "cat:enhancement",
+    "prio:low"
+  ],
+  "number": 8697,
+  "state": "open",
+  "title": "Creating Array with Pinned Memory fails",
+  "updated_at": "2025-02-07T00:45:12Z"
+}

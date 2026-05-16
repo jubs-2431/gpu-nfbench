@@ -1,0 +1,12 @@
+{
+  "body": "code like this \r\n\r\n```python\r\nqk = tl.zeros([BLOCK_M, BLOCK_N], dtype=tl.float16)\r\n\r\nfor ...:\r\n    qk += tl.where(mask, tl.dot(q, k, out_dtype=tl.float16), 0.0)\r\n```\r\n\r\nwould trigger \r\n\r\n```text\r\nAssertionError('initial value for `qk` is of type <[64, 64], fp16>, but the then block redefines it as <[64, 64], fp32>')\r\n```\r\n\r\nSo how to represent numeric literals in fp16 or other type? \r\n\r\nBesides, why `tl.where` does not maintain type consistence of the two candidates?",
+  "closed_at": null,
+  "comments": 7,
+  "created_at": "2023-09-21T03:35:14Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/2356",
+  "labels": [],
+  "number": 2356,
+  "state": "open",
+  "title": "how to use numeric literal in fp16",
+  "updated_at": "2023-11-02T01:55:32Z"
+}

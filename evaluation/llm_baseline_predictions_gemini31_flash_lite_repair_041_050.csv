@@ -1,0 +1,521 @@
+blind_id,primary_failure_label,secondary_cause_labels,is_true_numerical_failure,evidence_quote,confidence,model,provider,elapsed_seconds,error,raw_response
+GNF-0041-2e844e08,crash_compile,environment_configuration,no,ValueError: The number of threads must be between 1 and 112,high,gemini-3.1-flash-lite,gemini_batched,10.758,,"[
+  {
+    ""blind_id"": ""GNF-0041-2e844e08"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: The number of threads must be between 1 and 112"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0043-75ac4cd1"",
+    ""primary_failure_label"": ""needs_review"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I am testing Numba locally and encountered 6 test case failures while running the test suite."",
+    ""confidence"": ""medium""
+  },
+  {
+    ""blind_id"": ""GNF-0044-58d8c7b3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0045-d28f7a7d"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It is better to have a feature like numpy.seterr to detect what computation cause numeric exception."",
+    ""confidence"": ""high""
+  }
+]"
+GNF-0042-938c1ba1,crash_compile,api_semantics,no,InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant,high,gemini-3.1-flash-lite,gemini_batched,10.758,,"[
+  {
+    ""blind_id"": ""GNF-0041-2e844e08"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: The number of threads must be between 1 and 112"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0043-75ac4cd1"",
+    ""primary_failure_label"": ""needs_review"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I am testing Numba locally and encountered 6 test case failures while running the test suite."",
+    ""confidence"": ""medium""
+  },
+  {
+    ""blind_id"": ""GNF-0044-58d8c7b3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0045-d28f7a7d"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It is better to have a feature like numpy.seterr to detect what computation cause numeric exception."",
+    ""confidence"": ""high""
+  }
+]"
+GNF-0043-75ac4cd1,needs_review,unknown,no,I am testing Numba locally and encountered 6 test case failures while running the test suite.,medium,gemini-3.1-flash-lite,gemini_batched,10.758,,"[
+  {
+    ""blind_id"": ""GNF-0041-2e844e08"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: The number of threads must be between 1 and 112"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0043-75ac4cd1"",
+    ""primary_failure_label"": ""needs_review"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I am testing Numba locally and encountered 6 test case failures while running the test suite."",
+    ""confidence"": ""medium""
+  },
+  {
+    ""blind_id"": ""GNF-0044-58d8c7b3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0045-d28f7a7d"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It is better to have a feature like numpy.seterr to detect what computation cause numeric exception."",
+    ""confidence"": ""high""
+  }
+]"
+GNF-0044-58d8c7b3,not_numerical_failure,environment_configuration,no,ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory,high,gemini-3.1-flash-lite,gemini_batched,10.758,,"[
+  {
+    ""blind_id"": ""GNF-0041-2e844e08"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: The number of threads must be between 1 and 112"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0043-75ac4cd1"",
+    ""primary_failure_label"": ""needs_review"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I am testing Numba locally and encountered 6 test case failures while running the test suite."",
+    ""confidence"": ""medium""
+  },
+  {
+    ""blind_id"": ""GNF-0044-58d8c7b3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0045-d28f7a7d"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It is better to have a feature like numpy.seterr to detect what computation cause numeric exception."",
+    ""confidence"": ""high""
+  }
+]"
+GNF-0045-d28f7a7d,not_numerical_failure,unknown,no,It is better to have a feature like numpy.seterr to detect what computation cause numeric exception.,high,gemini-3.1-flash-lite,gemini_batched,10.758,,"[
+  {
+    ""blind_id"": ""GNF-0041-2e844e08"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: The number of threads must be between 1 and 112"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0042-938c1ba1"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0043-75ac4cd1"",
+    ""primary_failure_label"": ""needs_review"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""I am testing Numba locally and encountered 6 test case failures while running the test suite."",
+    ""confidence"": ""medium""
+  },
+  {
+    ""blind_id"": ""GNF-0044-58d8c7b3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""environment_configuration""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0045-d28f7a7d"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It is better to have a feature like numpy.seterr to detect what computation cause numeric exception."",
+    ""confidence"": ""high""
+  }
+]"
+GNF-0046-21fccfc5,precision_tolerance,hardware_backend,yes,"I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger.",high,gemini-3.1-flash-lite,gemini_batched,10.865,,"[
+  {
+    ""blind_id"": ""GNF-0046-21fccfc5"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0047-c6f710e5"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""source of problem is a**b invoking an integer exponential and causing undetected overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0048-07821d1f"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0049-80ab540f"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""This bug looks to be caused by an int64 overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0050-b61f01c8"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Running PDSH query 17 with decimal data at scale 10 errors with an IndexError"",
+    ""confidence"": ""medium""
+  }
+]"
+GNF-0047-c6f710e5,overflow_underflow,compiler_codegen,yes,source of problem is a**b invoking an integer exponential and causing undetected overflow.,high,gemini-3.1-flash-lite,gemini_batched,10.865,,"[
+  {
+    ""blind_id"": ""GNF-0046-21fccfc5"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0047-c6f710e5"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""source of problem is a**b invoking an integer exponential and causing undetected overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0048-07821d1f"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0049-80ab540f"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""This bug looks to be caused by an int64 overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0050-b61f01c8"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Running PDSH query 17 with decimal data at scale 10 errors with an IndexError"",
+    ""confidence"": ""medium""
+  }
+]"
+GNF-0048-07821d1f,precision_tolerance,hardware_backend,yes,"Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page",high,gemini-3.1-flash-lite,gemini_batched,10.865,,"[
+  {
+    ""blind_id"": ""GNF-0046-21fccfc5"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0047-c6f710e5"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""source of problem is a**b invoking an integer exponential and causing undetected overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0048-07821d1f"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0049-80ab540f"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""This bug looks to be caused by an int64 overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0050-b61f01c8"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Running PDSH query 17 with decimal data at scale 10 errors with an IndexError"",
+    ""confidence"": ""medium""
+  }
+]"
+GNF-0049-80ab540f,overflow_underflow,unknown,yes,This bug looks to be caused by an int64 overflow.,high,gemini-3.1-flash-lite,gemini_batched,10.865,,"[
+  {
+    ""blind_id"": ""GNF-0046-21fccfc5"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0047-c6f710e5"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""source of problem is a**b invoking an integer exponential and causing undetected overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0048-07821d1f"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0049-80ab540f"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""This bug looks to be caused by an int64 overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0050-b61f01c8"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Running PDSH query 17 with decimal data at scale 10 errors with an IndexError"",
+    ""confidence"": ""medium""
+  }
+]"
+GNF-0050-b61f01c8,crash_compile,api_semantics,no,Running PDSH query 17 with decimal data at scale 10 errors with an IndexError,medium,gemini-3.1-flash-lite,gemini_batched,10.865,,"[
+  {
+    ""blind_id"": ""GNF-0046-21fccfc5"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0047-c6f710e5"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""compiler_codegen""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""source of problem is a**b invoking an integer exponential and causing undetected overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0048-07821d1f"",
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page"",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0049-80ab540f"",
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [
+      ""unknown""
+    ],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""This bug looks to be caused by an int64 overflow."",
+    ""confidence"": ""high""
+  },
+  {
+    ""blind_id"": ""GNF-0050-b61f01c8"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Running PDSH query 17 with decimal data at scale 10 errors with an IndexError"",
+    ""confidence"": ""medium""
+  }
+]"

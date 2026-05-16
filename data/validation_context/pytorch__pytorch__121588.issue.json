@@ -1,0 +1,17 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\r\n\r\nWhen sending a complex input where the real part of each element is infinity/-infinity, sigmoid functions (`torch.special.explit` and `torch.nn.functional.sigmoid`) outputs NaN.\r\nHowever, when I sent the first row of this complex input to sigmoid functions, they will return normal value.\r\n\r\nHere is the code:\r\n\r\n```\r\nimport numpy as np\r\nimport torch\r\n\r\ninput = torch.tensor([\r\n    [-np.inf+0.j, np.inf+0.j, np.inf+0.j, np.inf+0.j],\r\n    [np.inf+0.j, -np.inf+0.j, np.inf+0.j, -np.inf+0.j],\r\n])\r\nprint(torch.special.expit(input))\r\n# tensor([[nan+nanj, 1.-0.j, 1.-0.j, 1.-0.j],\r\n#         [1.-0.j, nan+nanj, 1.-0.j, nan+nanj]])\r\n        \r\nprint(torch.nn.functional.sigmoid(input))\r\n# tensor([[nan+nanj, 1.-0.j, 1.-0.j, 1.-0.j],\r\n#         [1.-0.j, nan+nanj, 1.-0.j, nan+nanj]])\r\n\r\nprint(torch.special.expit(input[0]))\r\n# tensor([0.+0.j, 1.+0.j, 1.+0.j, 1.+0.j])\r\n\r\nprint(torch.nn.functional.sigmoid(input[0]))\r\n# tensor([0.+0.j, 1.+0.j, 1.+0.j, 1.+0.j])\r\n\r\n```\r\n\r\nAt least, sigmoid functions are element-wise operations and thus it may be weird that results on a specific element of the input tensor is affected by the total shape of the input tensor.\r\nMoreover, please check if yielding NaN for a complex value whose real part is infinity is expected or not. \r\n\r\n\r\n### Versions\r\n\r\n[pip3] numpy==1.25.2\r\n[pip3] torch==2.1.0+cu121\r\n[pip3] torchaudio==2.1.0+cu121\r\n[pip3] torchdata==0.7.0\r\n[pip3] torchsummary==1.5.1\r\n[pip3] torchtext==0.16.0\r\n[pip3] torchvision==0.16.0+cu121\r\n[pip3] triton==2.1.0\n\ncc @jgong5 @mingfeima @XiaobingSuper @sanchitintel @ashokei @jingxu10 @ezyang @anjali411 @dylanbespalko @mruberry @Lezcano @nikitaved @amjames",
+  "closed_at": null,
+  "comments": 1,
+  "created_at": "2024-03-09T20:00:55Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/121588",
+  "labels": [
+    "module: cpu",
+    "triaged",
+    "module: complex",
+    "module: NaNs and Infs"
+  ],
+  "number": 121588,
+  "state": "open",
+  "title": "logistic sigmoid function outputs NaN indeterminate on complex input",
+  "updated_at": "2024-03-11T16:18:00Z"
+}

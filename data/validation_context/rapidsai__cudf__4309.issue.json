@@ -1,0 +1,16 @@
+{
+  "body": "**Describe the bug**\r\n`dask_cudf.DataFrame.values` shows `chunktype` of `numpy.ndarray` but it is actually `cupy.ndarray`.\r\n\r\n**Steps/Code to reproduce bug**\r\n```\r\nimport cudf\r\nimport dask_cudf\r\ndf = cudf.DataFrame({'a': list(range(20)),\r\n'b': list(reversed(range(20))),\r\n'c': list(range(20))})\r\nddf = dask_cudf.from_cudf(df, npartitions=2)\r\nprint(ddf.values)\r\n\r\ndask.array<values, shape=(nan, 3), dtype=int64, chunksize=(nan, 3), chunktype=numpy.ndarray>\r\n```\r\n**Expected behavior**\r\nThe chunktype should be `cupy.ndarray`\r\n\r\n**Environment overview (please complete the following information)**\r\n - Environment location: Bare-metal\r\n - Method of cuDF install: conda\r\n\r\n**Environment details**\r\ncudf `0.12.0`. cuda 10.0. python 3.7\r\n\r\n",
+  "closed_at": null,
+  "comments": 16,
+  "created_at": "2020-03-03T00:25:58Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/4309",
+  "labels": [
+    "bug",
+    "Python",
+    "dask"
+  ],
+  "number": 4309,
+  "state": "open",
+  "title": "[BUG] dask_cudf.DataFrame.values shows chunktype of numpy ndarray",
+  "updated_at": "2025-04-19T02:20:30Z"
+}

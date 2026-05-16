@@ -1,0 +1,14 @@
+{
+  "body": "# Bug\nHello, I found that the function `np.bitwise_count()` doesn\u00b4t work with numba.\nI think the issue may be similar to #9464 because I cannot find any mention of `np.bitwise_count` by searching the repo.\n\nThank you for your work!\n\n\n# How to reproduce\n### Without Numba it works\n```python\nimport numpy as np\nfrom numba import njit\n\n\ndef hamming_distance(vec1, vec2):\n    xor = np.bitwise_xor(vec1, vec2)\n    cnt = np.bitwise_count(xor)\n    d = np.sum(cnt)\n    return d\n\n\ntest = np.array(\n    [\n        [0, 0, 0, 0],\n        [1, 1, 0, 2],\n    ],\n    dtype=np.uint32,\n)\nresult = hamming_distance(test[0], test[1])\nprint(result)\n```\n\n```sh\n$ python test.py\n3\n```\n\n### With Numba it doesn\u00b4t work\n```python\nimport numpy as np\nfrom numba import njit\n\n@njit\ndef hamming_distance(vec1, vec2):\n    xor = np.bitwise_xor(vec1, vec2)\n    cnt = np.bitwise_count(xor)\n    d = np.sum(cnt)\n    return d\n\n\ntest = np.array(\n    [\n        [0, 0, 0, 0],\n        [1, 1, 0, 2],\n    ],\n    dtype=np.uint32,\n)\nresult = hamming_distance(test[0], test[1])\nprint(result)\n```\n\n```sh\n$ python test.py\nTraceback (most recent call last):\n  File \"[PARENT PATH]/test.py\", line 19, in <module>\n    result = hamming_distance(test[0], test[1])\n  File \"[PARENT PATH]/.venv/lib/python3.14/site-packages/numba/core/dispatcher.py\", line 424, in _compile_for_args\n    error_rewrite(e, 'typing')\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"[PARENT PATH]/.venv/lib/python3.14/site-packages/numba/core/dispatcher.py\", line 365, in error_rewrite\n    raise e.with_traceback(None)\nnumba.core.errors.TypingError: Failed in nopython mode pipeline (step: nopython frontend)\nUse of unsupported NumPy function 'numpy.bitwise_count' or unsupported use of the function.\n\nFile \"test.py\", line 7:\ndef hamming_distance(vec1, vec2):\n    <source elided>\n    xor = np.bitwise_xor(vec1, vec2)\n    cnt = np.bitwise_count(xor)\n    ^\n\nDuring: typing of get attribute at [PARENT PATH]/test.py (7)\n\nFile \"test.py\", line 7:\ndef hamming_distance(vec1, vec2):\n    <source elided>\n    xor = np.bitwise_xor(vec1, vec2)\n    cnt = np.bitwise_count(xor)\n    ^\n\nDuring: Pass nopython_type_inference\n```\n\n# Python packages versions\n```\ncuda-bindings       13.1.1\ncuda-core           0.5.1\ncuda-pathfinder     1.3.3\nnumba               0.63.1\nnumba-cuda          0.24.0\nnumpy               2.2.6\n```\n",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2026-01-17T18:44:45Z",
+  "html_url": "https://github.com/numba/numba/issues/10403",
+  "labels": [
+    "feature_request"
+  ],
+  "number": 10403,
+  "state": "open",
+  "title": "The np.bitwise_count() function fails",
+  "updated_at": "2026-01-18T16:46:10Z"
+}

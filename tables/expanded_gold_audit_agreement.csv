@@ -1,0 +1,4 @@
+comparison,rows,observed_agreement_or_accuracy,expected_agreement,cohens_kappa,macro_f1_against_gold
+person_a_vs_person_b,119,0.807,0.306,0.721,
+person_a_vs_gold,119,0.538,0.143,0.461,0.552
+person_b_vs_gold,119,0.370,0.143,0.265,0.352

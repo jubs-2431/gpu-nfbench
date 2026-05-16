@@ -1,0 +1,16 @@
+{
+  "body": "**Describe the bug**\r\n\r\ndask_cudf nunique gives incorrect results\r\n\r\n**Steps/Code to reproduce bug**\r\n```python\r\nimport dask_cudf\r\nimport cudf\r\n\r\ndf = dask_cudf.from_cudf(cudf.DataFrame({\"key\":[1,1],'val':[1,2]}),npartitions=1)\r\ndf.groupby(['key']).val.nunique().compute()\r\n\r\n```\r\n\r\n```\r\n\tval\r\n0\t1\r\n1\t1\r\n```\r\n\r\n**Expected behavior**\r\n```python\r\ndf.to_dask_dataframe().groupby(['key']).val.nunique().compute()\r\n```\r\n```\r\nkey\r\n1    2\r\nName: val, dtype: int64\r\n```\r\n**Environment overview (please complete the following information)**\r\n - Method of cuDF install: [conda]\r\n\r\n```python\r\n# packages in environment at /raid/vjawa/conda/conda_installation/envs/cudf_march_23:\r\ncudf                      0.13.0a200323         py37_4667    rapidsai-nightly\r\ndask-cudf                 0.13.0a200323         py37_4667    rapidsai-nightly\r\nlibcudf                   0.13.0a200323     cuda10.1_4667    rapidsai-nightly\r\ndask                      2.12.0                     py_0    conda-forge\r\ndask-core                 2.12.0                     py_0    conda-forge\r\ndask-cuda                 0.13.0b200323           py37_73    rapidsai-nightly\r\ndask-cudf                 0.13.0a200323         py37_4667    rapidsai-nightly\r\n```\r\n**Additional context**\r\n\r\nSeems like mainline-dask may have problems that can be related:\r\n\r\nDask issue https://github.com/dask/dask/issues/4869\r\nPandas issue : https://github.com/pandas-dev/pandas/issues/26515",
+  "closed_at": "2024-05-10T22:42:28Z",
+  "comments": 11,
+  "created_at": "2020-03-23T20:40:20Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/4663",
+  "labels": [
+    "bug",
+    "Python",
+    "dask"
+  ],
+  "number": 4663,
+  "state": "closed",
+  "title": "[BUG]dask_cudf nunique gives incorrect results",
+  "updated_at": "2024-05-10T22:42:28Z"
+}

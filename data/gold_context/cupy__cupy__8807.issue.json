@@ -1,0 +1,15 @@
+{
+  "body": "### Description\n\n`cupy.mod` behaves differntly with `numpy.mod` on `inf`.\n\n### To Reproduce\n\n```py\nimport cupy as cp\nimport numpy as np\n\nprint(np.mod(np.array(1.), np.array(np.inf)))\nprint(cp.mod(cp.array(1.), cp.array(cp.inf)))\n```\n\nOutput:\n```py\n1.0\nnan\n```\n\n\n### Installation\n\nWheel (`pip install cupy-***`)\n\n### Environment\n\n```\nOS                           : Linux-6.8.0-49-generic-x86_64-with-glibc2.35\nPython Version               : 3.10.12\nCuPy Version                 : 13.3.0\nCuPy Platform                : NVIDIA CUDA\nNumPy Version                : 2.1.0\nSciPy Version                : 1.13.1\nCython Build Version         : 0.29.36\nCython Runtime Version       : 0.29.37\nCUDA Root                    : /usr/local/cuda\nnvcc PATH                    : /usr/local/cuda/bin/nvcc\nCUDA Build Version           : 12060\nCUDA Driver Version          : 12040\nCUDA Runtime Version         : 12060 (linked to CuPy) / 12020 (locally installed)\nCUDA Extra Include Dirs      : []\ncuBLAS Version               : 120201\ncuFFT Version                : 11008\ncuRAND Version               : 10303\ncuSOLVER Version             : (11, 5, 2)\ncuSPARSE Version             : 12101\nNVRTC Version                : (12, 2)\nThrust Version               : 200600\nCUB Build Version            : 200600\nJitify Build Version         : <unknown>\ncuDNN Build Version          : None\ncuDNN Version                : None\nNCCL Build Version           : None\nNCCL Runtime Version         : None\ncuTENSOR Version             : None\ncuSPARSELt Build Version     : None\nDevice 0 Name                : NVIDIA GeForce RTX 4070 Laptop GPU\nDevice 0 Compute Capability  : 89\nDevice 0 PCI Bus ID          : 0000:01:00.0\n```\n\n\n### Additional Information\n\nAs [numpy doc](https://numpy.org/doc/2.0/reference/generated/numpy.mod.html) describes, \n> It is equivalent to the Python modulus operator `x1 % x2`\n\nPython's behavior\n```py\nPython 3.10.12 (main, Jul 29 2024, 16:56:48) [GCC 11.4.0] on linux\nType \"help\", \"copyright\", \"credits\" or \"license\" for more information.\n>>> import math\n>>> 1. % math.inf\n1.0\n```",
+  "closed_at": null,
+  "comments": 1,
+  "created_at": "2024-12-13T00:56:22Z",
+  "html_url": "https://github.com/cupy/cupy/issues/8807",
+  "labels": [
+    "cat:bug",
+    "prio:low"
+  ],
+  "number": 8807,
+  "state": "open",
+  "title": "`cupy.mod` behaves differntly with `numpy.mod` on `inf`",
+  "updated_at": "2025-02-07T00:23:56Z"
+}

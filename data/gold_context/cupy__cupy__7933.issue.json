@@ -1,0 +1,14 @@
+{
+  "body": "### Description\r\n\r\nI was testing things locally and noticed this:\r\n\r\n### To Reproduce\r\n\r\n```py\r\nimport pytest\r\n\r\nimport cupy \r\nfrom cupy import testing\r\n\r\n\r\n@testing.parameterize(*testing.product({\r\n    'n': [None, 5, 10, 15],\r\n    'shape': [(10, 7), (10,), (10, 10)],\r\n    'norm': [None, 'ortho'],\r\n}))\r\nclass Test1dCallbacks:\r\n\r\n    x = 1\r\n\r\n    @testing.for_float_dtypes(no_float16=True)\r\n    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, contiguous_check=False)\r\n    def test_cb(self, xp, dtype):\r\n        if self.x == 1:\r\n            pytest.skip(\"ha\")\r\n        return xp.zeros(1, dtype=dtype)\r\n```\r\n\r\nOutput:\r\n```\r\n============================================================= test session starts =============================================================\r\nplatform linux -- Python 3.10.12, pytest-7.4.2, pluggy-1.3.0\r\nrootdir: /home/leof/dev/cupy_cuda122\r\nconfigfile: setup.cfg\r\ncollected 24 items                                                                                                                            \r\n\r\ntests/cupy_tests/fft_tests/test_pytest.py ........................                                                                      [100%]\r\n\r\n============================================================= 24 passed in 0.15s ==============================================================\r\n```\r\n\r\nIf I remove `@testing.for_float_dtypes(no_float16=True)` and the `dtype` argument, the skipped tests will be shown correctly.\r\n\r\n### Installation\r\n\r\nBuilt from GitHub source\r\n\r\n### Environment\r\n\r\n_No response_\r\n\r\n### Additional Information\r\n\r\nTried with pytest 7.4.2/7.3.2.",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2023-10-13T15:13:18Z",
+  "html_url": "https://github.com/cupy/cupy/issues/7933",
+  "labels": [
+    "cat:bug"
+  ],
+  "number": 7933,
+  "state": "open",
+  "title": "`cupy.testing.for*dtypes()` seem to turn skipped tests into passed",
+  "updated_at": "2023-10-17T11:05:22Z"
+}

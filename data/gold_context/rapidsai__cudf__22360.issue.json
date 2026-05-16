@@ -1,0 +1,14 @@
+{
+  "body": "Claude-generated description of the issue and repro:\n\n```\n\"\"\"Minimal repro: cudf-polars streaming-mode broadcast bug for\n`with_columns(pl.lit(<numpy_array>))` at >~1M rows.\n\nSetup:\n    polars==1.38.1, cudf==26.04, on NVIDIA L40 / Ubuntu 22.04, CUDA 12.x\n\nSymptom:\n    RuntimeError: Cannot broadcast columns of length nrows=N to target_length=N/2\n\nTrigger:\n    A LazyFrame whose `with_columns` adds a literal column built from a\n    Series/numpy array of the same length as the source (i.e. a row-aligned\n    column literal, not a scalar `pl.lit(value)`). At >~1M rows the streaming\n    executor partitions the upstream into halves but does not partition the\n    literal alongside; the subsequent broadcast then sees a full-length\n    column being placed into a half-length partition and raises.\n\nWorkaround:\n    pl.GPUEngine(executor=\"in-memory\")     # skips the streaming code path\n\"\"\"\nfrom __future__ import annotations\n\nimport numpy as np\nimport polars as pl\n\n\ndef make_lf(n: int) -> pl.LazyFrame:\n    return pl.LazyFrame({\n        \"key\": np.random.default_rng(0).integers(0, 100, size=n, dtype=np.int32),\n    }).with_columns(\n        pl.lit(np.arange(n, dtype=np.uint64)).alias(\"var_id\"),\n    )\n\n\ndef try_collect(n: int, executor: str) -> str:\n    engine = pl.GPUEngine(raise_on_fail=True, executor=executor)\n    try:\n        df = make_lf(n).collect(engine=engine)\n        return f\"OK ({df.height} rows)\"\n    except RuntimeError as e:\n        return f\"FAIL: {e}\"\n\n\nif __name__ == \"__main__\":\n    print(\"Polars:\", pl.__version__)\n    import cudf\n    print(\"cudf:  \", cudf.__version__)\n    print()\n    for n in [100_000, 500_000, 1_000_000, 1_500_000, 2_000_000, 5_000_000]:\n        print(f\"n={n:>10}  streaming: {try_collect(n, 'streaming')}\")\n    print()\n    print(f\"n={5_000_000:>10}  in-memory: {try_collect(5_000_000, 'in-memory')}\")\n```\n",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2026-05-03T00:47:54Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/22360",
+  "labels": [
+    "bug"
+  ],
+  "number": 22360,
+  "state": "open",
+  "title": "[BUG] cudf-polars streaming-mode broadcast bug",
+  "updated_at": "2026-05-03T03:36:49Z"
+}

@@ -1,0 +1,17 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\nHere is the code to reproduce the bug:\n\n```python\nimport torch\ntorch._inductor.config.fallback_random = True\n\ndef foo(a):\n    x = a.clone()  # this line is necessary to reproduce the error\n    y = x.as_strided((2, 2), (1, 1), 0)\n    y.add_(1.0)\n    return y\n\ntorch.manual_seed(0)\na = torch.randn([2, 2, 10])\na_ = a.clone()\nres1 = foo(a)\nres2 = torch.compile(foo, backend='aot_eager')(a_)\ntorch.testing.assert_close(res1, res2, equal_nan=True)\n\n```\n\nInterestingly, the line `x = a.clone()` is necessary to trigger this error.\nPlease note that this issue happens when using backend `inductor` or `aot_eager`, but does not occur when using backend `eager`.\n\n### Error logs\n\n```\nTraceback (most recent call last):\n  File \"/workspace/try.py\", line 20, in <module>\n    torch.testing.assert_close(res1, res2, equal_nan=True)\n  File \"/opt/conda/envs/a3bda49/lib/python3.10/site-packages/torch/testing/_comparison.py\", line 1600, in assert_close\n    raise error_metas[0].to_error(msg)\nAssertionError: Tensor-likes are not close!\n\nMismatched elements: 2 / 4 (50.0%)\nGreatest absolute difference: 1.0 at index (0, 1) (up to 1e-05 allowed)\nGreatest relative difference: 6.563393592834473 at index (0, 1) (up to 1.3e-06 allowed)\n```\n\n### Versions\n\n[pip3] numpy==1.26.4\n[pip3] optree==0.18.0\n[pip3] pytorch-triton==3.3.1+gitc8757738\n[pip3] torch==2.11.0a0+gita3bda49\n[conda] numpy 1.26.4 pypi_0 pypi\n[conda] optree 0.18.0 pypi_0 pypi\n[conda] pytorch-triton 3.3.1+gitc8757738 pypi_0 pypi\n[conda] torch 2.11.0a0+gita3bda49 pypi_0 pypi\n\ncc @bdhirsh @ezyang @chauhang @penguinwu @bobrenjc93 @aorenste",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2026-02-05T09:58:32Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/174371",
+  "labels": [
+    "triaged",
+    "module: functionalization",
+    "oncall: pt2",
+    "module: pt2-dispatcher"
+  ],
+  "number": 174371,
+  "state": "open",
+  "title": "[inductor][aot_eager] Incorrect results with torch.compile when using clone, as_strided followed by add_",
+  "updated_at": "2026-02-16T09:31:33Z"
+}

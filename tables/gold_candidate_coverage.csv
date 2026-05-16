@@ -1,0 +1,14 @@
+dimension,value,issues
+repository,cupy/cupy,33
+repository,jax-ml/jax,28
+repository,numba/numba,29
+repository,pytorch/pytorch,31
+repository,rapidsai/cudf,35
+repository,triton-lang/triton,35
+candidate_primary_failure,crash_compile,27
+candidate_primary_failure,dtype_casting,30
+candidate_primary_failure,nan_inf,30
+candidate_primary_failure,needs_review,30
+candidate_primary_failure,overflow_underflow,25
+candidate_primary_failure,performance_only,19
+candidate_primary_failure,precision_tolerance,30

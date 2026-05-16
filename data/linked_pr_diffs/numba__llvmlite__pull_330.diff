@@ -1,0 +1,97 @@
+diff --git a/llvmlite/ir/builder.py b/llvmlite/ir/builder.py
+index 8f1452016..f450848d1 100644
+--- a/llvmlite/ir/builder.py
++++ b/llvmlite/ir/builder.py
+@@ -872,6 +872,15 @@ def assume(self, cond):
+         fn = self.module.declare_intrinsic("llvm.assume")
+         return self.call(fn, [cond])
+ 
++    def fence(self, ordering, targetscope=None, name=''):
++        """
++        Add a memory barrier, preventing certain reorderings of load and/or store accesses with
++        respect to other processors and devices.
++        """
++        inst = instructions.Fence(self.block, ordering, targetscope, name=name)
++        self._insert(inst)
++        return inst
++
+     @_uniop_intrinsic("llvm.bswap")
+     def bswap(self, cond):
+         """
+diff --git a/llvmlite/ir/instructions.py b/llvmlite/ir/instructions.py
+index 47f65dd93..f2f749490 100644
+--- a/llvmlite/ir/instructions.py
++++ b/llvmlite/ir/instructions.py
+@@ -676,3 +676,34 @@ def descr(self, buf):
+                               clauses=''.join(["\n      {0}".format(clause)
+                                                for clause in self.clauses]),
+                               ))
++
++class Fence(Instruction):
++    """
++    The `fence` instruction.
++
++    As of LLVM 5.0.1:
++
++    fence [syncscope("<target-scope>")] <ordering>  ; yields void
++    """
++
++    VALID_FENCE_ORDERINGS = {"acquire", "release", "acq_rel", "seq_cst"}
++
++    def __init__(self, parent, ordering, targetscope=None, name=''):
++        super(Fence, self).__init__(parent, types.VoidType(), "fence", (), name=name)
++        if ordering not in self.VALID_FENCE_ORDERINGS:
++            raise ValueError("Invalid fence ordering \"{0}\"! Should be one of {1}."
++                             .format(ordering, ", ".join(self.VALID_FENCE_ORDERINGS)))
++        self.ordering = ordering
++        self.targetscope = targetscope
++
++    def descr(self, buf):
++        if self.targetscope is None:
++            syncscope = ""
++        else:
++            syncscope = 'syncscope("{0}") '.format(self.targetscope)
++
++        fmt = "fence {syncscope}{ordering}\n"
++        buf.append(fmt.format(syncscope=syncscope,
++                              ordering=self.ordering,
++                              ))
++
+diff --git a/llvmlite/tests/test_ir.py b/llvmlite/tests/test_ir.py
+index 81c8ec657..0b40a4cf9 100644
+--- a/llvmlite/tests/test_ir.py
++++ b/llvmlite/tests/test_ir.py
+@@ -1188,6 +1188,33 @@ def test_bitreverse_wrongtype(self):
+             "expected an integer type, got float",
+             str(raises.exception))
+ 
++    def test_fence(self):
++        block = self.block(name='my_block')
++        builder = ir.IRBuilder(block)
++        with self.assertRaises(ValueError) as raises:
++            builder.fence("monotonic", None)
++        self.assertIn(
++            "Invalid fence ordering \"monotonic\"!",
++            str(raises.exception))
++        with self.assertRaises(ValueError) as raises:
++            builder.fence(None, "monotonic")
++        self.assertIn(
++            "Invalid fence ordering \"None\"!",
++            str(raises.exception))
++        builder.fence("acquire", None)
++        builder.fence("release", "singlethread")
++        builder.fence("acq_rel", "singlethread")
++        builder.fence("seq_cst")
++        builder.ret_void()
++        self.check_block(block, """\
++            my_block:
++                fence acquire
++                fence syncscope("singlethread") release
++                fence syncscope("singlethread") acq_rel
++                fence seq_cst
++                ret void
++            """)
++
+     def test_bswap(self):
+         block = self.block(name='my_block')
+         builder = ir.IRBuilder(block)

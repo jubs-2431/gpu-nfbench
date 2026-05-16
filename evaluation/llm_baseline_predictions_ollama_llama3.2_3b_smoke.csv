@@ -1,0 +1,23 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+GNF-0001-f56f80f3,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,6.18,precision_tolerance,compiler_codegen|api_semantics,yes,low,Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits.,"{
+  ""blind_id"": ""GNF-0001-f56f80f3"",
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""compiler_codegen"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits."",
+  ""confidence"": ""low""
+}",
+GNF-0002-16e149fe,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.78,not_numerical_failure,hardware_backend|api_semantics,unclear,low,"Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type).","{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""hardware_backend"", ""api_semantics""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type)."",
+  ""confidence"": ""low""
+}",
+GNF-0003-eaa63fac,llama3.2:3b,evaluation/llm_baseline_prompts.jsonl,5000,0,3.84,nan_inf,memory_mask_bounds|compiler_codegen,unclear,low,"Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve<(unsigned int)128, (unsigned int)32, (unsigned int)2, (unsigned int)96, (bool)1, thrust::transform_iterator<cudf::detail::make_pair_function<cudf::experimental::row::hash::device_row_hasher<cudf::hashing::detail::default_hash, ...","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""memory_mask_bounds"", ""compiler_codegen""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve<(unsigned int)128, (unsigned int)32, (unsigned int)2, (unsigned int)96, (bool)1, thrust::transform_iterator<cudf::detail::make_pair_function<cudf::experimental::row::hash::device_row_hasher<cudf::hashing::detail::default_hash, ..."",
+  ""confidence"": ""low""
+}",

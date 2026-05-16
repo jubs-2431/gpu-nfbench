@@ -1,0 +1,796 @@
+diff --git a/test/inductor/test_register_tiled_persistent_reduction.py b/test/inductor/test_register_tiled_persistent_reduction.py
+new file mode 100644
+index 0000000000000..62df90b6d6a4f
+--- /dev/null
++++ b/test/inductor/test_register_tiled_persistent_reduction.py
+@@ -0,0 +1,244 @@
++# Owner(s): ["module: inductor"]
++
++"""Tests for register-tiled persistent reductions.
++
++When a fused reduction+epilogue kernel shares source reads between the
++reduction and epilogue, the reduction dimension can be split into tiles
++so shared inputs stay in registers across both phases.  These tests
++verify correctness, generated code shape, and fallback behaviour.
++"""
++
++import functools
++import unittest
++
++import torch
++import torch._inductor.config as inductor_config
++from torch._inductor.test_case import run_tests, TestCase
++from torch._inductor.utils import run_and_get_code
++from torch.testing._internal.common_utils import (
++    instantiate_parametrized_tests,
++    parametrize,
++)
++from torch.testing._internal.inductor_utils import GPU_TYPE, HAS_GPU_AND_TRITON
++
++
++register_tiled_config = {
++    "triton.register_tiled_persistent_reductions": True,
++}
++
++
++def expects_register_tiled(expected: bool):
++    """Decorator marking whether a test expects register-tiled codegen."""
++
++    def decorator(fn):
++        @functools.wraps(fn)
++        def wrapper(*args, **kwargs):
++            return fn(*args, **kwargs)
++
++        wrapper._expects_register_tiled = expected
++        return wrapper
++
++    return decorator
++
++
++@unittest.skipUnless(HAS_GPU_AND_TRITON, "requires GPU and Triton")
++@instantiate_parametrized_tests
++class TestRegisterTiledPersistentReduction(TestCase):
++    def _run_and_check(self, fn, args, *, atol=None, rtol=None):
++        """Compile fn with register-tiled config, check correctness against eager.
++
++        Also asserts register-tiled codegen based on the @expects_register_tiled decorator.
++        """
++        expected = fn(*args)
++        compiled = torch.compile(fn)
++        with inductor_config.patch(register_tiled_config):
++            actual, code = run_and_get_code(compiled, *args)
++        self.assertEqual(actual, expected, atol=atol, rtol=rtol)
++        # Check register-tiled expectation from decorator
++        test_method = getattr(self, self._testMethodName)
++        expect = getattr(test_method, "_expects_register_tiled", None)
++        assert expect is not None, "test must use @expects_register_tiled decorator"
++        if expect:
++            self.assertIn("tl.static_range(NUM_TILES)", code[0])
++        else:
++            self.assertNotIn("tl.static_range(NUM_TILES)", code[0])
++        return code
++
++    # ---- register-tiled tests (bf16/fp16 only) ----
++
++    @expects_register_tiled(True)
++    @parametrize("dtype", [torch.float16, torch.bfloat16])
++    def test_sum_reduction(self, dtype):
++        """Simple sum reduction with epilogue — should tile correctly."""
++
++        def fn(x):
++            return x / x.sum(dim=-1, keepdim=True).clamp(min=1e-6)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype).abs()
++
++        self._run_and_check(fn, (x,))
++
++    @expects_register_tiled(True)
++    @parametrize("dtype", [torch.float16, torch.bfloat16])
++    def test_max_reduction(self, dtype):
++        """max reduction with epilogue — should tile correctly."""
++
++        def fn(x):
++            return x - x.max(dim=-1, keepdim=True).values
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x,))
++
++    @expects_register_tiled(True)
++    @parametrize("dtype", [torch.float16, torch.bfloat16])
++    def test_rmsnorm(self, dtype):
++        """RMSNorm-like pattern."""
++
++        def fn(x, weight):
++            variance = x.to(torch.float32).pow(2).mean(-1, keepdim=True)
++            x_normed = x * torch.rsqrt(variance + 1e-6)
++            return x_normed * weight
++
++        x = torch.randn(32, 8192, device=GPU_TYPE, dtype=dtype)
++        weight = torch.randn(8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x, weight))
++
++    @expects_register_tiled(True)
++    @parametrize("dtype", [torch.float16, torch.bfloat16])
++    def test_residual_rmsnorm(self, dtype):
++        """Residual + RMSNorm fused pattern (common in transformers)."""
++
++        def fn(x, residual, weight):
++            h = x.to(torch.float32) + residual.to(torch.float32)
++            variance = h.pow(2).mean(-1, keepdim=True)
++            h_normed = h * torch.rsqrt(variance + 1e-6)
++            return h_normed * weight.to(torch.float32)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        residual = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        weight = torch.randn(8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x, residual, weight))
++
++    # ---- fallback tests ----
++
++    def test_small_rnumel_stays_single_tile(self):
++        """rnumel=1024 is below min_numel — should use standard persistent, no tiling."""
++
++        def fn(x):
++            return x / x.sum(dim=-1, keepdim=True)
++
++        x = torch.randn(16, 1024, device=GPU_TYPE)
++        compiled = torch.compile(fn)
++        with inductor_config.patch(register_tiled_config):
++            _, code = run_and_get_code(compiled, x)
++
++        self.assertIn("persistent_reduction", code[0])
++        self.assertNotIn("tl.static_range", code[0])
++        self.assertNotIn("persistent_reduction_num_tiles", code[0])
++
++    def test_indivisible_rnumel_falls_back(self):
++        """rnumel=5003 (prime) — not evenly divisible by any tile count, should fall back."""
++
++        def fn(x):
++            return x / x.sum(dim=-1, keepdim=True)
++
++        x = torch.randn(16, 5003, device=GPU_TYPE)
++        compiled = torch.compile(fn)
++        with inductor_config.patch(register_tiled_config):
++            _, code = run_and_get_code(compiled, x)
++
++        self.assertNotIn("tl.static_range", code[0])
++
++    @parametrize("dtype", [torch.float16, torch.bfloat16])
++    def test_many_shared_inputs_falls_back(self, dtype):
++        """More than 2 shared inputs — falls back to avoid register pressure."""
++
++        def fn(a, b, c, d):
++            h = a.float() + b.float() + c.float() + d.float()
++            s = h.sum(dim=-1, keepdim=True)
++            return (h - s).to(dtype)
++
++        a = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        b = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        c = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        d = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++
++        compiled = torch.compile(fn)
++        with inductor_config.patch(register_tiled_config):
++            _, code = run_and_get_code(compiled, a, b, c, d)
++
++        self.assertNotIn("tl.static_range(NUM_TILES)", code[0])
++
++    @expects_register_tiled(False)
++    @parametrize("dtype", [torch.float32, torch.bfloat16])
++    def test_var_mean_falls_back(self, dtype):
++        """torch.var_mean uses welford reduction — unsupported, should fall back."""
++
++        def fn(x):
++            var, mean = torch.var_mean(x, dim=-1, keepdim=True)
++            return x * mean + var
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x,))
++
++    @expects_register_tiled(False)
++    @parametrize("dtype", [torch.float32, torch.bfloat16])
++    def test_layer_norm_falls_back(self, dtype):
++        """nn.functional.layer_norm uses welford — should fall back correctly."""
++
++        def fn(x, weight, bias):
++            return torch.nn.functional.layer_norm(x, [8192], weight, bias)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++        weight = torch.randn(8192, device=GPU_TYPE, dtype=dtype)
++        bias = torch.randn(8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x, weight, bias))
++
++    @expects_register_tiled(False)
++    @parametrize("dtype", [torch.float32, torch.bfloat16])
++    def test_softmax(self, dtype):
++        """softmax has two reductions (max + sum) — falls back."""
++
++        def fn(x):
++            return torch.nn.functional.softmax(x, dim=-1)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=dtype)
++
++        self._run_and_check(fn, (x,))
++
++    # ---- metadata / gating tests ----
++
++    def test_metadata_emitted(self):
++        """Check that inductor_meta contains tile metadata."""
++
++        def fn(x):
++            return x / x.sum(dim=-1, keepdim=True)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE, dtype=torch.bfloat16)
++        compiled = torch.compile(fn)
++        with inductor_config.patch(register_tiled_config):
++            _, code = run_and_get_code(compiled, x)
++
++        self.assertIn("persistent_reduction_num_tiles", code[0])
++        self.assertIn("persistent_reduction_rnumel", code[0])
++
++    def test_feature_disabled_by_default(self):
++        """Without the config flag, register-tiled should not activate."""
++
++        def fn(x):
++            return x / x.sum(dim=-1, keepdim=True)
++
++        x = torch.randn(16, 8192, device=GPU_TYPE)
++        compiled = torch.compile(fn)
++        _, code = run_and_get_code(compiled, x)
++        self.assertNotIn("tl.static_range", code[0])
++        self.assertNotIn("persistent_reduction_num_tiles", code[0])
++
++
++if __name__ == "__main__":
++    run_tests()
+diff --git a/torch/_inductor/codegen/simd.py b/torch/_inductor/codegen/simd.py
+index 633a8a424910d..628a046d78b77 100644
+--- a/torch/_inductor/codegen/simd.py
++++ b/torch/_inductor/codegen/simd.py
+@@ -433,6 +433,22 @@ def __init__(
+             if override_persistent_reduction is not None
+             else self.should_use_persistent_reduction()
+         )
++        tile_config = (
++            features.get_reg_cached_persistent_reduction_config()
++            if not self.persistent_reduction and not self.cooperative_reduction
++            else None
++        )
++        if tile_config is not None:
++            self.persistent_reduction = True
++            self.num_persistent_tiles: int = tile_config.num_tiles
++            self.persistent_rnumel: int | None = tile_config.rnumel
++            self.persistent_shared_read_names: tuple[str, ...] = (
++                tile_config.shared_read_names
++            )
++        else:
++            self.num_persistent_tiles: int = 1
++            self.persistent_rnumel: int | None = None
++            self.persistent_shared_read_names: tuple[str, ...] = ()
+         self.mix_order_reduction: bool = mix_order_reduction
+         self.no_x_dim = self.want_no_x_dim()
+         self.code_hash: str | None = None
+@@ -693,7 +709,11 @@ def _combine_contiguous_dims(
+         return new_index
+ 
+     def disable_reduction(self) -> contextlib.AbstractContextManager[None]:
+-        should_flush = self.range_trees[-1].is_loop or self.cooperative_reduction
++        should_flush = (
++            self.range_trees[-1].is_loop
++            or self.cooperative_reduction
++            or self.num_persistent_tiles > 1
++        )
+ 
+         @contextlib.contextmanager
+         def ctx():
+diff --git a/torch/_inductor/codegen/simd_kernel_features.py b/torch/_inductor/codegen/simd_kernel_features.py
+index 5b89828ef199e..c013db063fde5 100644
+--- a/torch/_inductor/codegen/simd_kernel_features.py
++++ b/torch/_inductor/codegen/simd_kernel_features.py
+@@ -246,6 +246,96 @@ def memory_stats(
+             )
+         return result
+ 
++    def get_reg_cached_persistent_reduction_config(self) -> PersistentReductionTileConfig | None:
++        """Check if this kernel qualifies for register-cached persistent reduction.
++
++        Requires exactly one reduction node and one pointwise (epilogue) node
++        that share at least one input buffer, with a reduction dimension large
++        enough to tile.
++        """
++        from .. import config
++        from ..runtime.hints import ReductionHint
++
++        if not config.triton.register_tiled_persistent_reductions:
++            return None
++        if torch.version.hip:
++            return None
++        if not self.is_reduction():
++            return None
++        if self.get_reduction_hint() != ReductionHint.INNER:
++            return None
++
++        nodes = [n for n in self.node_schedule if isinstance(n, SchedulerNode)]
++        reductions = [n for n in nodes if n.is_reduction()]
++        pointwise = [n for n in nodes if not n.is_reduction()]
++        if len(reductions) != 1 or len(pointwise) != 1:
++            return None
++
++        def mem_dep_names(node: SchedulerNode) -> OrderedSet[str]:
++            return OrderedSet(d.name for d in node.read_writes.reads if isinstance(d, MemoryDep))
++
++        shared_read_names = mem_dep_names(reductions[0]) & mem_dep_names(pointwise[0])
++        if not shared_read_names:
++            return None
++
++        # Limit to at most 2 shared inputs to avoid excessive register pressure
++        # from retaining many values across the tile loop. Future work: retain
++        # the computed intermediate instead of raw inputs.
++        if len(shared_read_names) > 2:
++            return None
++
++        # Only beneficial for half-precision inputs where retained loads
++        # use half the registers compared to fp32 compute type.
++        shared_dtypes = {V.graph.get_dtype(name) for name in shared_read_names}
++        if not shared_dtypes.issubset({torch.bfloat16, torch.float16}):
++            return None
++
++        rnumel = V.graph.sizevars.simplify(self.reduction_numel)
++        if not isinstance(rnumel, (sympy.Integer, int)):
++            return None
++        rnumel = int(rnumel)
++
++        if rnumel < config.triton.register_tiled_persistent_reduction_min_numel:
++            return None
++
++        if rnumel > config.triton.register_tiled_persistent_reduction_max_numel:
++            return None
++
++        min_tiles = config.triton.register_tiled_persistent_reduction_min_tiles
++        max_tiles = config.triton.register_tiled_persistent_reduction_max_tiles
++        if max_tiles < min_tiles:
++            return None
++
++        # R0_BLOCK must be a power of 2 (Triton requirement for block shapes)
++        num_tiles = next(
++            (nt for nt in range(max_tiles, min_tiles - 1, -1)
++             if rnumel % nt == 0 and (rnumel // nt & (rnumel // nt - 1)) == 0),
++            None,
++        )
++        if num_tiles is None:
++            return None
++
++        return PersistentReductionTileConfig(
++            num_tiles=num_tiles,
++            rnumel=rnumel,
++            shared_read_names=tuple(shared_read_names),
++        )
++
++
++@dataclasses.dataclass(frozen=True)
++class PersistentReductionTileConfig:
++    """Tile configuration for register-tiled persistent reductions.
++
++    The reduction dimension is split into ``num_tiles`` tiles.
++    Inputs named in ``shared_read_names`` are cached in multiple tiled
++    registers instead of one large block, helping the downstream compiler
++    optimize register allocation for higher occupancy and performance.
++    """
++
++    num_tiles: int
++    rnumel: int
++    shared_read_names: tuple[str, ...]
++
+ 
+ class MemoryEstimator:
+     """
+diff --git a/torch/_inductor/codegen/triton.py b/torch/_inductor/codegen/triton.py
+index 959ff25647e11..e7ae167a12e01 100644
+--- a/torch/_inductor/codegen/triton.py
++++ b/torch/_inductor/codegen/triton.py
+@@ -1239,6 +1239,9 @@ def _get_min_elements_per_thread(
+         else:
+             out_dtype = triton_store_type(dtype)
+ 
++        if triton_type(x.dtype) == out_dtype:
++            return x
++
+         return f"{x}.to({out_dtype})"
+ 
+     @staticmethod
+@@ -2833,6 +2836,12 @@ def __init__(
+         )
+         self.tma_min_block_sizes = dict[str, int]()
+         self.hint_override = hint_override
++        # Register-tiled persistent reduction state
++        self._persistent_tile_phase: str | None = (
++            "reduction" if self.num_persistent_tiles > 1 else None
++        )
++        self._retained_loads_current: dict[str, Any] = {}
++        self._retained_load_var_names: dict[str, list[str]] = {}
+         self._load_counts: collections.Counter[str] = collections.Counter()
+         self._pdl_load_index = 0
+         self._pdl_has_wait = False
+@@ -2960,26 +2969,24 @@ def init_cooperative_reduction_mask(self):
+ 
+     def codegen_range_tree(self):
+         for tree in self.range_trees:
+-            # reduction indexing goes inside a loop
+-            if not tree.is_loop:
++            # reduction ranges change per tile, so we compute them in the loop instead of the header
++            if not tree.is_loop and not (tree.is_reduction and self.num_persistent_tiles > 1):
+                 self.iteration_ranges_codegen_header(tree, self.body)
+-            elif self.inside_reduction:
++            elif tree.is_loop and self.inside_reduction:
+                 # workaround for this issue:
+                 # https://gist.github.com/jansel/6527126f781559095c5531f98a4235a7
+                 self.body.writeline(
+                     f"{tree.prefix}base = {self.iteration_ranges_ranges_code(tree)}"
+                 )
+ 
+-        if self.inside_reduction:
++        if self.inside_reduction and self.num_persistent_tiles <= 1:
+             if any(tree.is_loop for tree in self.range_trees):
+-                # If the kernel contains loops, compute rbase.
+                 rn_bases = self._get_reduction_symbols(
+                     "base", integer=True, nonnegative=True
+                 )
+                 rbase = self._flatten_reduction_indices(rn_bases)
+                 self.body.splice(f"rbase = {self.index_to_str(rbase)}")
+             else:
+-                # For looped reductions, indexing is deferred to the innermost loop.
+                 self.codegen_reduction_indices(self.body)
+ 
+     def need_numel_args(self):
+@@ -3767,6 +3774,21 @@ def load(self, name: str, index: sympy.Expr):
+         """
+         Load from the memory location 'name', offset by some indexing expression 'index'.
+         """
++        # Register-tiled epilogue: reuse the retained register copy instead of
++        # reloading from memory.  _forwarded_<name> is set per tile by the
++        # if-chain in codegen_body's epilogue loop.
++        if self._persistent_tile_phase == "epilogue" and name in self.persistent_shared_read_names:
++            safe_name = name.replace(".", "_")
++            forwarded_name = f"_forwarded_{safe_name}"
++            dtype = V.graph.get_dtype(name)
++            result_var = self.cse.generate(
++                self.loads,
++                forwarded_name,
++                dtype=dtype,
++                shape=tuple(self.dense_size_list()),
++            )
++            return result_var
++
+         var = self.args.input(name)
+         load_counts = self._load_counts
+         load_counts[name] += 1
+@@ -3838,6 +3860,7 @@ def decide_later():
+         NOTE: enabled with env variable TORCHINDUCTOR_SKIP_L1
+         """
+         has_read_deps = True
++        _retain_native = False
+         if config.triton.skip_l1_cache:
+             buffer_read_counts = self.features.buffer_read_counts()
+             # Graph inputs, primals_*, arg*_* would not be tracked by `buffer_read_counts`
+@@ -3903,9 +3926,22 @@ def decide_later():
+                 else:
+                     shape = TritonSymbols.get_block_shape(indexing.index)
+ 
++            # For register-tiled retained loads in bf16/fp16, emit the raw load
++            # as a separate CSE var before the upcast so we can stash in
++            # native dtype.  The upcast (.to(tl.float32)) still happens for
++            # the reduction compute; the epilogue will upcast again from the
++            # retained native-dtype value.
++            _retain_native = (
++                dtype in (torch.float16, torch.bfloat16)
++                and config.triton.codegen_upcast_to_fp32
++                and self._persistent_tile_phase == "reduction"
++                and name in self.persistent_shared_read_names
++            )
++
+             if (
+                 dtype in (torch.float16, torch.bfloat16)
+                 and config.triton.codegen_upcast_to_fp32
++                and not _retain_native
+             ):
+                 line += ".to(tl.float32)"
+                 dtype = torch.float32
+@@ -3927,6 +3963,15 @@ def decide_later():
+         assert isinstance(result_var, TritonCSEVariable)
+         result_var.mask_vars = indexing.mask_vars  # type: ignore[assignment]
+ 
++        # For _retain_native: result_var is the raw bf16 load. Stash it,
++        # then generate the .to(tl.float32) upcast as a second CSE var.
++        if _retain_native:
++            self._retained_loads_current[name] = result_var
++            upcast_line = f"{result_var}.to(tl.float32)"
++            result_var = self.cse.generate(
++                load_buffer, upcast_line, dtype=torch.float32, shape=shape
++            )
++
+         if append_broadcast:
+             line = f"tl.broadcast_to({result_var}, {append_broadcast})"
+             result_var = self.cse.generate(
+@@ -3950,6 +3995,10 @@ def decide_later():
+         if not self.inside_reduction or (not indexing.has_rmask() and not has_rindex):
+             self.outside_loop_vars.add(result_var)
+ 
++        if self._persistent_tile_phase == "reduction" and name in self.persistent_shared_read_names:
++            if name not in self._retained_loads_current:
++                self._retained_loads_current[name] = result_var
++
+         return result_var
+ 
+     def store(
+@@ -4331,7 +4380,7 @@ def where_cond(tval, fval):
+                 return tval
+             return TritonKernelOverrides.where(cond, tval, fval)
+ 
+-        if self.persistent_reduction:
++        if self.persistent_reduction and self.num_persistent_tiles <= 1:
+             default = ir.Reduction.default_value(reduction_type, src_dtype)
+ 
+             def update_constant_dtype(constant, src_dtype, dst_dtype):
+@@ -5268,6 +5317,99 @@ def codegen_body(self):
+                     f"tl.store(ws_ptr + (tl.program_id(0) + {idx} * tl.num_programs(0)) * r0_numel + r0_index, accum{idx}, r0_mask)"
+                 )
+ 
++        elif self.inside_reduction and self.num_persistent_tiles > 1:
++            # Register-tiled persistent reduction: wrap staging buffers in
++            # tl.static_range loops.  The node was codegen'd once — the
++            # loop handles repetition across tiles.  NUM_TILES and R0_BLOCK
++            # are constexpr function params so the autotuner can try
++            # different tile sizes.
++            # Pre-declare retained-load variables for max_tiles so the
++            # autotuner can vary NUM_TILES.  Unused tiles are dead-code-
++            # eliminated by the compiler since tl.static_range unrolls.
++            max_tiles = config.triton.register_tiled_persistent_reduction_max_tiles
++            assert self.num_persistent_tiles <= max_tiles, (
++                f"num_persistent_tiles ({self.num_persistent_tiles}) exceeds "
++                f"max_tiles ({max_tiles})"
++            )
++
++            if self._persistent_tile_phase == "reduction":
++                self.body.writeline(
++                    f"tl.static_assert(NUM_TILES <= {max_tiles}, "
++                    f"'NUM_TILES must be <= {max_tiles}')"
++                )
++
++            if self._persistent_tile_phase == "reduction":
++                for name in self.persistent_shared_read_names:
++                    safe_name = name.replace(".", "_")
++                    dtype = V.graph.get_dtype(name)
++                    triton_dtype = triton_type(dtype)
++                    var_names = []
++                    for i in range(max_tiles):
++                        vname = f"_retained_{safe_name}_{i}"
++                        self.body.writeline(
++                            f"{vname} = tl.full({self.dense_size_str()}, 0.0, {triton_dtype})"
++                        )
++                        var_names.append(vname)
++                    self._retained_load_var_names[name] = var_names
++
++            self.body.writeline(
++                "for _tile in tl.static_range(NUM_TILES):"
++            )
++            with self.body.indent():
++                # Emit tile range header using R0_BLOCK (autotunable constexpr)
++                for tree in self.range_trees:
++                    if not tree.is_reduction:
++                        continue
++                    x = tree.prefix
++                    self.body.writeline(f"{x}offset = _tile * {x.upper()}BLOCK")
++                    self.body.writeline(
++                        f"{tree.name} = {x}offset + {self.iteration_ranges_ranges_code(tree)}"
++                    )
++                    if self._has_constant_mask(tree):
++                        self.body.writeline(self.create_constant_mask(tree))
++                    else:
++                        self.body.writeline(f"{x}mask = {tree.name} < {x}numel")
++                self.codegen_reduction_indices(self.body)
++
++                # Epilogue: emit retained-load retrieval
++                if self._persistent_tile_phase == "epilogue":
++                    for name in self.persistent_shared_read_names:
++                        safe_name = name.replace(".", "_")
++                        forwarded = f"_forwarded_{safe_name}"
++                        var_names = self._retained_load_var_names.get(name, [])
++                        for i, vname in enumerate(var_names):
++                            self.body.writeline(f"if _tile == {i}:")
++                            with self.body.indent():
++                                self.body.writeline(f"{forwarded} = {vname}")
++
++                self.body.splice(self.indexing_code)
++                self.body.splice(self.loads)
++                self.body.splice(self.compute)
++                self.body.splice(self.stores)
++
++                # Reduction: emit retained-load stash
++                if self._persistent_tile_phase == "reduction":
++                    for name in self.persistent_shared_read_names:
++                        safe_name = name.replace(".", "_")
++                        loaded = self._retained_loads_current.get(name)
++                        if loaded is None:
++                            continue
++                        var_names = self._retained_load_var_names.get(name, [])
++                        for i, vname in enumerate(var_names):
++                            self.body.writeline(f"if _tile == {i}:")
++                            with self.body.indent():
++                                self.body.writeline(f"{vname} = {loaded}")
++
++            self.cse.invalidate(self.outside_loop_vars)
++            for tree in self.range_trees:
++                if tree.is_reduction:
++                    tree.cache_clear()
++
++            # After emitting the reduction loop, switch to epilogue phase
++            if self._persistent_tile_phase == "reduction":
++                self._persistent_tile_phase = "epilogue"
++                self._retained_loads_current.clear()
++
+         elif self.inside_reduction and len(loop_trees) > 0:
+             # Write the loop headers.
+             for level, tree in enumerate(loop_trees):
+@@ -5652,6 +5794,16 @@ def inductor_meta_per_kernel(self) -> dict[str, Any]:
+             out["persistent_reduction"] = self.persistent_reduction
+         if self.add_persistent_rblock:
+             out["add_persistent_rblock"] = True
++        if self.num_persistent_tiles > 1:
++            out["dynamic_scale_rblock"] = False
++            out["persistent_reduction_num_tiles"] = self.num_persistent_tiles
++            out["persistent_reduction_max_tiles"] = (
++                config.triton.register_tiled_persistent_reduction_max_tiles
++            )
++            out["persistent_reduction_min_tiles"] = (
++                config.triton.register_tiled_persistent_reduction_min_tiles
++            )
++            out["persistent_reduction_rnumel"] = self.persistent_rnumel
+         if (
+             config.benchmark_kernel
+             or config.profile_bandwidth
+@@ -5668,6 +5820,8 @@ def inductor_meta_per_kernel(self) -> dict[str, Any]:
+ 
+     @functools.cached_property
+     def add_persistent_rblock(self) -> bool:
++        if self.num_persistent_tiles > 1:
++            return False
+         # Bail on 3d tiling, which has more complicated coalesce patterns
+         looped_red = self.features.is_reduction() and not self.persistent_reduction
+         tiling_scores = self.tiling_scores
+@@ -5815,7 +5969,11 @@ def add_constexpr_arg(arg_name):
+ 
+         for tree in self.range_trees:
+             if tree.is_reduction and self.persistent_reduction:
+-                # Rn_BLOCK for persistent_reduction is defined in codegen_static_numels
++                if self.num_persistent_tiles > 1:
++                    add_constexpr_arg(f"{tree.prefix.upper()}BLOCK")
++                else:
++                    # Rn_BLOCK for single-tile persistent is defined in codegen_static_numels
++                    pass
+                 continue
+             if tree.tensor_dim is None:
+                 continue
+@@ -5825,6 +5983,9 @@ def add_constexpr_arg(arg_name):
+         if self.cooperative_reduction:
+             add_constexpr_arg("RSPLIT")
+ 
++        if self.num_persistent_tiles > 1:
++            add_constexpr_arg("NUM_TILES")
++
+         if self.mix_order_reduction:
+             add_constexpr_arg("RSPLIT_SIZE")
+             add_constexpr_arg("NUM_STAGES")
+@@ -5858,8 +6019,8 @@ def add_constexpr_arg(arg_name):
+             "kernel_name": str(Placeholder.DESCRIPTIVE_NAME),
+             "mutated_arg_names": mutated_args,
+             "optimize_mem": optimize_mem,
+-            **self.inductor_meta_per_kernel(),
+             **self.inductor_meta_common(),
++            **self.inductor_meta_per_kernel(),
+         }
+ 
+         # Triton compiler includes equal_to_1 args into constants even
+@@ -6010,7 +6171,9 @@ def is_static_integer(expr: sympy.Expr) -> bool:
+                     code.writeline(f"{tree.prefix}numel = {int(simplified_tree_numel)}")
+ 
+             if tree.is_reduction and self.persistent_reduction:
+-                if self.cooperative_reduction:
++                if self.num_persistent_tiles > 1:
++                    continue  # R0_BLOCK is a function parameter for register-tiled
++                elif self.cooperative_reduction:
+                     numel = self.kexpr(self.rename_indexing(tree.numel))
+                     val = f"triton_helpers.constexpr_next_power_of_2(({numel} + RSPLIT - 1) // RSPLIT)"
+                 else:
+@@ -6104,6 +6267,8 @@ def codegen_iteration_ranges_entry(self, entry: IterationRangesEntry):
+         # dimension
+         if entry.root.is_loop or (self.mix_order_reduction and entry.prefix == "x"):
+             self.indexing_code.writeline(line)
++        elif entry.root.is_reduction and self.num_persistent_tiles > 1:
++            self.indexing_code.writeline(line)
+         else:
+             # lift non-reduction stores outside loop
+             self.body.writeline(line)
+diff --git a/torch/_inductor/config.py b/torch/_inductor/config.py
+index 000a90735299b..4036e6644e692 100644
+--- a/torch/_inductor/config.py
++++ b/torch/_inductor/config.py
+@@ -1916,6 +1916,33 @@ class triton:
+         os.environ.get("TORCHINDUCTOR_PERSISTENT_REDUCTIONS", "1") == "1"
+     )
+ 
++    # Register-tiled persistent reductions: tile the reduction dimension
++    # and retain shared source loads in registers across the epilogue.
++    register_tiled_persistent_reductions = (
++        os.environ.get("TORCHINDUCTOR_REGISTER_TILED_PERSISTENT_REDUCTIONS", "0")
++        == "1"
++    )
++    register_tiled_persistent_reduction_min_numel: int = int(
++        os.environ.get(
++            "TORCHINDUCTOR_REGISTER_TILED_PERSISTENT_REDUCTION_MIN_NUMEL", "2048"
++        )
++    )
++    register_tiled_persistent_reduction_max_numel: int = int(
++        os.environ.get(
++            "TORCHINDUCTOR_REGISTER_TILED_PERSISTENT_REDUCTION_MAX_NUMEL", "16384"
++        )
++    )
++    register_tiled_persistent_reduction_max_tiles: int = int(
++        os.environ.get(
++            "TORCHINDUCTOR_REGISTER_TILED_PERSISTENT_REDUCTION_MAX_TILES", "8"
++        )
++    )
++    register_tiled_persistent_reduction_min_tiles: int = int(
++        os.environ.get(
++            "TORCHINDUCTOR_REGISTER_TILED_PERSISTENT_REDUCTION_MIN_TILES", "2"
++        )
++    )
++
+     # Decompose sort-based ops (sort, mode, median) to generate Triton
+     # kernels instead of falling back to ATen eager.  When enabled, sort
+     # removes the default 512-element dimension limit and uses int32
+diff --git a/torch/_inductor/runtime/triton_heuristics.py b/torch/_inductor/runtime/triton_heuristics.py
+index 34d963fff926d..87de440ce27c6 100644
+--- a/torch/_inductor/runtime/triton_heuristics.py
++++ b/torch/_inductor/runtime/triton_heuristics.py
+@@ -4570,6 +4570,36 @@ def persistent_reduction(
+ 
+     configs = filter_reduction_configs_for_determinism(inductor_meta, configs)
+ 
++    # Multi-tile persistent: generate configs with all valid
++    # R0_BLOCK / NUM_TILES pairs.  Retained-load variables are
++    # pre-declared for max_tiles, so the compiler dead-code-eliminates
++    # unused tiles when NUM_TILES < max_tiles.
++    rnumel = inductor_meta.get("persistent_reduction_rnumel")
++    max_tiles = inductor_meta.get("persistent_reduction_max_tiles", 1)
++    min_tiles = inductor_meta.get("persistent_reduction_min_tiles", 2)
++    if rnumel is not None and max_tiles > 1:
++        tile_pairs = []
++        for nt in range(min_tiles, max_tiles + 1):
++            ts = rnumel // nt
++            # Triton persistent reduction configs require R0_BLOCK to be a power
++            # of 2. Filter tile pairs here so autotuning only explores valid
++            # NUM_TILES / R0_BLOCK combinations.
++            if ts * nt == rnumel and ts > 0 and (ts & (ts - 1)) == 0:
++                tile_pairs.append((ts, nt))
++        if tile_pairs:
++            expanded = []
++            for c in configs:
++                for ts, nt in tile_pairs:
++                    # With tiling, R0_BLOCK is smaller so fewer warps may
++                    # be optimal.  Generate configs with varied num_warps.
++                    for nw in (4, 8, c.num_warps):
++                        newc = copy.deepcopy(c)
++                        newc.kwargs["R0_BLOCK"] = ts
++                        newc.kwargs["NUM_TILES"] = nt
++                        newc.num_warps = nw
++                        expanded.append(newc)
++            configs = unique_configs(expanded)
++
+     if return_configs:
+         return configs
+ 

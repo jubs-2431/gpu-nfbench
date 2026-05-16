@@ -1,0 +1,16 @@
+{
+  "body": "### Description\n\nI am running the following code using CuPy which crashes with the message:\n```\nTraceback (most recent call last):\n  File \"/content/test-cupy-func.py\", line 21, in <module>\n    w = wofz_gpu(z)\n        ^^^^^^^^^^^\n  File \"/content/test-cupy-func.py\", line 15, in wofz_gpu\n    return erfcx(-1j * z_gpu)\n           ^^^^^^^^^^^^^^^^^^\n  File \"cupy/_core/_kernel.pyx\", line 1340, in cupy._core._kernel.ufunc.__call__\n  File \"cupy/_core/_kernel.pyx\", line 1660, in cupy._core._kernel._Ops.guess_routine\nTypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx\n```\n\n### To Reproduce\n\n```py\nimport cupy as cp\nfrom cupyx.scipy.special import erfcx\n\n\ndef wofz_gpu(z) -> cp.ndarray:\n    \"\"\"Compute the complex Faddeeva function on GPU for complex128 inputs.\n\n    Args:\n        z: Array-like input (NumPy or CuPy). Converted to CuPy complex128.\n\n    Returns:\n        CuPy array (complex128) containing w(z).\n    \"\"\"\n    z_gpu = cp.asarray(z, dtype=cp.complex128)\n    return erfcx(-1j * z_gpu)\n\n\nif __name__ == \"__main__\":\n    # Example: everything remains on GPU.\n    z = cp.array([1.0 + 2.0j, -0.5 + 0.25j, 3.0 - 1.0j], dtype=cp.complex128)\n    w = wofz_gpu(z)\n    print(\"Input dtype:\", z.dtype)\n    print(\"Output dtype:\", w.dtype)\n    print(\"Output (GPU array):\", w)\n\n    from scipy.special import wofz\n    import numpy as np\n    z = cp.asnumpy(z)  # Move to CPU for SciPy\n    w = wofz(z)\n    print(\"Input dtype:\", z.dtype)\n    print(\"Output dtype:\", w.dtype)\n    print(\"Output (CPU array):\", w)\n```\n\n\n### Installation\n\nWheel (`pip install cupy-cuda13x`)\n\n### Environment\n\n```\ncupy-cuda13x==14.0.1\nnumpy==2.0.2\n```\n\n### Additional Information\n\n_No response_",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2026-05-05T23:28:35Z",
+  "html_url": "https://github.com/cupy/cupy/issues/9907",
+  "labels": [
+    "contribution welcome",
+    "cat:numpy-compat",
+    "prio:medium"
+  ],
+  "number": 9907,
+  "state": "open",
+  "title": "`cupyx.scipy.special.erfcx` not working",
+  "updated_at": "2026-05-08T05:38:44Z"
+}

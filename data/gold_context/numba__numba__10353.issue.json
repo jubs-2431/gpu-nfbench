@@ -1,0 +1,12 @@
+{
+  "body": "<!--\n\nThanks for opening an issue! To help the Numba team handle your information\nefficiently, please first ensure that there is no other issue present that\nalready describes the issue you have\n(search at https://github.com/numba/numba/issues?&q=is%3Aissue).\n\n-->\n\n## Reporting a bug\n\n<!--\n\nBefore submitting a bug report please ensure that you can check off these boxes:\n\n-->\n\n- [x] I have tried using the latest released version of Numba (most recent is\n  visible in the release notes\n  (https://numba.readthedocs.io/en/stable/release-notes-overview.html).\n- [x] #10354\n  i.e. it's possible to run as 'python bug.py'.\n\n<!--\n\nPlease include details of the bug here, including, if applicable, what you\nexpected to happen!\n\nI don't know when or what update caused all the cuda.jit code to stop working.\nNow my numba nvcc version is as follows. The code error is as follows\n\n-->\n",
+  "closed_at": null,
+  "comments": 14,
+  "created_at": "2025-11-27T16:46:16Z",
+  "html_url": "https://github.com/numba/numba/issues/10353",
+  "labels": [],
+  "number": 10353,
+  "state": "open",
+  "title": "wsl   Linker error log: ERROR 4 in nvvmAddNVVMContainerToProgram, may need newer version of nvJitLink library",
+  "updated_at": "2026-04-27T12:40:58Z"
+}

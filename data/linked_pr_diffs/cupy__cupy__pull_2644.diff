@@ -1,0 +1,1216 @@
+diff --git a/cupy/cuda/cufft.pyx b/cupy/cuda/cufft.pyx
+index 09f179d0782..f894260e407 100644
+--- a/cupy/cuda/cufft.pyx
++++ b/cupy/cuda/cufft.pyx
+@@ -1,12 +1,18 @@
+ cimport cython  # NOQA
++from cpython.mem cimport PyMem_Malloc, PyMem_Free
+ from libc.stdint cimport intptr_t
++from libc.string cimport memset as c_memset
++from libcpp cimport vector
+ import numpy
+ import threading
+ 
+ import cupy
+ from cupy.cuda cimport driver
+ from cupy.cuda cimport memory
++from cupy.cuda cimport runtime
+ from cupy.cuda cimport stream as stream_module
++from cupy.cuda.device import Device
++from cupy.cuda.stream import Event, Stream
+ 
+ 
+ cdef object _thread_local = threading.local()
+@@ -23,6 +29,12 @@ cpdef get_current_plan():
+     return _thread_local._current_plan
+ 
+ 
++cdef enum:
++    # Actually, this is 64, but it's undocumented. For the sake
++    # of safety, let us use 16, which agrees with the cuFFT doc.
++    MAX_CUDA_DESCRIPTOR_GPUS = 16
++
++
+ cdef extern from 'cupy_cufft.h' nogil:
+     ctypedef struct Complex 'cufftComplex':
+         float x, y
+@@ -60,6 +72,43 @@ cdef extern from 'cupy_cufft.h' nogil:
+     # Version
+     Result cufftGetVersion(int* version)
+ 
++    # cufftXt data types
++    ctypedef struct XtArrayDesc 'cudaXtDesc':
++        int version
++        int nGPUs
++        int GPUs[MAX_CUDA_DESCRIPTOR_GPUS]
++        void* data[MAX_CUDA_DESCRIPTOR_GPUS]
++        size_t size[MAX_CUDA_DESCRIPTOR_GPUS]
++        void* cudaXtState
++
++    ctypedef enum XtSubFormat 'cufftXtSubFormat':
++        CUFFT_XT_FORMAT_INPUT
++        CUFFT_XT_FORMAT_OUTPUT
++        CUFFT_XT_FORMAT_INPLACE
++        CUFFT_XT_FORMAT_INPLACE_SHUFFLED
++        CUFFT_XT_FORMAT_1D_INPUT_SHUFFLED
++
++    ctypedef struct XtArray 'cudaLibXtDesc':
++        int version
++        XtArrayDesc* descriptor
++        int library
++        XtSubFormat subFormat
++        void* libDescriptor
++
++    ctypedef enum XtCopyType 'cufftXtCopyType':
++        CUFFT_COPY_HOST_TO_DEVICE = 0x00
++        CUFFT_COPY_DEVICE_TO_HOST = 0x01
++        CUFFT_COPY_DEVICE_TO_DEVICE = 0x02
++
++    # cufftXt functions
++    Result cufftXtSetGPUs(Handle plan, int nGPUs, int* gpus)
++    Result cufftXtSetWorkArea(Handle plan, void** workArea)
++    Result cufftXtMemcpy(Handle plan, void *dst, void *src, XtCopyType type)
++    Result cufftXtExecDescriptorC2C(Handle plan, XtArray* idata,
++                                    XtArray* odata, int direction)
++    Result cufftXtExecDescriptorZ2Z(Handle plan, XtArray* idata,
++                                    XtArray* odata, int direction)
++
+ 
+ cdef dict RESULT = {
+     0: 'CUFFT_SUCCESS',
+@@ -105,17 +154,134 @@ cpdef size_t getVersion() except? -1:
+     return version
+ 
+ 
++# This is necessary for single-batch transforms: "when batch is one, data is
++# left in the GPU memory in a permutation of the natural output", see
++# https://docs.nvidia.com/cuda/cufft/index.html#multiple-GPU-cufft-intermediate-helper  # NOQA
++cdef _reorder_buffers(Handle plan, intptr_t xtArr, list xtArr_buffer):
++    cdef int i, result, nGPUs
++    cdef intptr_t temp_xtArr
++    cdef XtArray* temp_arr
++    cdef XtArray* arr
++    cdef list gpus = []
++    cdef list sizes = []
++    cdef list temp_xtArr_buffer
++
++    arr = <XtArray*>xtArr
++    nGPUs = len(xtArr_buffer)
++    assert nGPUs == arr.descriptor.nGPUs
++
++    # allocate another buffer to prepare for order conversion
++    for i in range(nGPUs):
++        gpus.append(arr.descriptor.GPUs[i])
++        sizes.append(arr.descriptor.size[i])
++    temp_xtArr, temp_xtArr_buffer = _XtMalloc(gpus, sizes,
++                                              CUFFT_XT_FORMAT_INPLACE)
++    temp_arr = <XtArray*>temp_xtArr
++
++    # Make a device copy to bring the data from the permuted order back to
++    # the natural order. Note that this works because after FFT
++    # arr.subFormat is silently changed to CUFFT_XT_FORMAT_INPLACE_SHUFFLED
++    with nogil:
++        result = cufftXtMemcpy(plan, <void*>temp_arr, <void*>arr,
++                               CUFFT_COPY_DEVICE_TO_DEVICE)
++    check_result(result)
++
++    for i in range(nGPUs):
++        # swap MemoryPointer in xtArr_buffer
++        temp = temp_xtArr_buffer[i]
++        temp_xtArr_buffer[i] = xtArr_buffer[i]
++        xtArr_buffer[i] = temp
++
++        # swap pointer in xtArr
++        arr.descriptor.data[i] = temp_arr.descriptor.data[i]
++        assert arr.descriptor.size[i] == temp_arr.descriptor.size[i]
++        temp_arr.descriptor.data[i] = NULL
++        temp_arr.descriptor.size[i] = 0
++
++    # temp_xtArr now points to the old data, which is now in temp_xtArr_buffer
++    # and will be deallocated after this line (out of scope)
++    _XtFree(temp_xtArr)
++
++
++# We need to manage the buffers ourselves in order to 1. avoid excessive,
++# uncessary memory usage, and 2. use CuPy's memory pool.
++# This is meant to replace cufftXtMalloc().
++cdef _XtMalloc(list gpus, list sizes, XtSubFormat fmt):
++    cdef XtArrayDesc* xtArr_desc
++    cdef XtArray* xtArr
++    cdef list xtArr_buffer = []
++    cdef int i, nGPUs
++    cdef size_t size
++
++    assert len(gpus) == len(sizes)
++    nGPUs = len(gpus)
++    xtArr_desc = <XtArrayDesc*>PyMem_Malloc(sizeof(XtArrayDesc))
++    xtArr = <XtArray*>PyMem_Malloc(sizeof(XtArray))
++    c_memset(xtArr_desc, 0, sizeof(XtArrayDesc))
++    c_memset(xtArr, 0, sizeof(XtArray))
++
++    xtArr_desc.nGPUs = nGPUs
++    for i, (gpu, size) in enumerate(zip(gpus, sizes)):
++        with Device(gpu):
++            buf = memory.alloc(size)
++        assert gpu == buf.device_id
++        xtArr_buffer.append(buf)
++        xtArr_desc.GPUs[i] = gpu
++        xtArr_desc.data[i] = <void*>buf.ptr
++        xtArr_desc.size[i] = size
++
++    xtArr.descriptor = xtArr_desc
++    xtArr.subFormat = fmt
++
++    return <intptr_t>xtArr, xtArr_buffer
++
++
++# This is meant to replace cufftXtFree().
++# We only free the C structs. The underlying GPU buffers are deallocated when
++# going out of scope.
++cdef _XtFree(intptr_t ptr):
++    cdef XtArray* xtArr = <XtArray*>ptr
++    cdef XtArrayDesc* xtArr_desc = xtArr.descriptor
++    PyMem_Free(xtArr_desc)
++    PyMem_Free(xtArr)
++
++
+ class Plan1d(object):
+-    def __init__(self, int nx, int fft_type, int batch):
++    def __init__(self, int nx, int fft_type, int batch, *,
++                 devices=None, out=None):
+         cdef Handle plan
+-        cdef size_t work_size
++        cdef bint use_multi_gpus = 0 if devices is None else 1
++
+         with nogil:
+             result = cufftCreate(&plan)
+             if result == 0:
+                 result = cufftSetAutoAllocation(plan, 0)
+-            if result == 0:
+-                result = cufftMakePlan1d(plan, nx, <Type>fft_type, batch,
+-                                         &work_size)
++        check_result(result)
++
++        # set plan, work_area, gpus, streams, and events
++        if not use_multi_gpus:
++            self._single_gpu_get_plan(plan, nx, fft_type, batch)
++        else:
++            self._multi_gpu_get_plan(plan, nx, fft_type, batch, devices, out)
++
++        self.nx = nx
++        self.fft_type = fft_type
++        self.batch = batch
++
++        self._use_multi_gpus = use_multi_gpus
++        self.batch_share = None
++        self.xtArr = <intptr_t>0  # pointer to metadata for multi-GPU buffer
++        self.xtArr_buffer = None  # actual multi-GPU intermediate buffer
++
++    def _single_gpu_get_plan(self, Handle plan, int nx, int fft_type,
++                             int batch):
++        cdef int result
++        cdef size_t work_size
++        cdef intptr_t ptr
++
++        with nogil:
++            result = cufftMakePlan1d(plan, nx, <Type>fft_type, batch,
++                                     &work_size)
+ 
+         # cufftMakePlan1d uses large memory when nx has large divisor.
+         # See https://github.com/cupy/cupy/issues/1063
+@@ -127,21 +293,112 @@ class Plan1d(object):
+ 
+         check_result(result)
+         work_area = memory.alloc(work_size)
++        ptr = work_area.ptr
+         with nogil:
+-            result = cufftSetWorkArea(plan, <void *>(work_area.ptr))
++            result = cufftSetWorkArea(plan, <void*>(ptr))
+         check_result(result)
+-        self.nx = nx
+-        self.fft_type = fft_type
++
+         self.plan = plan
+-        self.work_area = work_area
+-        self.batch = batch
++        self.work_area = work_area  # this is for cuFFT plan
++        self.gpus = None
++        self.streams = None
++        self.events = None
++
++    def _multi_gpu_get_plan(self, Handle plan, int nx, int fft_type, int batch,
++                            devices, out):
++        cdef int nGPUs, min_len, result
++        cdef vector.vector[int] gpus
++        cdef vector.vector[size_t] work_size
++        cdef list work_area = []
++        cdef list streams = []
++        cdef list events = []
++        cdef vector.vector[void*] work_area_ptr
++
++        # some sanity checks
++        if fft_type != CUFFT_C2C and fft_type != CUFFT_Z2Z:
++            raise ValueError('Currently for multiple GPUs only C2C and Z2Z are'
++                             ' supported.')
++        if isinstance(devices, list):
++            nGPUs = len(devices)
++            for i in range(nGPUs):
++                gpus.push_back(devices[i])
++        elif isinstance(devices, int):
++            nGPUs = devices
++            for i in range(nGPUs):
++                gpus.push_back(i)
++        else:
++            raise ValueError('\"devices\" should be an int or a list of int.')
++        if batch == 1:
++            if (nx & (nx - 1)) != 0:
++                raise ValueError('For multi-GPU FFT with batch = 1, the array '
++                                 'size must be a power of 2.')
++            if nGPUs not in (2, 4, 8, 16):
++                raise ValueError('For multi-GPU FFT with batch = 1, the number'
++                                 ' of devices must be 2, 4, 8, or 16.')
++            if nGPUs in (2, 4):
++                min_len = 64
++            elif nGPUs == 8:
++                min_len = 128
++            else:  # nGPU = 16
++                min_len = 1024
++            if nx < min_len:
++                raise ValueError('For {} GPUs, the array length must be at '
++                                 'least {} (you have {}).'
++                                 .format(nGPUs, min_len, nx))
++        work_size.resize(nGPUs)
++
++        with nogil:
++            result = cufftXtSetGPUs(plan, nGPUs, gpus.data())
++            if result == 0:
++                result = cufftMakePlan1d(plan, nx, <Type>fft_type, batch,
++                                         work_size.data())
++
++        # cufftMakePlan1d uses large memory when nx has large divisor.
++        # See https://github.com/cupy/cupy/issues/1063
++        if result == 2:
++            cupy.get_default_memory_pool().free_all_blocks()
++            with nogil:
++                result = cufftMakePlan1d(plan, nx, <Type>fft_type, batch,
++                                         work_size.data())
++        check_result(result)
++
++        for i in range(nGPUs):
++            with Device(gpus[i]):
++                buf = memory.alloc(work_size[i])
++                stream = Stream()
++                event = Event()
++            work_area.append(buf)
++            streams.append(stream)
++            events.append(event)
++            work_area_ptr.push_back(<void*>buf.ptr)
++        with nogil:
++            result = cufftXtSetWorkArea(plan, work_area_ptr.data())
++        check_result(result)
++
++        self.plan = plan
++        self.work_area = work_area  # this is for cuFFT plan
++        self.gpus = list(gpus)
++        self.streams = streams      # for async, overlapped copies
++        self.events = events        # for async, overlapped copies
+ 
+     def __del__(self):
+         cdef Handle plan = self.plan
++        cdef int dev = runtime.getDevice()
++
+         with nogil:
+             result = cufftDestroy(plan)
+         check_result(result)
+ 
++        # cuFFT bug: after cufftDestroy(), the current device is mistakenly
++        # set to the last device in self.gpus, so we must correct it. See
++        # https://github.com/cupy/cupy/pull/2644#discussion_r347567899 and
++        # NVIDIA internal ticket 2761341.
++        runtime.setDevice(dev)
++
++        if self.xtArr != 0:
++            _XtFree(self.xtArr)
++            self.xtArr = 0
++
+     def __enter__(self):
+         _thread_local._current_plan = self
+         return self
+@@ -150,11 +407,21 @@ class Plan1d(object):
+         _thread_local._current_plan = None
+ 
+     def fft(self, a, out, direction):
++        if self._use_multi_gpus:
++            # Note: mult-GPU plans cannot set stream
++            self._multi_gpu_fft(a, out, direction)
++        else:
++            self._single_gpu_fft(a, out, direction)
++
++    def _single_gpu_fft(self, a, out, direction):
+         cdef Handle plan = self.plan
++        cdef intptr_t stream
++
+         stream = stream_module.get_current_stream_ptr()
+         with nogil:
+             result = cufftSetStream(plan, <driver.Stream>stream)
+         check_result(result)
++
+         if self.fft_type == CUFFT_C2C:
+             execC2C(plan, a.data.ptr, out.data.ptr, direction)
+         elif self.fft_type == CUFFT_R2C:
+@@ -168,6 +435,180 @@ class Plan1d(object):
+         else:
+             execZ2D(plan, a.data.ptr, out.data.ptr)
+ 
++    def _multi_gpu_setup_buffer(self, a):
++        cdef XtArrayDesc* xtArr_desc
++        cdef XtArray* xtArr
++        cdef intptr_t ptr
++        cdef list xtArr_buffer, share, sizes
++        cdef int i, nGPUs, count
++        cdef XtSubFormat fmt
++
++        # First, get the buffers:
++        # We need to manage the buffers ourselves in order to avoid excessive,
++        # uncessary memory usage. Note that these buffers are used for in-place
++        # transforms, and are re-used (lifetime tied to the plan).
++
++        # TODO(leofang): revisit this when NumPy support is added
++        # if isinstance(a, cupy.ndarray) or isinstance(a, numpy.ndarray):
++        if isinstance(a, cupy.ndarray):
++            if self.xtArr == 0 and self.xtArr_buffer is None:
++                nGPUs = len(self.gpus)
++
++                # this is the rule for distributing the workload
++                if self.batch > 1:
++                    share = [self.batch // nGPUs] * nGPUs
++                    for i in range(self.batch % nGPUs):
++                        share[i] += 1
++                else:
++                    share = [1.0 / nGPUs] * nGPUs
++                sizes = [int(share[i] * self.nx * a.dtype.itemsize)
++                         for i in range(nGPUs)]
++
++                # get buffer
++                if isinstance(a, cupy.ndarray):
++                    fmt = CUFFT_XT_FORMAT_INPLACE
++                # TODO(leofang): revisit this when NumPy support is added
++                # else:  # from numpy
++                #     fmt = CUFFT_XT_FORMAT_1D_INPUT_SHUFFLED
++                ptr, xtArr_buffer = _XtMalloc(self.gpus, sizes, fmt)
++
++                xtArr = <XtArray*>ptr
++                xtArr_desc = xtArr.descriptor
++                assert xtArr_desc.nGPUs == nGPUs
++
++                self.batch_share = share
++                self.xtArr = ptr
++                self.xtArr_buffer = xtArr_buffer  # kept to ensure lifetime
++            else:
++                # After FFT the subFormat flag is silently changed to
++                # CUFFT_XT_FORMAT_INPLACE_SHUFFLED. For reuse we must correct
++                # it, otherwise in the next run we would encounter
++                # CUFFT_INVALID_TYPE!
++                ptr = self.xtArr
++                xtArr = <XtArray*>ptr
++                if self.batch == 1:
++                    if isinstance(a, cupy.ndarray):
++                        fmt = CUFFT_XT_FORMAT_INPLACE
++                    # TODO(leofang): revisit this when NumPy support is added
++                    # else:  # from numpy
++                    #     fmt = CUFFT_XT_FORMAT_1D_INPUT_SHUFFLED
++                    xtArr.subFormat = fmt
++        elif isinstance(a, list):
++            # TODO(leofang): For users running Plan1d.fft() (bypassing all
++            # checks in cupy.fft.fft), they are allowed to send in a list of
++            # ndarrays, each of which is on a different GPU. Then, no data
++            # copy is needed, just replace the pointers in the descriptor.
++            raise NotImplementedError('User-managed buffer area is not yet '
++                                      'supported.')
++        else:
++            raise ValueError('Impossible to reach.')
++
++    def _multi_gpu_memcpy(self, a, str action):
++        cdef Handle plan = self.plan
++        cdef list xtArr_buffer, share
++        cdef int start, nGPUs, i, count, result
++        cdef XtArray* arr
++        cdef intptr_t ptr, ptr2
++        cdef size_t size
++
++        # TODO(leofang): revisit this when NumPy support is added
++        # if isinstance(a, cupy.ndarray) or isinstance(a, numpy.ndarray):
++        if isinstance(a, cupy.ndarray):
++            start = 0
++            b = a.ravel()
++            assert b.flags['OWNDATA'] is False
++            assert self.xtArr_buffer is not None
++            ptr = self.xtArr
++            arr = <XtArray*>ptr
++            xtArr_buffer = self.xtArr_buffer
++            nGPUs = len(self.gpus)
++            share = self.batch_share
++
++            if action == 'scatter':
++                if isinstance(a, cupy.ndarray):
++                    for i in range(nGPUs):
++                        count = int(share[i] * self.nx)
++                        size = count * b.dtype.itemsize
++                        curr_stream = self.streams[i]
++                        if i == 0:
++                            # When we come here, another stream could still be
++                            # copying data for us, so we wait patiently...
++                            outer_stream = stream_module.get_current_stream()
++                            outer_stream.synchronize()
++                        xtArr_buffer[i].copy_from_device_async(
++                            b[start:start+count].data, size, curr_stream)
++                        if i != 0:
++                            prev_event = self.events[i-1]
++                            curr_stream.wait_event(prev_event)
++                        curr_event = self.events[i]
++                        curr_event.record(curr_stream)
++                        if i == nGPUs - 1:
++                            curr_event.synchronize()
++                        start += count
++                    assert start == b.size
++                # TODO(leofang): revisit this when NumPy support is added
++                # else:  # numpy
++                #     ptr2 = b.ctypes.data
++                #     with nogil:
++                #         result = cufftXtMemcpy(
++                #             plan, <void*>arr, <void*>ptr2,
++                #             CUFFT_COPY_HOST_TO_DEVICE)
++                #     check_result(result)
++            elif action == 'gather':
++                if isinstance(a, cupy.ndarray):
++                    if self.batch == 1:
++                        _reorder_buffers(plan, self.xtArr, xtArr_buffer)
++
++                    for i in range(nGPUs):
++                        count = int(share[i] * self.nx)
++                        size = count * b.dtype.itemsize
++                        curr_stream = self.streams[i]
++                        if i == 0:
++                            # When we come here, another stream could still be
++                            # copying data for us, so we wait patiently...
++                            outer_stream = stream_module.get_current_stream()
++                            outer_stream.synchronize()
++                        b[start:start+count].data.copy_from_device_async(
++                            xtArr_buffer[i], size, curr_stream)
++                        if i != 0:
++                            prev_event = self.events[i-1]
++                            curr_stream.wait_event(prev_event)
++                        curr_event = self.events[i]
++                        curr_event.record(curr_stream)
++                        if i == nGPUs - 1:
++                            curr_event.synchronize()
++                        start += count
++                    assert start == b.size
++                # TODO(leofang): revisit this when NumPy support is added
++                # else:  # numpy
++                #     ptr2 = b.ctypes.data
++                #     with nogil:
++                #         result = cufftXtMemcpy(
++                #             plan, <void*>ptr2, <void*>arr,
++                #             CUFFT_COPY_DEVICE_TO_HOST)
++                #     check_result(result)
++            else:
++                raise ValueError
++
++    def _multi_gpu_fft(self, a, out, direction):
++        # When we arrive here, the normal CuPy call path ensures a and out
++        # reside on the same GPU -> must distribute a to all of the GPUs
++        self._multi_gpu_setup_buffer(a)
++
++        # Next, copy data to buffer
++        self._multi_gpu_memcpy(a, 'scatter')
++
++        # Actual workhorses
++        if self.fft_type == CUFFT_C2C:
++            multi_gpu_execC2C(self.plan, self.xtArr, self.xtArr, direction)
++        elif self.fft_type == CUFFT_Z2Z:
++            multi_gpu_execZ2Z(self.plan, self.xtArr, self.xtArr, direction)
++        else:
++            raise ValueError
++
++        # Gather the distributed outputs
++        self._multi_gpu_memcpy(out, 'gather')
++
+     def _output_dtype_and_shape(self, a):
+         shape = list(a.shape)
+         if self.fft_type == CUFFT_C2C:
+@@ -356,3 +797,19 @@ cpdef execZ2D(Handle plan, intptr_t idata, intptr_t odata):
+     with nogil:
+         result = cufftExecZ2D(plan, <DoubleComplex*>idata, <Double*>odata)
+     check_result(result)
++
++
++cpdef multi_gpu_execC2C(Handle plan, intptr_t idata, intptr_t odata,
++                        int direction):
++    with nogil:
++        result = cufftXtExecDescriptorC2C(plan, <XtArray*>idata,
++                                          <XtArray*>odata, direction)
++    check_result(result)
++
++
++cpdef multi_gpu_execZ2Z(Handle plan, intptr_t idata, intptr_t odata,
++                        int direction):
++    with nogil:
++        result = cufftXtExecDescriptorZ2Z(plan, <XtArray*>idata,
++                                          <XtArray*>odata, direction)
++    check_result(result)
+diff --git a/cupy/cuda/cupy_cufft.h b/cupy/cuda/cupy_cufft.h
+index dbda14509fa..cd37dde652f 100644
+--- a/cupy/cuda/cupy_cufft.h
++++ b/cupy/cuda/cupy_cufft.h
+@@ -5,6 +5,7 @@
+ 
+ #if !defined(CUPY_NO_CUDA) && !defined(CUPY_USE_HIP)
+ #include <cufft.h>
++#include <cufftXt.h>
+ 
+ #else  // #if !defined(CUPY_NO_CUDA) && !defined(CUPY_USE_HIP)
+ 
+@@ -102,6 +103,60 @@ cufftResult_t cufftGetVersion(...) {
+     return CUFFT_SUCCESS;
+ }
+ 
++// cufftXt relavant data and functions
++typedef struct cudaXtDesc_t {
++   int version;
++   int nGPUs;
++   int GPUs[64];
++   void* data[64];
++   size_t size[64];
++   void* cudaXtState;
++} cudaXtDesc;
++
++typedef enum cufftXtSubFormat_t {
++    CUFFT_XT_FORMAT_INPUT = 0x00,
++    CUFFT_XT_FORMAT_OUTPUT = 0x01,
++    CUFFT_XT_FORMAT_INPLACE = 0x02,
++    CUFFT_XT_FORMAT_INPLACE_SHUFFLED = 0x03,
++    CUFFT_XT_FORMAT_1D_INPUT_SHUFFLED = 0x04,
++    CUFFT_FORMAT_UNDEFINED = 0x05
++} cufftXtSubFormat;
++
++typedef struct cudaLibXtDesc_t{
++    int version;
++    cudaXtDesc *descriptor;
++    int library;  // libFormat is an undoumented type, so use int here
++    int subFormat;
++    void *libDescriptor;
++} cudaLibXtDesc;
++
++typedef enum cufftXtCopyType_t {
++    CUFFT_COPY_HOST_TO_DEVICE = 0x00,
++    CUFFT_COPY_DEVICE_TO_HOST = 0x01,
++    CUFFT_COPY_DEVICE_TO_DEVICE = 0x02,
++    CUFFT_COPY_UNDEFINED = 0x03
++} cufftXtCopyType;
++
++cufftResult_t cufftXtSetGPUs(...) {
++    return CUFFT_SUCCESS;
++}
++
++cufftResult_t cufftXtSetWorkArea(...) {
++    return CUFFT_SUCCESS;
++}
++
++cufftResult_t cufftXtMemcpy(...) {
++    return CUFFT_SUCCESS;
++}
++
++cufftResult_t cufftXtExecDescriptorC2C(...) {
++    return CUFFT_SUCCESS;
++}
++
++cufftResult_t cufftXtExecDescriptorZ2Z(...) {
++    return CUFFT_SUCCESS;
++}
++
+ }  // extern "C"
+ 
+ #endif  // #if !defined(CUPY_NO_CUDA) && !defined(CUPY_USE_HIP)
+diff --git a/cupy/fft/config.py b/cupy/fft/config.py
+index bac3795ae19..10d8d655a89 100644
+--- a/cupy/fft/config.py
++++ b/cupy/fft/config.py
+@@ -1,3 +1,38 @@
++from cupy import util
++
+ 
+-global enable_nd_planning
+ enable_nd_planning = True
++use_multi_gpus = False
++_devices = None
++
++
++def set_cufft_gpus(gpus):
++    '''Set the GPUs to be used in multi-GPU FFT.
++
++    Args:
++        gpus (int or list of int): The number of GPUs or a list of GPUs
++            to be used. For the former case, the first ``gpus`` GPUs
++            will be used.
++
++    .. warning::
++        This API is currently experimental and may be changed in the future
++        version.
++
++    .. seealso:: `Multiple GPU cuFFT Transforms`_
++
++    .. _Multiple GPU cuFFT Transforms:
++        https://docs.nvidia.com/cuda/cufft/index.html#multiple-GPU-cufft-transforms
++    '''
++    util.experimental('cupy.fft.config.set_cufft_gpus')
++    global _devices
++
++    if isinstance(gpus, int):
++        devs = [i for i in range(gpus)]
++    elif isinstance(gpus, list):
++        devs = gpus
++    else:
++        raise ValueError("gpus must be an int or a list of int.")
++    if len(devs) <= 1:
++        raise ValueError("Must use at least 2 GPUs.")
++
++    _devices = devs
+diff --git a/cupy/fft/fft.py b/cupy/fft/fft.py
+index a0f1b718f76..6c9938ea851 100644
+--- a/cupy/fft/fft.py
++++ b/cupy/fft/fft.py
+@@ -97,7 +97,8 @@ def _exec_fft(a, direction, value_type, norm, axis, overwrite_x,
+             raise RuntimeError('Use the cuFFT plan either as a context manager'
+                                ' or as an argument.')
+     if plan is None:
+-        plan = cufft.Plan1d(out_size, fft_type, batch)
++        devices = None if not config.use_multi_gpus else config._devices
++        plan = cufft.Plan1d(out_size, fft_type, batch, devices=devices)
+     else:
+         # check plan validity
+         if not isinstance(plan, cufft.Plan1d):
+@@ -108,6 +109,8 @@ def _exec_fft(a, direction, value_type, norm, axis, overwrite_x,
+             raise ValueError('Target array size does not match the plan.')
+         if batch != plan.batch:
+             raise ValueError('Batch size does not match the plan.')
++        if config.use_multi_gpus != plan._use_multi_gpus:
++            raise ValueError('Unclear if multiple GPUs are to be used or not.')
+ 
+     if overwrite_x and value_type == 'C2C':
+         out = a
+@@ -438,6 +441,7 @@ def _fftn(a, s, axes, norm, direction, value_type='C2C', order='A', plan=None,
+         a = cupy.ascontiguousarray(a)
+     elif order == 'F' and not a.flags.f_contiguous:
+         a = cupy.asfortranarray(a)
++
+     a = _exec_fftn(a, direction, value_type, norm=norm, axes=axes_sorted,
+                    overwrite_x=overwrite_x, plan=plan, out=out)
+     return a
+diff --git a/cupyx/scipy/fftpack/fft.py b/cupyx/scipy/fftpack/fft.py
+index 48d52515e2a..dbb7fd7c0b0 100644
+--- a/cupyx/scipy/fftpack/fft.py
++++ b/cupyx/scipy/fftpack/fft.py
+@@ -2,6 +2,7 @@
+ 
+ import cupy
+ from cupy.cuda import cufft
++from cupy.fft import config
+ from cupy.fft.fft import (_fft, _default_fft_func, _convert_fft_type,
+                           _get_cufft_plan_nd)
+ 
+@@ -107,7 +108,8 @@ def get_fft_plan(a, shape=None, axes=None, value_type='C2C'):
+     else:  # 1D transform
+         out_size = shape[axis1D]
+         batch = prod(shape) // out_size
+-        plan = cufft.Plan1d(out_size, fft_type, batch)
++        devices = None if not config.use_multi_gpus else config._devices
++        plan = cufft.Plan1d(out_size, fft_type, batch, devices=devices)
+ 
+     return plan
+ 
+diff --git a/docs/source/reference/fft.rst b/docs/source/reference/fft.rst
+index fcae97d2da0..8e8381e2071 100644
+--- a/docs/source/reference/fft.rst
++++ b/docs/source/reference/fft.rst
+@@ -57,6 +57,7 @@ Helper routines
+    cupy.fft.rfftfreq
+    cupy.fft.fftshift
+    cupy.fft.ifftshift
++   cupy.fft.config.set_cufft_gpus
+ 
+ 
+ Normalization
+@@ -74,4 +75,10 @@ Internally, ``cupy.fft`` always generates a *cuFFT plan* (see the `cuFFT documen
+ 
+ Moreover, the automatic plan generation can be suppressed by using an existing plan returned by :func:`cupyx.scipy.fftpack.get_fft_plan` as a context manager. This is again a deviation from NumPy.
+ 
++
++Multi-GPU FFT
++-------------
++:mod:`cupy.fft` can use multiple GPUs. To enable (disable) this feature, set :data:`cupy.fft.config.use_multi_gpus` to ``True`` (``False``). Next, to set the number of GPUs or the participating GPU IDs, use the function :func:`cupy.fft.config.set_cufft_gpus`. All of the limitations listed in the `cuFFT documentation`_ apply here. In particular, using more than one GPU does not guarantee better performance.
++
++
+ .. _cuFFT documentation: https://docs.nvidia.com/cuda/cufft/index.html
+diff --git a/docs/source/reference/fftpack.rst b/docs/source/reference/fftpack.rst
+index 1aa904791e8..bd31d0614c6 100644
+--- a/docs/source/reference/fftpack.rst
++++ b/docs/source/reference/fftpack.rst
+@@ -31,6 +31,8 @@ Code compatibility features
+ ---------------------------
+ 1. As with other FFT modules in CuPy, FFT functions in this module can take advantage of an existing cuFFT plan (returned by :func:`~cupyx.scipy.fftpack.get_fft_plan`) to accelarate the computation. The plan can be either passed in explicitly via the ``plan`` argument or used as a context manager. The argument ``plan`` is currently experimental and the interface may be changed in the future version. The :func:`~cupyx.scipy.fftpack.get_fft_plan` function has no counterpart in ``scipy.fftpack``.
+ 
+-2. The boolean switch ``cupy.fft.config.enable_nd_planning`` also affects the FFT functions in this module, see :doc:`./fft`. This switch is neglected when planning manually using :func:`~cupyx.scipy.fftpack.get_fft_plan`.
++2. The boolean switch :data:`cupy.fft.config.enable_nd_planning` also affects the FFT functions in this module, see :doc:`./fft`. This switch is neglected when planning manually using :func:`~cupyx.scipy.fftpack.get_fft_plan`.
+ 
+ 3. Like in ``scipy.fftpack``, all FFT functions in this module have an optional argument ``overwrite_x`` (default is ``False``), which has the same semantics as in ``scipy.fftpack``: when it is set to ``True``, the input array ``x`` *can* (not *will*) be overwritten arbitrarily. For this reason, when an in-place FFT is desired, the user should always reassign the input in the following manner: ``x = cupyx.scipy.fftpack.fft(x, ..., overwrite_x=True, ...)``.
++
++4. The boolean switch :data:`cupy.fft.config.use_multi_gpus` also affects the FFT functions in this module, see :doc:`./fft`. Moreover, this switch is *honored* when planning manually using :func:`~cupyx.scipy.fftpack.get_fft_plan`.
+diff --git a/docs/source/reference/scipy_fft.rst b/docs/source/reference/scipy_fft.rst
+index 48cf5765a76..a89a0350717 100644
+--- a/docs/source/reference/scipy_fft.rst
++++ b/docs/source/reference/scipy_fft.rst
+@@ -37,6 +37,8 @@ Code compatibility features
+ 
+ 4. The ``cupyx.scipy.fft`` module can also be used as a backend for ``scipy.fft`` e.g. by installing with ``scipy.fft.set_backend(cupyx.scipy.fft)``. This can allow ``scipy.fft`` to work with both ``numpy`` and ``cupy`` arrays.
+ 
++5. The boolean switch :data:`cupy.fft.config.use_multi_gpus` also affects the FFT functions in this module, see :doc:`./fft`. Moreover, this switch is *honored* when planning manually using :func:`~cupyx.scipy.fftpack.get_fft_plan`.
++
+ .. note::
+    ``scipy.fft`` requires SciPy version 1.4.0 or newer.
+ 
+diff --git a/tests/cupy_tests/fft_tests/test_fft.py b/tests/cupy_tests/fft_tests/test_fft.py
+index ee3552ae50b..e46225070dc 100644
+--- a/tests/cupy_tests/fft_tests/test_fft.py
++++ b/tests/cupy_tests/fft_tests/test_fft.py
+@@ -48,6 +48,41 @@ def test_func(self, *args, **kw):
+     return decorator
+ 
+ 
++def multi_gpu_config(gpu_configs=None):
++    """Decorator for parameterized tests with different GPU configurations.
++
++    Args:
++        gpu_configs(list of list): The GPUs to test.
++
++    .. notes:
++        The decorated tests are skipped if no or only one GPU is available.
++    """
++    def decorator(impl):
++        @functools.wraps(impl)
++        def test_func(self, *args, **kw):
++            use_multi_gpus = config.use_multi_gpus
++            _devices = config._devices
++
++            try:
++                for gpus in gpu_configs:
++                    try:
++                        nGPUs = len(gpus)
++                        assert nGPUs >= 2, 'Must use at least two gpus'
++                        config.use_multi_gpus = True
++                        config.set_cufft_gpus(gpus)
++
++                        impl(self, *args, **kw)
++                    except Exception:
++                        print('GPU config is:', gpus)
++                        raise
++            finally:
++                config.use_multi_gpus = use_multi_gpus
++                config._devices = _devices
++
++        return test_func
++    return decorator
++
++
+ def _size_last_transform_axis(shape, s, axes):
+     if s is not None:
+         if s[-1] is not None:
+@@ -74,7 +109,7 @@ def test_fft(self, xp, dtype):
+         out = xp.fft.fft(a, n=self.n, norm=self.norm)
+ 
+         # np.fft.fft alway returns np.complex128
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -89,7 +124,7 @@ def test_ifft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.ifft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -114,7 +149,7 @@ def test_fft(self, xp, dtype):
+         out = xp.fft.fft(a, axis=self.axis)
+ 
+         # np.fft.fft alway returns np.complex128
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -128,12 +163,99 @@ def test_ifft(self, xp, dtype):
+             a = xp.asfortranarray(a)
+         out = xp.fft.ifft(a, axis=self.axis)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+ 
+ 
++# Almost identical to the TestFft class, except that
++# 1. multi-GPU cuFFT is used
++# 2. the tested parameter combinations are adjusted to meet the requirements
++@testing.parameterize(*testing.product({
++    'n': [None, 0, 64],
++    'shape': [(64,), (4, 64)],
++    'norm': [None, 'ortho', ''],
++}))
++@testing.with_requires('numpy>=1.10.0')
++@testing.multi_gpu(2)
++class TestMultiGpuFft(unittest.TestCase):
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    def test_fft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        out = xp.fft.fft(a, n=self.n, norm=self.norm)
++
++        # np.fft.fft alway returns np.complex128
++        if xp is np and dtype is np.complex64:
++            out = out.astype(dtype)
++
++        return out
++
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    # NumPy 1.17.0 and 1.17.1 raises ZeroDivisonError due to a bug
++    @testing.with_requires('numpy!=1.17.0')
++    @testing.with_requires('numpy!=1.17.1')
++    def test_ifft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        out = xp.fft.ifft(a, n=self.n, norm=self.norm)
++
++        # np.fft.fft alway returns np.complex128
++        if xp is np and dtype is np.complex64:
++            out = out.astype(dtype)
++
++        return out
++
++
++# Almost identical to the TestFftOrder class, except that
++# 1. multi-GPU cuFFT is used
++# 2. the tested parameter combinations are adjusted to meet the requirements
++@testing.parameterize(*testing.product({
++    'shape': [(10, 10), (10, 5, 10)],
++    'data_order': ['F', 'C'],
++    'axis': [0, 1, -1],
++}))
++@testing.with_requires('numpy>=1.10.0')
++@testing.multi_gpu(2)
++class TestMultiGpuFftOrder(unittest.TestCase):
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    def test_fft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        if self.data_order == 'F':
++            a = xp.asfortranarray(a)
++        out = xp.fft.fft(a, axis=self.axis)
++
++        # np.fft.fft alway returns np.complex128
++        if xp is np and dtype is np.complex64:
++            out = out.astype(dtype)
++
++        return out
++
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    def test_ifft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        if self.data_order == 'F':
++            a = xp.asfortranarray(a)
++        out = xp.fft.ifft(a, axis=self.axis)
++
++        # np.fft.fft alway returns np.complex128
++        if xp is np and dtype is np.complex64:
++            out = out.astype(dtype)
++
++        return out
++
++
+ @testing.gpu
+ class TestDefaultPlanType(unittest.TestCase):
+ 
+@@ -213,7 +335,7 @@ def test_fft2(self, xp, dtype, enable_nd):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.fft2(a, s=self.s, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -227,7 +349,7 @@ def test_ifft2(self, xp, dtype, enable_nd):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.ifft2(a, s=self.s, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -272,7 +394,7 @@ def test_fftn(self, xp, dtype, enable_nd):
+             assert out is a
+             return out
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -290,7 +412,7 @@ def test_ifftn(self, xp, dtype, enable_nd):
+             assert out is a
+             return out
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -323,7 +445,7 @@ class TestPlanCtxManagerFftn(unittest.TestCase):
+     def test_fftn(self, xp, dtype, enable_nd):
+         assert config.enable_nd_planning == enable_nd
+         a = testing.shaped_random(self.shape, xp, dtype)
+-        if xp == cupy:
++        if xp is cupy:
+             from cupyx.scipy.fftpack import get_fft_plan
+             plan = get_fft_plan(a, self.s, self.axes)
+             with plan:
+@@ -331,7 +453,7 @@ def test_fftn(self, xp, dtype, enable_nd):
+         else:
+             out = xp.fft.fftn(a, s=self.s, axes=self.axes, norm=self.norm)
+ 
+-        if xp == np and dtype is np.complex64:
++        if xp is np and dtype is np.complex64:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -343,7 +465,7 @@ def test_fftn(self, xp, dtype, enable_nd):
+     def test_ifftn(self, xp, dtype, enable_nd):
+         assert config.enable_nd_planning == enable_nd
+         a = testing.shaped_random(self.shape, xp, dtype)
+-        if xp == cupy:
++        if xp is cupy:
+             from cupyx.scipy.fftpack import get_fft_plan
+             plan = get_fft_plan(a, self.s, self.axes)
+             with plan:
+@@ -351,7 +473,7 @@ def test_ifftn(self, xp, dtype, enable_nd):
+         else:
+             out = xp.fft.ifftn(a, s=self.s, axes=self.axes, norm=self.norm)
+ 
+-        if xp == np and dtype is np.complex64:
++        if xp is np and dtype is np.complex64:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -402,7 +524,7 @@ class TestPlanCtxManagerFft(unittest.TestCase):
+                                  contiguous_check=False)
+     def test_fft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+-        if xp == cupy:
++        if xp is cupy:
+             from cupyx.scipy.fftpack import get_fft_plan
+             shape = (self.n,) if self.n is not None else None
+             plan = get_fft_plan(a, shape=shape)
+@@ -413,7 +535,7 @@ def test_fft(self, xp, dtype):
+             out = xp.fft.fft(a, n=self.n, norm=self.norm)
+ 
+         # np.fft.fft alway returns np.complex128
+-        if xp == np and dtype is np.complex64:
++        if xp is np and dtype is np.complex64:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -423,7 +545,7 @@ def test_fft(self, xp, dtype):
+                                  contiguous_check=False)
+     def test_ifft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+-        if xp == cupy:
++        if xp is cupy:
+             from cupyx.scipy.fftpack import get_fft_plan
+             shape = (self.n,) if self.n is not None else None
+             plan = get_fft_plan(a, shape=shape)
+@@ -433,7 +555,7 @@ def test_ifft(self, xp, dtype):
+         else:
+             out = xp.fft.ifft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype is np.complex64:
++        if xp is np and dtype is np.complex64:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -457,6 +579,80 @@ def test_fft_error_on_wrong_plan(self, dtype):
+         assert 'Target array size does not match the plan.' in str(ex.value)
+ 
+ 
++# Almost identical to the TestPlanCtxManagerFft class, except that
++# 1. multi-GPU cuFFT is used
++# 2. the tested parameter combinations are adjusted to meet the requirements
++@testing.parameterize(*testing.product({
++    'n': [None, 64],
++    'shape': [(64,), (128,)],
++    'norm': [None, 'ortho'],
++}))
++@testing.with_requires('numpy>=1.10.0')
++@testing.multi_gpu(2)
++class TestMultiGpuPlanCtxManagerFft(unittest.TestCase):
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    def test_fft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        if xp is cupy:
++            from cupyx.scipy.fftpack import get_fft_plan
++            shape = (self.n,) if self.n is not None else None
++            plan = get_fft_plan(a, shape=shape)
++            assert isinstance(plan, cupy.cuda.cufft.Plan1d)
++            with plan:
++                out = xp.fft.fft(a, n=self.n, norm=self.norm)
++        else:
++            out = xp.fft.fft(a, n=self.n, norm=self.norm)
++
++        # np.fft.fft alway returns np.complex128
++        if xp is np and dtype is np.complex64:
++            out = out.astype(np.complex64)
++
++        return out
++
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    @testing.numpy_cupy_allclose(rtol=1e-4, atol=1e-7, accept_error=ValueError,
++                                 contiguous_check=False)
++    def test_ifft(self, xp, dtype):
++        a = testing.shaped_random(self.shape, xp, dtype)
++        if xp is cupy:
++            from cupyx.scipy.fftpack import get_fft_plan
++            shape = (self.n,) if self.n is not None else None
++            plan = get_fft_plan(a, shape=shape)
++            assert isinstance(plan, cupy.cuda.cufft.Plan1d)
++            with plan:
++                out = xp.fft.ifft(a, n=self.n, norm=self.norm)
++        else:
++            out = xp.fft.ifft(a, n=self.n, norm=self.norm)
++
++        if xp is np and dtype is np.complex64:
++            out = out.astype(np.complex64)
++
++        return out
++
++    @multi_gpu_config(gpu_configs=[[0, 1], [1, 0]])
++    @testing.for_complex_dtypes()
++    def test_fft_error_on_wrong_plan(self, dtype):
++        # This test ensures the context manager plan is picked up
++
++        from cupyx.scipy.fftpack import get_fft_plan
++        from cupy.fft import fft
++
++        a = testing.shaped_random(self.shape, cupy, dtype)
++        bad_shape = tuple(4*i for i in self.shape)
++        b = testing.shaped_random(bad_shape, cupy, dtype)
++        plan_wrong = get_fft_plan(b)
++        assert isinstance(plan_wrong, cupy.cuda.cufft.Plan1d)
++
++        with pytest.raises(ValueError) as ex, plan_wrong:
++            fft(a, n=self.n, norm=self.norm)
++        # targeting a particular error
++        assert 'Target array size does not match the plan.' in str(ex.value)
++
++
+ @testing.parameterize(
+     {'shape': (3, 4), 's': None, 'axes': None, 'norm': None},
+     {'shape': (3, 4), 's': None, 'axes': (-2, -1), 'norm': None},
+@@ -532,7 +728,7 @@ def test_rfft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.rfft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -543,7 +739,7 @@ def test_irfft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.irfft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.float32)
+ 
+         return out
+@@ -583,7 +779,7 @@ def test_rfft2(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.rfft2(a, s=self.s, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+         return out
+ 
+@@ -594,7 +790,7 @@ def test_irfft2(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.irfft2(a, s=self.s, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.float32)
+         return out
+ 
+@@ -628,7 +824,7 @@ def test_rfftn(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.rfftn(a, s=self.s, axes=self.axes, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out
+@@ -646,7 +842,7 @@ def test_irfftn(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.irfftn(a, s=self.s, axes=self.axes, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.float32)
+ 
+         return out
+@@ -667,7 +863,7 @@ def test_hfft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.hfft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.float32)
+ 
+         return out
+@@ -678,7 +874,7 @@ def test_ihfft(self, xp, dtype):
+         a = testing.shaped_random(self.shape, xp, dtype)
+         out = xp.fft.ihfft(a, n=self.n, norm=self.norm)
+ 
+-        if xp == np and dtype in [np.float16, np.float32, np.complex64]:
++        if xp is np and dtype in [np.float16, np.float32, np.complex64]:
+             out = out.astype(np.complex64)
+ 
+         return out

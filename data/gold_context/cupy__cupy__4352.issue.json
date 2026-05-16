@@ -1,0 +1,12 @@
+{
+  "body": "Thank you for using and contributing to CuPy!\r\n\r\nIf your issue is a **request for support in using CuPy**, please post it on [Stack Overflow](https://stackoverflow.com/questions/tagged/cupy) or Google Groups ([en](https://groups.google.com/forum/#!forum/cupy) / [ja](https://groups.google.com/forum/#!forum/cupy-ja)).\r\nDeveloper team members are monitoring questions on these channels.\r\n\r\nIf it is a bug report, please include the following information:\r\n\r\n* Conditions (you can just paste the output of `python -c 'import cupy; cupy.show_config()'`)\r\n  - CuPy version **9.0.0a2**\r\n  - OS/Platform: **Windows 10**\r\n  - CUDA version: **10.2**\r\n  - cuDNN/NCCL version (if applicable)\r\n* Code to reproduce\r\n```python\r\n>>> import cupy\r\n```\r\n* Error messages, stack traces, or logs\r\n```bash\r\nTraceback (most recent call last):\r\n  File \"<stdin>\", line 1, in <module>\r\n  File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\__init__.py\", line 57, in <module>\r\n    from cupy import fft  # NOQA\r\n  File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\__init__.py\", line 1, in <module>\r\n    from cupy.fft._fft import fft  # NOQA\r\n  File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\_fft.py\", line 9, in <module>\r\n    from cupy.fft import config\r\n  File \"C:\\Users\\Amin\\anaconda3\\envs\\py38\\lib\\site-packages\\cupy\\fft\\config.py\", line 13, in <module>\r\n    from cupy.fft._callback import get_current_callback_manager  # NOQA\r\n  File \"cupy\\fft\\_callback.pyx\", line 35, in init cupy.fft._callback\r\nAttributeError: 'NoneType' object has no attribute 'split'\r\n```\r\n",
+  "closed_at": "2020-11-30T04:12:53Z",
+  "comments": 10,
+  "created_at": "2020-11-26T14:25:13Z",
+  "html_url": "https://github.com/cupy/cupy/issues/4352",
+  "labels": [],
+  "number": 4352,
+  "state": "closed",
+  "title": "import cupy 9.0.0a2 doesn't work on Windows 10",
+  "updated_at": "2020-12-02T05:28:09Z"
+}

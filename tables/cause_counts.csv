@@ -1,0 +1,6 @@
+cause_label,issues,share_pct
+hardware_backend,764,82.2
+compiler_codegen,358,38.5
+reduction_accumulation,313,33.7
+async_race_ordering,287,30.9
+memory_mask_bounds,276,29.7

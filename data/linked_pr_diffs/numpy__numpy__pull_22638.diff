@@ -1,0 +1,134 @@
+diff --git a/doc/release/upcoming_changes/22638.deprecation.rst b/doc/release/upcoming_changes/22638.deprecation.rst
+new file mode 100644
+index 000000000000..2db186106c62
+--- /dev/null
++++ b/doc/release/upcoming_changes/22638.deprecation.rst
+@@ -0,0 +1,2 @@
++* ``np.core.MachAr`` is deprecated.  It is private API.  In names
++  defined in ``np.core`` should generally be considered private.
+diff --git a/doc/release/upcoming_changes/22638.expired.rst b/doc/release/upcoming_changes/22638.expired.rst
+new file mode 100644
+index 000000000000..01e87fa9f3a9
+--- /dev/null
++++ b/doc/release/upcoming_changes/22638.expired.rst
+@@ -0,0 +1 @@
++* ``np.core.machar`` and ``np.finfo.machar`` have been removed.
+diff --git a/numpy/core/__init__.py b/numpy/core/__init__.py
+index 748705e3321d..4375aa9c563f 100644
+--- a/numpy/core/__init__.py
++++ b/numpy/core/__init__.py
+@@ -84,7 +84,6 @@
+ from . import function_base
+ from .function_base import *
+ from . import _machar
+-from ._machar import *
+ from . import getlimits
+ from .getlimits import *
+ from . import shape_base
+@@ -153,13 +152,13 @@ def _DType_reduce(DType):
+ 
+ 
+ def __getattr__(name):
+-    # Deprecated 2021-10-20, NumPy 1.22
+-    if name == "machar":
++    # Deprecated 2022-11-22, NumPy 1.25.
++    if name == "MachAr":
+         warnings.warn(
+-            "The `np.core.machar` module is deprecated (NumPy 1.22)",
++            "The `np.core.MachAr` is considered private API (NumPy 1.24)",
+             DeprecationWarning, stacklevel=2,
+         )
+-        return _machar
++        return _machar.MachAr
+     raise AttributeError(f"Module {__name__!r} has no attribute {name!r}")
+ 
+ 
+diff --git a/numpy/core/_machar.py b/numpy/core/_machar.py
+index 3cc7db2784de..3f1bec493c28 100644
+--- a/numpy/core/_machar.py
++++ b/numpy/core/_machar.py
+@@ -14,7 +14,6 @@
+ # Need to speed this up...especially for longfloat
+ 
+ # Deprecated 2021-10-20, NumPy 1.22
+-@set_module('numpy')
+ class MachAr:
+     """
+     Diagnosing machine parameters.
+diff --git a/numpy/core/getlimits.py b/numpy/core/getlimits.py
+index 2c0f462cc49f..45818b3265bd 100644
+--- a/numpy/core/getlimits.py
++++ b/numpy/core/getlimits.py
+@@ -352,6 +352,9 @@ def _get_machar(ftype):
+ 
+ def _discovered_machar(ftype):
+     """ Create MachAr instance with found information on float types
++
++    TODO: MachAr should be retired completely ideally.  We currently only
++          ever use it system with broken longdouble (valgrind, WSL).
+     """
+     params = _MACHAR_PARAMS[ftype]
+     return MachAr(lambda v: array([v], ftype),
+@@ -387,11 +390,6 @@ class finfo:
+     iexp : int
+         The number of bits in the exponent portion of the floating point
+         representation.
+-    machar : MachAr
+-        The object which calculated these parameters and holds more
+-        detailed information.
+-
+-        .. deprecated:: 1.22
+     machep : int
+         The exponent that yields `eps`.
+     max : floating point number of the appropriate type
+@@ -432,7 +430,6 @@ class finfo:
+ 
+     See Also
+     --------
+-    MachAr : The implementation of the tests that produce this information.
+     iinfo : The equivalent for integer data types.
+     spacing : The distance between a value and the nearest adjacent number
+     nextafter : The next floating point value after x1 towards x2
+@@ -595,20 +592,6 @@ def tiny(self):
+         """
+         return self.smallest_normal
+ 
+-    @property
+-    def machar(self):
+-        """The object which calculated these parameters and holds more
+-        detailed information.
+-
+-        .. deprecated:: 1.22
+-        """
+-        # Deprecated 2021-10-27, NumPy 1.22
+-        warnings.warn(
+-            "`finfo.machar` is deprecated (NumPy 1.22)",
+-            DeprecationWarning, stacklevel=2,
+-        )
+-        return self._machar
+-
+ 
+ @set_module('numpy')
+ class iinfo:
+diff --git a/numpy/core/tests/test_deprecations.py b/numpy/core/tests/test_deprecations.py
+index dba301418612..3a8db40dfd68 100644
+--- a/numpy/core/tests/test_deprecations.py
++++ b/numpy/core/tests/test_deprecations.py
+@@ -1024,15 +1024,11 @@ def test_not_deprecated(self, func):
+ 
+ 
+ class TestMachAr(_DeprecationTestCase):
+-    # Deprecated 2021-10-19, NumPy 1.22
++    # Deprecated 2022-11-22, NumPy 1.25
+     warning_cls = DeprecationWarning
+ 
+     def test_deprecated_module(self):
+-        self.assert_deprecated(lambda: getattr(np.core, "machar"))
+-
+-    def test_deprecated_attr(self):
+-        finfo = np.finfo(float)
+-        self.assert_deprecated(lambda: getattr(finfo, "machar"))
++        self.assert_deprecated(lambda: getattr(np.core, "MachAr"))
+ 
+ 
+ class TestQuantileInterpolationDeprecation(_DeprecationTestCase):

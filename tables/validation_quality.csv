@@ -1,0 +1,7 @@
+metric,value,share
+validation_issues,82,100.0%
+candidate_context_agreement,44,53.7%
+has_reproducer_or_code,74,90.2%
+has_stack_trace_or_error_log,31,37.8%
+has_fix_or_workaround_signal,36,43.9%
+closed_issues,34,41.5%

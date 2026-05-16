@@ -1,0 +1,57 @@
+diff --git a/python/cudf/cudf/core/groupby/groupby.py b/python/cudf/cudf/core/groupby/groupby.py
+index fb242a49adf..fe22cc48e0f 100644
+--- a/python/cudf/cudf/core/groupby/groupby.py
++++ b/python/cudf/cudf/core/groupby/groupby.py
+@@ -678,7 +678,7 @@ def _head_tail(self, n, *, take_head: bool, preserve_order: bool):
+             # subsample the gather map from the full input ordering,
+             # rather than permuting the gather map of the output.
+             _, (ordering,), _ = self._groupby.groups(
+-                [arange(0, self.obj._data.nrows)]
++                [arange(0, len(self.obj))]
+             )
+             # Invert permutation from original order to groups on the
+             # subset of entries we want.
+@@ -2277,9 +2277,7 @@ def _mimic_pandas_order(
+         # result coming back from libcudf has null_count few rows than
+         # the input, so we must produce an ordering from the full
+         # input range.
+-        _, (ordering,), _ = self._groupby.groups(
+-            [arange(0, self.obj._data.nrows)]
+-        )
++        _, (ordering,), _ = self._groupby.groups([arange(0, len(self.obj))])
+         if self._dropna and any(
+             c.has_nulls(include_nan=True) > 0
+             for c in self.grouping._key_columns
+@@ -2287,7 +2285,7 @@ def _mimic_pandas_order(
+             # Scan aggregations with null/nan keys put nulls in the
+             # corresponding output rows in pandas, to do that here
+             # expand the result by reindexing.
+-            ri = cudf.RangeIndex(0, self.obj._data.nrows)
++            ri = cudf.RangeIndex(0, len(self.obj))
+             result.index = cudf.Index(ordering)
+             # This reorders and expands
+             result = result.reindex(ri)
+diff --git a/python/cudf/cudf/tests/test_groupby.py b/python/cudf/cudf/tests/test_groupby.py
+index 78da342e627..e2af85b9e73 100644
+--- a/python/cudf/cudf/tests/test_groupby.py
++++ b/python/cudf/cudf/tests/test_groupby.py
+@@ -3260,3 +3260,19 @@ def test_head_tail(self, df, n, take_head, expected, preserve_order):
+         else:
+             actual = df.groupby("a").tail(n=n, preserve_order=preserve_order)
+         assert_eq(actual, expected)
++
++
++def test_head_tail_empty():
++    # GH #13397
++
++    values = [1, 2, 3]
++    pdf = pd.DataFrame({}, index=values)
++    df = cudf.DataFrame({}, index=values)
++
++    expected = pdf.groupby(pd.Series(values)).head()
++    got = df.groupby(cudf.Series(values)).head()
++    assert_eq(expected, got)
++
++    expected = pdf.groupby(pd.Series(values)).tail()
++    got = df.groupby(cudf.Series(values)).tail()
++    assert_eq(expected, got)

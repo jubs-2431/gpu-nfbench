@@ -1,0 +1,138 @@
+diff --git a/doc/release/upcoming_changes/22540.expired.rst b/doc/release/upcoming_changes/22540.expired.rst
+new file mode 100644
+index 000000000000..53e876cbf15b
+--- /dev/null
++++ b/doc/release/upcoming_changes/22540.expired.rst
+@@ -0,0 +1,5 @@
++* Passing dtype instances other than the canonical (mainly native byte-order)
++  ones to ``dtype=`` or ``signature=`` in ufuncs will now raise a ``TypeError``.
++  We recommend passing the strings ``"int8"`` or scalar types ``np.int8``
++  since the byte-order, datetime/timedelta unit, etc. are never enforced.
++  (Initially deprecated in NumPy 1.21.)
+diff --git a/numpy/core/src/umath/ufunc_object.c b/numpy/core/src/umath/ufunc_object.c
+index 693a6d6c97f6..9fb2ad314a7c 100644
+--- a/numpy/core/src/umath/ufunc_object.c
++++ b/numpy/core/src/umath/ufunc_object.c
+@@ -4361,23 +4361,16 @@ _get_dtype(PyObject *dtype_obj) {
+         }
+         else if (NPY_UNLIKELY(out->singleton != descr)) {
+             /* This does not warn about `metadata`, but units is important. */
+-            if (!PyArray_EquivTypes(out->singleton, descr)) {
+-                /* Deprecated NumPy 1.21.2 (was an accidental error in 1.21) */
+-                if (DEPRECATE(
++            if (out->singleton == NULL
++                    || !PyArray_EquivTypes(out->singleton, descr)) {
++                PyErr_SetString(PyExc_TypeError,
+                         "The `dtype` and `signature` arguments to "
+                         "ufuncs only select the general DType and not details "
+-                        "such as the byte order or time unit (with rare "
+-                        "exceptions see release notes).  To avoid this warning "
+-                        "please use the scalar types `np.float64`, or string "
+-                        "notation.\n"
+-                        "In rare cases where the time unit was preserved, "
+-                        "either cast the inputs or provide an output array. "
+-                        "In the future NumPy may transition to allow providing "
+-                        "`dtype=` to denote the outputs `dtype` as well. "
+-                        "(Deprecated NumPy 1.21)") < 0) {
+-                    Py_DECREF(descr);
+-                    return NULL;
+-                }
++                        "such as the byte order or time unit. "
++                        "You can avoid this error by using the scalar types "
++                        "`np.float64` or the dtype string notation.");
++                Py_DECREF(descr);
++                return NULL;
+             }
+         }
+         Py_INCREF(out);
+diff --git a/numpy/core/tests/test_deprecations.py b/numpy/core/tests/test_deprecations.py
+index e09ec27b92fd..86e058b96418 100644
+--- a/numpy/core/tests/test_deprecations.py
++++ b/numpy/core/tests/test_deprecations.py
+@@ -1044,39 +1044,6 @@ def test_not_deprecated(self, name: str) -> None:
+         self.assert_not_deprecated(lambda: getattr(self.ctypes, name))
+ 
+ 
+-class TestUFuncForcedDTypeWarning(_DeprecationTestCase):
+-    message = "The `dtype` and `signature` arguments to ufuncs only select the"
+-
+-    def test_not_deprecated(self):
+-        import pickle
+-        # does not warn (test relies on bad pickling behaviour, simply remove
+-        # it if the `assert int64 is not int64_2` should start failing.
+-        int64 = np.dtype("int64")
+-        int64_2 = pickle.loads(pickle.dumps(int64))
+-        assert int64 is not int64_2
+-        self.assert_not_deprecated(lambda: np.add(3, 4, dtype=int64_2))
+-
+-    def test_deprecation(self):
+-        int64 = np.dtype("int64")
+-        self.assert_deprecated(lambda: np.add(3, 5, dtype=int64.newbyteorder()))
+-        self.assert_deprecated(lambda: np.add(3, 5, dtype="m8[ns]"))
+-
+-    def test_behaviour(self):
+-        int64 = np.dtype("int64")
+-        arr = np.arange(10, dtype="m8[s]")
+-
+-        with pytest.warns(DeprecationWarning, match=self.message):
+-            np.add(3, 5, dtype=int64.newbyteorder())
+-        with pytest.warns(DeprecationWarning, match=self.message):
+-            np.add(3, 5, dtype="m8[ns]")  # previously used the "ns"
+-        with pytest.warns(DeprecationWarning, match=self.message):
+-            np.add(arr, arr, dtype="m8[ns]")  # never preserved the "ns"
+-        with pytest.warns(DeprecationWarning, match=self.message):
+-            np.maximum(arr, arr, dtype="m8[ns]")  # previously used the "ns"
+-        with pytest.warns(DeprecationWarning, match=self.message):
+-            np.maximum.reduce(arr, dtype="m8[ns]")  # never preserved the "ns"
+-
+-
+ PARTITION_DICT = {
+     "partition method": np.arange(10).partition,
+     "argpartition method": np.arange(10).argpartition,
+diff --git a/numpy/core/tests/test_ufunc.py b/numpy/core/tests/test_ufunc.py
+index 55767a3ef2ba..5f5434a1d514 100644
+--- a/numpy/core/tests/test_ufunc.py
++++ b/numpy/core/tests/test_ufunc.py
+@@ -3,6 +3,7 @@
+ import sys
+ 
+ import pytest
++from pytest import param
+ 
+ import numpy as np
+ import numpy.core._umath_tests as umt
+@@ -477,6 +478,34 @@ def test_signature_dtype_type(self):
+         float_dtype = type(np.dtype(np.float64))
+         np.add(3, 4, signature=(float_dtype, float_dtype, None))
+ 
++    @pytest.mark.parametrize("get_kwarg", [
++            lambda dt: dict(dtype=x),
++            lambda dt: dict(signature=(x, None, None))])
++    def test_signature_dtype_instances_allowed(self, get_kwarg):
++        # We allow certain dtype instances when there is a clear singleton
++        # and the given one is equivalent; mainly for backcompat.
++        int64 = np.dtype("int64")
++        int64_2 = pickle.loads(pickle.dumps(int64))
++        # Relies on pickling behavior, if assert fails just remove test...
++        assert int64 is not int64_2
++
++        assert np.add(1, 2, **get_kwarg(int64_2)).dtype == int64
++        td = np.timedelta(2, "s")
++        assert np.add(td, td, **get_kwarg("m8")).dtype == "m8[s]"
++
++    @pytest.mark.parametrize("get_kwarg", [
++            param(lambda x: dict(dtype=x), id="dtype"),
++            param(lambda x: dict(signature=(x, None, None)), id="signature")])
++    def test_signature_dtype_instances_allowed(self, get_kwarg):
++        msg = "The `dtype` and `signature` arguments to ufuncs"
++
++        with pytest.raises(TypeError, match=msg):
++            np.add(3, 5, **get_kwarg(np.dtype("int64").newbyteorder()))
++        with pytest.raises(TypeError, match=msg):
++            np.add(3, 5, **get_kwarg(np.dtype("m8[ns]")))
++        with pytest.raises(TypeError, match=msg):
++            np.add(3, 5, **get_kwarg("m8[ns]"))
++
+     @pytest.mark.parametrize("casting", ["unsafe", "same_kind", "safe"])
+     def test_partial_signature_mismatch(self, casting):
+         # If the second argument matches already, no need to specify it:

@@ -1,0 +1,1634 @@
+diff --git a/cpp/CMakeLists.txt b/cpp/CMakeLists.txt
+index 03674f5b47c..b883bfc122c 100644
+--- a/cpp/CMakeLists.txt
++++ b/cpp/CMakeLists.txt
+@@ -349,6 +349,7 @@ add_library(
+   src/ast/expressions.cpp
+   src/ast/operators.cpp
+   src/binaryop/binaryop.cpp
++  src/binaryop/decimal_ops.cu
+   src/binaryop/compiled/ATan2.cu
+   src/binaryop/compiled/Add.cu
+   src/binaryop/compiled/BitwiseAnd.cu
+diff --git a/cpp/include/cudf/decimal/decimal_ops.hpp b/cpp/include/cudf/decimal/decimal_ops.hpp
+new file mode 100644
+index 00000000000..a646653199e
+--- /dev/null
++++ b/cpp/include/cudf/decimal/decimal_ops.hpp
+@@ -0,0 +1,103 @@
++/*
++ * Copyright (c) 2025, NVIDIA CORPORATION.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#pragma once
++
++#include <cudf/column/column.hpp>
++#include <cudf/fixed_point/fixed_point.hpp>
++#include <cudf/scalar/scalar.hpp>
++#include <cudf/utilities/export.hpp>
++#include <cudf/utilities/memory_resource.hpp>
++
++#include <memory>
++
++namespace CUDF_EXPORT cudf {
++
++/**
++ * @addtogroup transformation_decimalops
++ * @{
++ * @file
++ * @brief Column APIs for decimal operations with scale preservation
++ */
++
++/**
++ * @brief Performs decimal division between two columns with scale preservation.
++ *
++ * The output contains the result of `divide_decimal(lhs[i], rhs[i])` for all `0 <= i < lhs.size()`
++ * The scale of the output is preserved to match the scale of the left operand.
++ *
++ * @param lhs         The left operand column
++ * @param rhs         The right operand column
++ * @param rounding_mode The rounding mode to use
++ * @param stream CUDA stream used for device memory operations and kernel launches
++ * @param mr          Device memory resource used to allocate the returned column's device memory
++ * @return            Output column containing the result of the decimal division
++ * @throw cudf::logic_error if @p lhs and @p rhs are different sizes
++ * @throw cudf::logic_error if @p lhs and @p rhs are not decimal types
++ */
++std::unique_ptr<column> divide_decimal(
++  column_view const& lhs,
++  column_view const& rhs,
++  numeric::decimal_rounding_mode rounding_mode = numeric::decimal_rounding_mode::HALF_UP,
++  rmm::cuda_stream_view stream                 = cudf::get_default_stream(),
++  rmm::device_async_resource_ref mr            = cudf::get_current_device_resource_ref());
++
++/**
++ * @brief Performs decimal division between a column and a scalar with scale preservation.
++ *
++ * The output contains the result of `divide_decimal(lhs[i], rhs)` for all `0 <= i < lhs.size()`
++ * The scale of the output is preserved to match the scale of the left operand.
++ *
++ * @param lhs         The left operand column
++ * @param rhs         The right operand scalar
++ * @param rounding_mode The rounding mode to use
++ * @param stream CUDA stream used for device memory operations and kernel launches
++ * @param mr          Device memory resource used to allocate the returned column's device memory
++ * @return            Output column containing the result of the decimal division
++ * @throw cudf::logic_error if @p lhs is not a decimal type
++ * @throw cudf::logic_error if @p rhs is not a decimal scalar
++ */
++std::unique_ptr<column> divide_decimal(
++  column_view const& lhs,
++  scalar const& rhs,
++  numeric::decimal_rounding_mode rounding_mode = numeric::decimal_rounding_mode::HALF_UP,
++  rmm::cuda_stream_view stream                 = cudf::get_default_stream(),
++  rmm::device_async_resource_ref mr            = cudf::get_current_device_resource_ref());
++
++/**
++ * @brief Performs decimal division between a scalar and a column with scale preservation.
++ *
++ * The output contains the result of `divide_decimal(lhs, rhs[i])` for all `0 <= i < rhs.size()`
++ * The scale of the output is preserved to match the scale of the left operand.
++ *
++ * @param lhs         The left operand scalar
++ * @param rhs         The right operand column
++ * @param rounding_mode The rounding mode to use
++ * @param stream CUDA stream used for device memory operations and kernel launches
++ * @param mr          Device memory resource used to allocate the returned column's device memory
++ * @return            Output column containing the result of the decimal division
++ * @throw cudf::logic_error if @p lhs is not a decimal scalar
++ * @throw cudf::logic_error if @p rhs is not a decimal type
++ */
++std::unique_ptr<column> divide_decimal(
++  scalar const& lhs,
++  column_view const& rhs,
++  numeric::decimal_rounding_mode rounding_mode = numeric::decimal_rounding_mode::HALF_UP,
++  rmm::cuda_stream_view stream                 = cudf::get_default_stream(),
++  rmm::device_async_resource_ref mr            = cudf::get_current_device_resource_ref());
++
++/** @} */  // end of group
++}  // namespace CUDF_EXPORT cudf
+diff --git a/cpp/include/cudf/fixed_point/fixed_point.hpp b/cpp/include/cudf/fixed_point/fixed_point.hpp
+index 2094cba5475..e77349493c3 100644
+--- a/cpp/include/cudf/fixed_point/fixed_point.hpp
++++ b/cpp/include/cudf/fixed_point/fixed_point.hpp
+@@ -716,6 +716,21 @@ CUDF_HOST_DEVICE inline fixed_point<Rep1, Rad1> operator*(fixed_point<Rep1, Rad1
+     scaled_integer<Rep1>(lhs._value * rhs._value, scale_type{lhs._scale + rhs._scale})};
+ }
+ 
++namespace detail {
++
++}  // namespace detail
++
++/**
++ * @brief Rounding modes for decimal division operations
++ *
++ * Specifies how to round the result when performing decimal division
++ * with scale preservation.
++ */
++enum class decimal_rounding_mode : int32_t {
++  HALF_UP   = 0,  ///< Round half away from zero
++  HALF_EVEN = 1   ///< Round half to even (banker's rounding)
++};
++
+ // DIVISION Operation
+ template <typename Rep1, Radix Rad1>
+ CUDF_HOST_DEVICE inline fixed_point<Rep1, Rad1> operator/(fixed_point<Rep1, Rad1> const& lhs,
+@@ -731,6 +746,131 @@ CUDF_HOST_DEVICE inline fixed_point<Rep1, Rad1> operator/(fixed_point<Rep1, Rad1
+     scaled_integer<Rep1>(lhs._value / rhs._value, scale_type{lhs._scale - rhs._scale})};
+ }
+ 
++/**
++ * @brief Performs decimal division with scale preservation
++ *
++ * This function divides two fixed-point numbers while preserving the scale
++ * of the dividend (left-hand side). This behavior is similar to Java's
++ * BigDecimal.divide(divisor, roundingMode) which maintains the dividend's scale.
++ *
++ * @tparam Rep1 The representation type of the fixed-point numbers
++ * @tparam Rad1 The radix of the fixed-point numbers
++ * @param lhs The dividend (left-hand side of division)
++ * @param rhs The divisor (right-hand side of division)
++ * @param rounding_mode The rounding mode to use (default: HALF_UP)
++ * @return A fixed-point number with the same scale as the dividend
++ */
++template <typename Rep1, Radix Rad1>
++CUDF_HOST_DEVICE inline fixed_point<Rep1, Rad1> divide_decimal(
++  fixed_point<Rep1, Rad1> const& lhs,
++  fixed_point<Rep1, Rad1> const& rhs,
++  decimal_rounding_mode rounding_mode = decimal_rounding_mode::HALF_UP)
++{
++  // Check for division by zero
++  // In CUDA device code, we cannot throw exceptions, so we assert
++  // In host code, this will cause undefined behavior (same as standard division)
++#if defined(__CUDACC_DEBUG__)
++  assert(rhs.value() != 0 && "division by zero");
++  assert(!detail::division_overflow<Rep1>(lhs.value(), rhs.value()) && "fixed_point overflow");
++#endif
++
++  // Scale up the dividend to maintain precision
++  // Result will have scale = lhs.scale()
++  // We need to compensate for the scale difference to preserve the dividend's scale
++  // Standard division would give us scale = lhs.scale() - rhs.scale()
++  // To preserve lhs.scale(), we need to scale up by 10^(-rhs.scale())
++  auto const scale_factor = detail::ipow<Rep1, Rad1>(-static_cast<int>(rhs.scale()));
++
++  // Check for potential overflow when scaling
++  bool overflow = multiplication_overflow<Rep1>(lhs.value(), scale_factor);
++
++  if (!overflow) {
++    // Standard calculation without overflow
++    Rep1 scaled_dividend = lhs.value() * scale_factor;
++    Rep1 quotient        = scaled_dividend / rhs.value();
++    Rep1 remainder       = scaled_dividend % rhs.value();
++
++    // Apply rounding based on remainder
++    if (rounding_mode == decimal_rounding_mode::HALF_UP) {
++      // Round half away from zero
++      // Avoid abs() ambiguity for __int128 by using conditional
++      auto abs_remainder = (remainder < 0) ? -remainder : remainder;
++      auto abs_divisor   = (rhs.value() < 0) ? -rhs.value() : rhs.value();
++      if (abs_remainder * 2 >= abs_divisor) {
++        // Round away from zero: if quotient is positive, add 1; if negative, subtract 1
++        quotient += (quotient >= 0) ? 1 : -1;
++      }
++    } else if (rounding_mode == decimal_rounding_mode::HALF_EVEN) {
++      // Banker's rounding
++      // Avoid abs() ambiguity for __int128 by using conditional
++      auto abs_rem_2   = ((remainder < 0) ? -remainder : remainder) * 2;
++      auto abs_divisor = (rhs.value() < 0) ? -rhs.value() : rhs.value();
++      if (abs_rem_2 > abs_divisor || (abs_rem_2 == abs_divisor && (quotient % 2) != 0)) {
++        // Round to nearest even: direction depends on quotient sign
++        quotient += (quotient >= 0) ? 1 : -1;
++      }
++    }
++
++    return fixed_point<Rep1, Rad1>{scaled_integer<Rep1>{quotient, lhs.scale()}};
++  }
++
++  // Handle overflow cases with type promotion
++  if constexpr (cuda::std::is_same_v<Rep1, int32_t>) {
++    // Try int64_t first
++    using WiderRep      = int64_t;
++    WiderRep wide_scale = static_cast<WiderRep>(scale_factor);
++    bool overflow_in_int64 =
++      multiplication_overflow<WiderRep>(static_cast<WiderRep>(lhs.value()), wide_scale);
++
++    if (!overflow_in_int64) {
++      WiderRep scaled_dividend = static_cast<WiderRep>(lhs.value()) * wide_scale;
++      WiderRep wide_divisor    = static_cast<WiderRep>(rhs.value());
++      WiderRep quotient        = scaled_dividend / wide_divisor;
++      WiderRep remainder       = scaled_dividend % wide_divisor;
++
++      // Apply rounding
++      if (rounding_mode == decimal_rounding_mode::HALF_UP) {
++        auto abs_remainder = (remainder < 0) ? -remainder : remainder;
++        auto abs_divisor   = (wide_divisor < 0) ? -wide_divisor : wide_divisor;
++        if (abs_remainder * 2 >= abs_divisor) { quotient += (quotient >= 0) ? 1 : -1; }
++      } else if (rounding_mode == decimal_rounding_mode::HALF_EVEN) {
++        auto abs_rem_2   = ((remainder < 0) ? -remainder : remainder) * 2;
++        auto abs_divisor = (wide_divisor < 0) ? -wide_divisor : wide_divisor;
++        if (abs_rem_2 > abs_divisor || (abs_rem_2 == abs_divisor && (quotient % 2) != 0)) {
++          quotient += (quotient >= 0) ? 1 : -1;
++        }
++      }
++
++      return fixed_point<Rep1, Rad1>{
++        scaled_integer<Rep1>{static_cast<Rep1>(quotient), lhs.scale()}};
++    }
++  }
++
++  // Fallback to __int128_t for severe overflow cases
++  using WidestRep           = __int128_t;
++  WidestRep wide_scale      = static_cast<WidestRep>(scale_factor);
++  WidestRep scaled_dividend = static_cast<WidestRep>(lhs.value()) * wide_scale;
++  WidestRep wide_divisor    = static_cast<WidestRep>(rhs.value());
++  WidestRep quotient        = scaled_dividend / wide_divisor;
++  WidestRep remainder       = scaled_dividend % wide_divisor;
++
++  // Apply rounding
++  if (rounding_mode == decimal_rounding_mode::HALF_UP) {
++    WidestRep abs_rem = (remainder < 0) ? -remainder : remainder;
++    WidestRep abs_div = (wide_divisor < 0) ? -wide_divisor : wide_divisor;
++    if (abs_rem * 2 >= abs_div) { quotient += (quotient >= 0) ? 1 : -1; }
++  } else if (rounding_mode == decimal_rounding_mode::HALF_EVEN) {
++    WidestRep abs_rem   = (remainder < 0) ? -remainder : remainder;
++    WidestRep abs_div   = (wide_divisor < 0) ? -wide_divisor : wide_divisor;
++    WidestRep abs_rem_2 = abs_rem * 2;
++    if (abs_rem_2 > abs_div || (abs_rem_2 == abs_div && (quotient % 2) != 0)) {
++      quotient += (quotient >= 0) ? 1 : -1;
++    }
++  }
++
++  return fixed_point<Rep1, Rad1>{scaled_integer<Rep1>{static_cast<Rep1>(quotient), lhs.scale()}};
++}
++
+ // EQUALITY COMPARISON Operation
+ template <typename Rep1, Radix Rad1>
+ CUDF_HOST_DEVICE inline bool operator==(fixed_point<Rep1, Rad1> const& lhs,
+diff --git a/cpp/src/binaryop/decimal_ops.cu b/cpp/src/binaryop/decimal_ops.cu
+new file mode 100644
+index 00000000000..c16e5bfd437
+--- /dev/null
++++ b/cpp/src/binaryop/decimal_ops.cu
+@@ -0,0 +1,389 @@
++/*
++ * Copyright (c) 2025, NVIDIA CORPORATION.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <cudf/column/column.hpp>
++#include <cudf/column/column_device_view.cuh>
++#include <cudf/column/column_factories.hpp>
++#include <cudf/decimal/decimal_ops.hpp>
++#include <cudf/detail/null_mask.hpp>
++#include <cudf/detail/nvtx/ranges.hpp>
++#include <cudf/fixed_point/fixed_point.hpp>
++#include <cudf/scalar/scalar.hpp>
++#include <cudf/scalar/scalar_device_view.cuh>
++#include <cudf/scalar/scalar_factories.hpp>
++#include <cudf/table/table_view.hpp>
++#include <cudf/utilities/error.hpp>
++#include <cudf/utilities/type_dispatcher.hpp>
++
++#include <rmm/cuda_stream_view.hpp>
++#include <rmm/exec_policy.hpp>
++
++#include <thrust/transform.h>
++
++namespace cudf {
++namespace detail {
++
++template <typename DecimalType>
++struct divide_decimal_functor {
++  numeric::decimal_rounding_mode rounding_mode;
++
++  __device__ DecimalType operator()(DecimalType const& lhs, DecimalType const& rhs) const
++  {
++    return numeric::divide_decimal(lhs, rhs, rounding_mode);
++  }
++};
++
++std::unique_ptr<column> divide_decimal_impl(column_view const& lhs,
++                                            column_view const& rhs,
++                                            numeric::decimal_rounding_mode rounding_mode,
++                                            rmm::cuda_stream_view stream,
++                                            rmm::device_async_resource_ref mr)
++{
++  using namespace numeric;
++
++  auto const size     = lhs.size();
++  auto const lhs_type = lhs.type();
++
++  // Create output column with same type as lhs (preserves scale)
++  // If there are nulls in inputs, create with null mask; otherwise create without
++  std::unique_ptr<column> result;
++  if (lhs.has_nulls() || rhs.has_nulls()) {
++    auto [null_mask, null_count] = cudf::detail::bitmask_and(table_view{{lhs, rhs}}, stream, mr);
++    result =
++      cudf::make_fixed_width_column(lhs_type, size, std::move(null_mask), null_count, stream, mr);
++  } else {
++    // Create non-nullable column when inputs have no nulls
++    // Use empty rmm::device_buffer{} directly to ensure column is non-nullable
++    result =
++      std::make_unique<column>(lhs_type,
++                               size,
++                               rmm::device_buffer{size * cudf::size_of(lhs_type), stream, mr},
++                               rmm::device_buffer{},  // Empty buffer = non-nullable
++                               0,                     // null_count = 0
++                               std::vector<std::unique_ptr<column>>{});
++  }
++
++  auto result_view = result->mutable_view();
++
++  // Get device views
++  auto const lhs_dev = column_device_view::create(lhs, stream);
++  auto const rhs_dev = column_device_view::create(rhs, stream);
++
++  // Perform element-wise divide_decimal
++  if (lhs_type.id() == type_id::DECIMAL32) {
++    using Type           = int32_t;
++    auto const lhs_scale = lhs_type.scale();
++    auto const rhs_scale = rhs.type().scale();
++    using DecType        = fixed_point<Type, numeric::Radix::BASE_10>;
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      lhs.begin<Type>(),
++      lhs.end<Type>(),
++      rhs.begin<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, rounding_mode] __device__(Type lhs_val, Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  } else if (lhs_type.id() == type_id::DECIMAL64) {
++    using Type           = int64_t;
++    auto const lhs_scale = lhs_type.scale();
++    auto const rhs_scale = rhs.type().scale();
++    using DecType        = fixed_point<Type, numeric::Radix::BASE_10>;
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      lhs.begin<Type>(),
++      lhs.end<Type>(),
++      rhs.begin<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, rounding_mode] __device__(Type lhs_val, Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  } else if (lhs_type.id() == type_id::DECIMAL128) {
++    using Type           = __int128_t;
++    auto const lhs_scale = lhs_type.scale();
++    auto const rhs_scale = rhs.type().scale();
++    using DecType        = fixed_point<Type, numeric::Radix::BASE_10>;
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      lhs.begin<Type>(),
++      lhs.end<Type>(),
++      rhs.begin<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, rounding_mode] __device__(Type lhs_val, Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  }
++
++  // Null mask already handled during column creation
++
++  return result;
++}
++
++template <typename DecimalType>
++std::unique_ptr<column> divide_decimal_scalar_impl(column_view const& lhs,
++                                                   scalar const& rhs,
++                                                   numeric::decimal_rounding_mode rounding_mode,
++                                                   rmm::cuda_stream_view stream,
++                                                   rmm::device_async_resource_ref mr)
++{
++  using namespace numeric;
++  using Type = typename DecimalType::rep;
++
++  auto const size      = lhs.size();
++  auto const lhs_type  = lhs.type();
++  auto const lhs_scale = lhs_type.scale();
++  auto const rhs_scale = rhs.type().scale();
++
++  // Get scalar value
++  auto const& decimal_scalar = static_cast<fixed_point_scalar<DecimalType> const&>(rhs);
++  DecimalType rhs_fp         = decimal_scalar.value(stream);
++  Type rhs_val               = rhs_fp.value();
++
++  // Create output column with same type as lhs
++  // If there are nulls in inputs, create with null mask; otherwise create without
++  std::unique_ptr<column> result;
++  if (lhs.has_nulls() || !rhs.is_valid(stream)) {
++    if (!rhs.is_valid(stream)) {
++      result = cudf::make_fixed_width_column(
++        lhs_type,
++        size,
++        cudf::detail::create_null_mask(size, mask_state::ALL_NULL, stream, mr),
++        size,
++        stream,
++        mr);
++    } else {
++      result = cudf::make_fixed_width_column(
++        lhs_type, size, cudf::detail::copy_bitmask(lhs, stream, mr), lhs.null_count(), stream, mr);
++    }
++  } else {
++    // Create non-nullable column when inputs have no nulls
++    // Use empty rmm::device_buffer{} directly to ensure column is non-nullable
++    result =
++      std::make_unique<column>(lhs_type,
++                               size,
++                               rmm::device_buffer{size * cudf::size_of(lhs_type), stream, mr},
++                               rmm::device_buffer{},  // Empty buffer = non-nullable
++                               0,                     // null_count = 0
++                               std::vector<std::unique_ptr<column>>{});
++  }
++
++  auto result_view = result->mutable_view();
++
++  // Perform element-wise divide_decimal
++  thrust::transform(
++    rmm::exec_policy(stream),
++    lhs.begin<Type>(),
++    lhs.end<Type>(),
++    result_view.begin<Type>(),
++    [lhs_scale, rhs_scale, rhs_val, rounding_mode] __device__(Type lhs_val) {
++      DecimalType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++      DecimalType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++      auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++      return result_fp.value();
++    });
++
++  // Null mask already handled during column creation
++
++  return result;
++}
++
++}  // namespace detail
++
++std::unique_ptr<column> divide_decimal(column_view const& lhs,
++                                       column_view const& rhs,
++                                       numeric::decimal_rounding_mode rounding_mode,
++                                       rmm::cuda_stream_view stream,
++                                       rmm::device_async_resource_ref mr)
++{
++  CUDF_FUNC_RANGE();
++
++  CUDF_EXPECTS(lhs.size() == rhs.size(), "Column sizes must match");
++  // For decimal division, we only need the same base type (DECIMAL32/64/128)
++  // Different scales are allowed and expected
++  CUDF_EXPECTS(lhs.type().id() == rhs.type().id(), "Column base types must match");
++
++  CUDF_EXPECTS(lhs.type().id() == type_id::DECIMAL32 || lhs.type().id() == type_id::DECIMAL64 ||
++                 lhs.type().id() == type_id::DECIMAL128,
++               "Columns must be decimal type");
++
++  // Note: Zero division check is handled in the kernel
++  // GPU kernels cannot throw exceptions, so they produce special values or assert in debug mode
++
++  if (lhs.is_empty()) { return make_empty_column(lhs.type()); }
++
++  return detail::divide_decimal_impl(lhs, rhs, rounding_mode, stream, mr);
++}
++
++std::unique_ptr<column> divide_decimal(column_view const& lhs,
++                                       scalar const& rhs,
++                                       numeric::decimal_rounding_mode rounding_mode,
++                                       rmm::cuda_stream_view stream,
++                                       rmm::device_async_resource_ref mr)
++{
++  CUDF_FUNC_RANGE();
++
++  CUDF_EXPECTS(lhs.type().id() == type_id::DECIMAL32 || lhs.type().id() == type_id::DECIMAL64 ||
++                 lhs.type().id() == type_id::DECIMAL128,
++               "Column must be decimal type");
++  CUDF_EXPECTS(rhs.type() == lhs.type(), "Scalar type must match column type");
++
++  if (lhs.is_empty()) { return make_empty_column(lhs.type()); }
++
++  using namespace numeric;
++
++  if (lhs.type().id() == type_id::DECIMAL32) {
++    using DecType = fixed_point<int32_t, Radix::BASE_10>;
++    return detail::divide_decimal_scalar_impl<DecType>(lhs, rhs, rounding_mode, stream, mr);
++  } else if (lhs.type().id() == type_id::DECIMAL64) {
++    using DecType = fixed_point<int64_t, Radix::BASE_10>;
++    return detail::divide_decimal_scalar_impl<DecType>(lhs, rhs, rounding_mode, stream, mr);
++  } else {
++    using DecType = fixed_point<__int128_t, Radix::BASE_10>;
++    return detail::divide_decimal_scalar_impl<DecType>(lhs, rhs, rounding_mode, stream, mr);
++  }
++}
++
++std::unique_ptr<column> divide_decimal(scalar const& lhs,
++                                       column_view const& rhs,
++                                       numeric::decimal_rounding_mode rounding_mode,
++                                       rmm::cuda_stream_view stream,
++                                       rmm::device_async_resource_ref mr)
++{
++  CUDF_FUNC_RANGE();
++
++  CUDF_EXPECTS(rhs.type().id() == type_id::DECIMAL32 || rhs.type().id() == type_id::DECIMAL64 ||
++                 rhs.type().id() == type_id::DECIMAL128,
++               "Column must be decimal type");
++  CUDF_EXPECTS(lhs.type() == rhs.type(), "Scalar type must match column type");
++
++  if (rhs.is_empty()) { return make_empty_column(rhs.type()); }
++
++  using namespace numeric;
++
++  // For scalar-column division, implement directly
++  auto const size      = rhs.size();
++  auto const rhs_type  = rhs.type();
++  auto const lhs_scale = lhs.type().scale();
++  auto const rhs_scale = rhs_type.scale();
++
++  // Create output column with same type as rhs
++  // If there are nulls in inputs, create with null mask; otherwise create without
++  std::unique_ptr<column> result;
++  if (!lhs.is_valid(stream) || rhs.has_nulls()) {
++    if (!lhs.is_valid(stream)) {
++      result = cudf::make_fixed_width_column(
++        rhs_type,
++        size,
++        cudf::detail::create_null_mask(size, mask_state::ALL_NULL, stream, mr),
++        size,
++        stream,
++        mr);
++    } else {
++      result = cudf::make_fixed_width_column(
++        rhs_type, size, cudf::detail::copy_bitmask(rhs, stream, mr), rhs.null_count(), stream, mr);
++    }
++  } else {
++    // Create non-nullable column when inputs have no nulls
++    // Use empty rmm::device_buffer{} directly to ensure column is non-nullable
++    result =
++      std::make_unique<column>(rhs_type,
++                               size,
++                               rmm::device_buffer{size * cudf::size_of(rhs_type), stream, mr},
++                               rmm::device_buffer{},  // Empty buffer = non-nullable
++                               0,                     // null_count = 0
++                               std::vector<std::unique_ptr<column>>{});
++  }
++
++  auto result_view = result->mutable_view();
++
++  // Perform element-wise divide_decimal based on type
++  if (rhs_type.id() == type_id::DECIMAL32) {
++    using Type    = int32_t;
++    using DecType = fixed_point<Type, Radix::BASE_10>;
++
++    auto const& decimal_scalar = static_cast<fixed_point_scalar<DecType> const&>(lhs);
++    DecType lhs_fp             = decimal_scalar.value(stream);
++    Type lhs_val               = lhs_fp.value();
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      rhs.begin<Type>(),
++      rhs.end<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, lhs_val, rounding_mode] __device__(Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  } else if (rhs_type.id() == type_id::DECIMAL64) {
++    using Type    = int64_t;
++    using DecType = fixed_point<Type, Radix::BASE_10>;
++
++    auto const& decimal_scalar = static_cast<fixed_point_scalar<DecType> const&>(lhs);
++    DecType lhs_fp             = decimal_scalar.value(stream);
++    Type lhs_val               = lhs_fp.value();
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      rhs.begin<Type>(),
++      rhs.end<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, lhs_val, rounding_mode] __device__(Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  } else {
++    using Type    = __int128_t;
++    using DecType = fixed_point<Type, Radix::BASE_10>;
++
++    auto const& decimal_scalar = static_cast<fixed_point_scalar<DecType> const&>(lhs);
++    DecType lhs_fp             = decimal_scalar.value(stream);
++    Type lhs_val               = lhs_fp.value();
++
++    thrust::transform(
++      rmm::exec_policy(stream),
++      rhs.begin<Type>(),
++      rhs.end<Type>(),
++      result_view.begin<Type>(),
++      [lhs_scale, rhs_scale, lhs_val, rounding_mode] __device__(Type rhs_val) {
++        DecType lhs_fp{numeric::scaled_integer<Type>{lhs_val, numeric::scale_type{lhs_scale}}};
++        DecType rhs_fp{numeric::scaled_integer<Type>{rhs_val, numeric::scale_type{rhs_scale}}};
++        auto result_fp = numeric::divide_decimal(lhs_fp, rhs_fp, rounding_mode);
++        return result_fp.value();
++      });
++  }
++
++  // Null mask already handled during column creation
++
++  return result;
++}
++
++}  // namespace cudf
+diff --git a/cpp/tests/CMakeLists.txt b/cpp/tests/CMakeLists.txt
+index 4ca97a89db5..2ada486509d 100644
+--- a/cpp/tests/CMakeLists.txt
++++ b/cpp/tests/CMakeLists.txt
+@@ -250,6 +250,10 @@ ConfigureTest(CLAMP_TEST replace/clamp_test.cpp)
+ # * fixed_point tests -----------------------------------------------------------------------------
+ ConfigureTest(FIXED_POINT_TEST fixed_point/fixed_point_tests.cpp fixed_point/fixed_point_tests.cu)
+ 
++# ##################################################################################################
++# * decimal_ops tests -----------------------------------------------------------------------------
++ConfigureTest(DECIMAL_OPS_TEST decimal/decimal_ops_test.cpp)
++
+ # ##################################################################################################
+ # * unary tests -----------------------------------------------------------------------------------
+ ConfigureTest(UNARY_TEST unary/math_ops_test.cpp unary/unary_ops_test.cpp unary/cast_tests.cpp)
+diff --git a/cpp/tests/decimal/decimal_ops_test.cpp b/cpp/tests/decimal/decimal_ops_test.cpp
+new file mode 100644
+index 00000000000..99622a9ed64
+--- /dev/null
++++ b/cpp/tests/decimal/decimal_ops_test.cpp
+@@ -0,0 +1,196 @@
++/*
++ * Copyright (c) 2025, NVIDIA CORPORATION.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <cudf_test/base_fixture.hpp>
++#include <cudf_test/column_utilities.hpp>
++#include <cudf_test/column_wrapper.hpp>
++
++#include <cudf/decimal/decimal_ops.hpp>
++#include <cudf/fixed_point/fixed_point.hpp>
++#include <cudf/scalar/scalar_factories.hpp>
++
++using namespace cudf;
++using namespace cudf::test;
++using namespace numeric;
++
++template <typename DecimalType>
++class DecimalOpsTest : public cudf::test::BaseFixture {};
++
++// Use fixed_point_column_wrapper for decimal types
++template <typename T>
++using fp_wrapper = cudf::test::fixed_point_column_wrapper<typename T::rep>;
++
++using DecimalTypes = ::testing::Types<numeric::decimal32, numeric::decimal64>;
++TYPED_TEST_SUITE(DecimalOpsTest, DecimalTypes);
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalBasic)
++{
++  using DecimalType = TypeParam;
++
++  // Scale -2 means 2 decimal places (10^-2)
++  auto const scale = scale_type{-2};
++
++  // Test basic division with scale preservation
++  // 10.00 / 2.00 = 5.00
++  // 20.00 / 4.00 = 5.00
++  // 30.00 / 3.00 = 10.00
++  fp_wrapper<DecimalType> lhs_col{{1000, 2000, 3000}, scale};
++  fp_wrapper<DecimalType> rhs_col{{200, 400, 300}, scale};
++  fp_wrapper<DecimalType> expected{{500, 500, 1000}, scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++  EXPECT_EQ(result->type().scale(), scale);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalWithRounding)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test rounding HALF_UP
++  // 10.00 / 3.00 = 3.33 (rounded from 3.333...)
++  // 20.00 / 3.00 = 6.67 (rounded from 6.666...)
++  // 5.00 / 2.00 = 2.50
++  fp_wrapper<DecimalType> lhs_col{{1000, 2000, 500}, scale};
++  fp_wrapper<DecimalType> rhs_col{{300, 300, 200}, scale};
++  fp_wrapper<DecimalType> expected_half_up{{333, 667, 250}, scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col, decimal_rounding_mode::HALF_UP);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected_half_up, *result);
++  EXPECT_EQ(result->type().scale(), scale);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalNegativeNumbers)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test with negative numbers
++  // -10.00 / 3.00 = -3.33 (rounded from -3.333...)
++  // 10.00 / -3.00 = -3.33
++  // -10.00 / -3.00 = 3.33
++  fp_wrapper<DecimalType> lhs_col{{-1000, 1000, -1000}, scale};
++  fp_wrapper<DecimalType> rhs_col{{300, -300, -300}, scale};
++  fp_wrapper<DecimalType> expected{{-333, -333, 333}, scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col, decimal_rounding_mode::HALF_UP);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalColumnScalar)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test column / scalar
++  // 10.00 / 2.00 = 5.00
++  // 20.00 / 2.00 = 10.00
++  // 30.00 / 2.00 = 15.00
++  fp_wrapper<DecimalType> lhs_col{{1000, 2000, 3000}, scale};
++  auto rhs_scalar = make_fixed_point_scalar<DecimalType>(200, scale);
++  fp_wrapper<DecimalType> expected{{500, 1000, 1500}, scale};
++
++  auto result = divide_decimal(lhs_col, *rhs_scalar);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalScalarColumn)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test scalar / column
++  // 30.00 / 2.00 = 15.00
++  // 30.00 / 3.00 = 10.00
++  // 30.00 / 5.00 = 6.00
++  auto lhs_scalar = make_fixed_point_scalar<DecimalType>(3000, scale);
++  fp_wrapper<DecimalType> rhs_col{{200, 300, 500}, scale};
++  fp_wrapper<DecimalType> expected{{1500, 1000, 600}, scale};
++
++  auto result = divide_decimal(*lhs_scalar, rhs_col);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalWithNulls)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test with null values
++  // 10.00 / 2.00 = 5.00
++  // null / 3.00 = null
++  // 30.00 / null = null
++  // null / null = null
++  fp_wrapper<DecimalType> lhs_col{{1000, 2000, 3000, 4000}, {1, 0, 1, 0}, scale};
++  fp_wrapper<DecimalType> rhs_col{{200, 300, 400, 500}, {1, 1, 0, 0}, scale};
++  fp_wrapper<DecimalType> expected{{500, 0, 0, 0}, {1, 0, 0, 0}, scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalEmptyColumns)
++{
++  using DecimalType = TypeParam;
++
++  auto const scale = scale_type{-2};
++
++  // Test with empty columns
++  fp_wrapper<DecimalType> lhs_col{{}, scale};
++  fp_wrapper<DecimalType> rhs_col{{}, scale};
++  fp_wrapper<DecimalType> expected{{}, scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++  EXPECT_EQ(result->size(), 0);
++}
++
++TYPED_TEST(DecimalOpsTest, DivideDecimalDifferentScales)
++{
++  using DecimalType = TypeParam;
++
++  // Test with different scales
++  // lhs has scale -2 (2 decimal places): 1.23
++  // rhs has scale -1 (1 decimal place): 2.0
++  // Result should have scale -2: 0.62 (rounded from 0.615)
++  auto const lhs_scale = scale_type{-2};
++  auto const rhs_scale = scale_type{-1};
++
++  // 1.23 / 2.0 = 0.615 -> 0.62 (HALF_UP)
++  // 4.56 / 3.0 = 1.52
++  // 7.89 / 4.0 = 1.9725 -> 1.97 (HALF_UP)
++  fp_wrapper<DecimalType> lhs_col{{123, 456, 789}, lhs_scale};
++  fp_wrapper<DecimalType> rhs_col{{20, 30, 40}, rhs_scale};
++  fp_wrapper<DecimalType> expected{{62, 152, 197}, lhs_scale};
++
++  auto result = divide_decimal(lhs_col, rhs_col, decimal_rounding_mode::HALF_UP);
++
++  CUDF_TEST_EXPECT_COLUMNS_EQUAL(expected, *result);
++  EXPECT_EQ(result->type().scale(), lhs_scale);
++}
+diff --git a/python/cudf/cudf/core/column/decimal.py b/python/cudf/cudf/core/column/decimal.py
+index f036cd6c084..a4259adf453 100644
+--- a/python/cudf/cudf/core/column/decimal.py
++++ b/python/cudf/cudf/core/column/decimal.py
+@@ -9,6 +9,7 @@
+ import numpy as np
+ import pandas as pd
+ import pyarrow as pa
++from typing_extensions import Self
+ 
+ import pylibcudf as plc
+ import rmm
+@@ -37,8 +38,6 @@
+ from cudf.utils.scalar import pa_scalar_to_plc_scalar
+ 
+ if TYPE_CHECKING:
+-    from typing_extensions import Self
+-
+     from cudf._typing import ColumnBinaryOperand, ColumnLike, Dtype, ScalarLike
+     from cudf.core.buffer import Buffer
+     from cudf.core.column.numerical import NumericalColumn
+@@ -267,6 +266,100 @@ def _binaryop(self, other: ColumnBinaryOperand, op: str):
+                 f"{self.dtype}, {other_cudf_dtype}"
+             )
+ 
++    def divide_decimal(
++        self, other: ColumnBinaryOperand, rounding_mode: str = "HALF_UP"
++    ) -> Self:
++        """
++        Perform decimal division preserving the dividend's scale.
++
++        This method divides the current column by another decimal value while
++        maintaining the scale of the dividend (this column), similar to Java's
++        BigDecimal.divide(divisor, roundingMode).
++
++        Parameters
++        ----------
++        other : DecimalColumn, Scalar, or numeric value
++            The divisor
++        rounding_mode : str, optional
++            The rounding mode to use. Options are:
++            - "HALF_UP": Round half away from zero (default)
++            - "HALF_EVEN": Round half to even (banker's rounding)
++
++        Returns
++        -------
++        DecimalBaseColumn
++            Result column with the same scale as this column
++
++        Examples
++        --------
++        >>> import cudf
++        >>> from decimal import Decimal
++        >>> s1 = cudf.Series([Decimal('1.23'), Decimal('4.56')])
++        >>> s2 = cudf.Series([Decimal('2.0'), Decimal('3.0')])
++        >>> # Standard division changes scale
++        >>> standard_result = s1 / s2
++        >>> # divide_decimal preserves scale
++        >>> decimal_result = s1.divide_decimal(s2)
++        """
++        # Import the decimal_division module (renamed from decimal_ops)
++        import pylibcudf.decimal_division as decimal_ops
++
++        # Type checking and normalization
++        reflect, _ = self._check_reflected_op("__div__")
++        other, other_cudf_dtype = self._normalize_binop_operand(other)  # type: ignore[assignment]
++        if other is NotImplemented:
++            return NotImplemented
++
++        if reflect:
++            raise NotImplementedError(
++                "Reflected divide_decimal operation is not supported"
++            )
++
++        # Map rounding mode string to enum
++        if rounding_mode == "HALF_UP":
++            rounding = decimal_ops.DecimalRoundingMode.HALF_UP
++        elif rounding_mode == "HALF_EVEN":
++            rounding = decimal_ops.DecimalRoundingMode.HALF_EVEN
++        else:
++            raise ValueError(f"Invalid rounding mode: {rounding_mode}")
++
++        # Prepare operands for pylibcudf
++        lhs = self.to_pylibcudf(mode="read")
++
++        # Determine if other is a scalar or column and call appropriate function
++        if isinstance(other, (int, Decimal)):
++            # Native Python scalar case
++            rhs = _to_plc_scalar(other, self.dtype)
++            result_column = decimal_ops.divide_decimal_column_scalar(
++                lhs, rhs, rounding
++            )
++        elif is_scalar(other) and hasattr(other, "to_pylibcudf"):
++            # cudf scalar-like object case
++            rhs = other.to_pylibcudf(mode="read")
++            result_column = decimal_ops.divide_decimal_column_scalar(
++                lhs, rhs, rounding
++            )
++        else:
++            # Column case
++            rhs = other.to_pylibcudf(mode="read")
++            result_column = decimal_ops.divide_decimal(lhs, rhs, rounding)
++
++        # Convert back to cudf column
++        result = ColumnBase.from_pylibcudf(result_column)
++
++        # Set the precision (libcudf doesn't track precision)
++        # The scale is already preserved by the C++ implementation
++        result_precision = min(
++            self.dtype.precision + other_cudf_dtype.scale,
++            type(self.dtype).MAX_PRECISION,
++        )
++        result.dtype.precision = result_precision
++
++        return cast(Self, result)
++
++    # Add alias
++    div_decimal = divide_decimal
++
+     def _cast_setitem_value(self, value: Any) -> plc.Scalar | ColumnBase:
+         if isinstance(value, np.integer):
+             value = value.item()
+diff --git a/python/cudf/cudf/tests/test_decimal_division.py b/python/cudf/cudf/tests/test_decimal_division.py
+new file mode 100644
+index 00000000000..69cf6f7a21b
+--- /dev/null
++++ b/python/cudf/cudf/tests/test_decimal_division.py
+@@ -0,0 +1,272 @@
++# Copyright (c) 2025, NVIDIA CORPORATION.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""
++Tests for decimal division with scale preservation (divide_decimal function)
++"""
++
++from decimal import Decimal
++
++import pytest
++
++import cudf
++from cudf.testing import assert_eq
++
++
++class TestDecimalDivision:
++    """Test suite for divide_decimal functionality"""
++
++    def test_divide_decimal_basic(self):
++        """Test basic divide_decimal functionality with scale preservation"""
++        # Create decimal series
++        s1 = cudf.Series([Decimal("1.23"), Decimal("4.56"), Decimal("7.89")])
++        s2 = cudf.Series([Decimal("2.0"), Decimal("3.0"), Decimal("4.0")])
++
++        # divide_decimal (scale preserved)
++        decimal_result = s1._column.divide_decimal(s2._column)
++
++        # Check that scales are different
++        # Standard division: scale = lhs.scale - rhs.scale
++        # divide_decimal: scale = lhs.scale
++        assert decimal_result.dtype.scale == s1._column.dtype.scale
++
++        # Check values are approximately correct
++        # 1.23 / 2.0 = 0.615 -> 0.62 (with HALF_UP)
++        # 4.56 / 3.0 = 1.52
++        # 7.89 / 4.0 = 1.9725 -> 1.97 (with HALF_UP)
++        expected = cudf.Series(
++            [Decimal("0.62"), Decimal("1.52"), Decimal("1.97")]
++        )
++
++        # Convert result to series for comparison
++        result_series = cudf.Series._from_column(decimal_result)
++
++        # Compare decimal values using cudf's testing utility
++        # Note: check_dtype=False because precision might differ
++        assert_eq(result_series, expected, check_dtype=False)
++
++    def test_rounding_mode_half_up(self):
++        """Test HALF_UP rounding mode"""
++        s1 = cudf.Series([Decimal("1.25"), Decimal("2.35"), Decimal("3.45")])
++        s2 = cudf.Series([Decimal("2.0"), Decimal("2.0"), Decimal("2.0")])
++
++        # HALF_UP: 0.5 rounds away from zero
++        result = s1._column.divide_decimal(s2._column, rounding_mode="HALF_UP")
++
++        # 1.25 / 2.0 = 0.625 -> 0.63
++        # 2.35 / 2.0 = 1.175 -> 1.18
++        # 3.45 / 2.0 = 1.725 -> 1.73
++        expected = cudf.Series(
++            [Decimal("0.63"), Decimal("1.18"), Decimal("1.73")]
++        )
++
++        # Convert result to series for comparison
++        result_series = cudf.Series._from_column(result)
++
++        # Verify HALF_UP rounding behavior
++        assert_eq(result_series, expected, check_dtype=False)
++
++    def test_rounding_mode_half_even(self):
++        """Test HALF_EVEN rounding mode (banker's rounding)"""
++        s1 = cudf.Series(
++            [
++                Decimal("1.25"),
++                Decimal("1.35"),
++                Decimal("2.25"),
++                Decimal("2.35"),
++            ]
++        )
++        s2 = cudf.Series(
++            [Decimal("2.0"), Decimal("2.0"), Decimal("2.0"), Decimal("2.0")]
++        )
++
++        # HALF_EVEN: 0.5 rounds to nearest even
++        result = s1._column.divide_decimal(
++            s2._column, rounding_mode="HALF_EVEN"
++        )
++
++        # 1.25 / 2.0 = 0.625 -> 0.62 (even)
++        # 1.35 / 2.0 = 0.675 -> 0.68 (even)
++        # 2.25 / 2.0 = 1.125 -> 1.12 (even)
++        # 2.35 / 2.0 = 1.175 -> 1.18 (even)
++        expected = cudf.Series(
++            [
++                Decimal("0.62"),
++                Decimal("0.68"),
++                Decimal("1.12"),
++                Decimal("1.18"),
++            ]
++        )
++
++        # Convert result to series for comparison
++        result_series = cudf.Series._from_column(result)
++
++        # Verify HALF_EVEN rounding behavior
++        assert_eq(result_series, expected, check_dtype=False)
++
++    def test_negative_numbers(self):
++        """Test divide_decimal with negative numbers"""
++        s1 = cudf.Series([Decimal("-1.23"), Decimal("1.23"), Decimal("-1.23")])
++        s2 = cudf.Series([Decimal("2.0"), Decimal("-2.0"), Decimal("-2.0")])
++
++        result = s1._column.divide_decimal(s2._column)
++
++        # -1.23 / 2.0 = -0.615 -> -0.62
++        # 1.23 / -2.0 = -0.615 -> -0.62
++        # -1.23 / -2.0 = 0.615 -> 0.62
++        expected = cudf.Series(
++            [Decimal("-0.62"), Decimal("-0.62"), Decimal("0.62")]
++        )
++
++        # Convert result to series for comparison
++        result_series = cudf.Series._from_column(result)
++
++        # Verify negative number handling
++        assert_eq(result_series, expected, check_dtype=False)
++
++    def test_divide_by_scalar(self):
++        """Test dividing by a scalar decimal value"""
++        s = cudf.Series([Decimal("10.50"), Decimal("20.75"), Decimal("30.25")])
++        scalar = Decimal("2.00")
++
++        result = s._column.divide_decimal(scalar)
++
++        # Scale should be preserved
++        assert result.dtype.scale == s._column.dtype.scale
++
++        # Check actual values: 10.50/2.00=5.25, 20.75/2.00=10.38, 30.25/2.00=15.13
++        expected_values = cudf.Series(
++            [Decimal("5.25"), Decimal("10.38"), Decimal("15.13")]
++        )
++        result_series = cudf.Series._from_column(result)
++
++        assert_eq(result_series, expected_values, check_dtype=False)
++
++    def test_different_decimal_types(self):
++        """Test with Decimal32, Decimal64, and Decimal128"""
++        # This would test different precision decimal types
++        # Note: Implementation depends on cuDF's decimal type support
++        pass
++
++    def test_null_values(self):
++        """Test handling of null values in decimal division"""
++        s1 = cudf.Series([Decimal("1.23"), None, Decimal("4.56")])
++        s2 = cudf.Series([Decimal("2.0"), Decimal("3.0"), Decimal("4.0")])
++
++        result = s1._column.divide_decimal(s2._column)
++
++        # Result should have null at index 1
++        assert result.isnull().sum() == 1
++
++    def test_invalid_rounding_mode(self):
++        """Test that invalid rounding mode raises error"""
++        s1 = cudf.Series([Decimal("1.23")])
++        s2 = cudf.Series([Decimal("2.0")])
++
++        with pytest.raises(ValueError):
++            s1._column.divide_decimal(s2._column, rounding_mode="INVALID")
++
++    def test_non_decimal_type_error(self):
++        """Test that non-decimal types raise TypeError"""
++        s1 = cudf.Series([1.23, 4.56])  # Float series, not decimal
++        s2 = cudf.Series([2.0, 3.0])
++
++        # This should fail as the columns are not decimal type
++        with pytest.raises(AttributeError):
++            s1._column.divide_decimal(s2._column)
++
++
++class TestDecimalDivisionIntegration:
++    """Integration tests with other cuDF operations"""
++
++    def test_chained_operations(self):
++        """Test divide_decimal in a chain of operations"""
++        s = cudf.Series([Decimal("10.50"), Decimal("20.75"), Decimal("30.25")])
++
++        # Chain operations
++        result = s._column.divide_decimal(Decimal("2.0"))
++
++        # Verify the result
++        expected_values = cudf.Series(
++            [Decimal("5.25"), Decimal("10.38"), Decimal("15.13")]
++        )
++        result_series = cudf.Series._from_column(result)
++
++        assert_eq(result_series, expected_values, check_dtype=False)
++
++    def test_mixed_operations(self):
++        """Test mixing standard division with divide_decimal"""
++        s1 = cudf.Series([Decimal("10.0"), Decimal("20.0")])
++        s2 = cudf.Series([Decimal("3.0"), Decimal("7.0")])
++
++        # Standard division
++        std_result = s1 / s2
++
++        # Decimal division
++        dec_result = s1._column.divide_decimal(s2._column)
++
++        # Scales should be different
++        assert std_result._column.dtype.scale != dec_result.dtype.scale
++
++
++# Parameterized tests
++@pytest.mark.parametrize("precision", [1, 2, 3, 4])
++def test_various_scales(precision):
++    """Test divide_decimal with various scale values"""
++    # Create series with specific scale based on precision
++    # Using string formatting to control decimal places
++    format_str = f"{{:.{precision}f}}"
++    values = [
++        Decimal(format_str.format(1.5)),
++        Decimal(format_str.format(2.5)),
++        Decimal(format_str.format(3.5)),
++    ]
++    s1 = cudf.Series(values)
++    s2 = cudf.Series([Decimal("2.0")] * 3)
++
++    result = s1._column.divide_decimal(s2._column)
++
++    # Result should preserve s1's scale and have correct values
++    assert result.dtype.scale == s1._column.dtype.scale
++
++    # Basic verification: 1.5/2.0=0.75, 2.5/2.0=1.25, 3.5/2.0=1.75
++    # With HALF_UP rounding and different precisions:
++    if precision == 1:
++        # 0.75 -> 0.8, 1.25 -> 1.3, 1.75 -> 1.8 (HALF_UP)
++        expected_values = cudf.Series(
++            [Decimal("0.8"), Decimal("1.3"), Decimal("1.8")]
++        )
++    elif precision == 2:
++        # 0.75 -> 0.75, 1.25 -> 1.25, 1.75 -> 1.75
++        expected_values = cudf.Series(
++            [Decimal("0.75"), Decimal("1.25"), Decimal("1.75")]
++        )
++    elif precision == 3:
++        # 0.750, 1.250, 1.750
++        expected_values = cudf.Series(
++            [Decimal("0.750"), Decimal("1.250"), Decimal("1.750")]
++        )
++    else:  # precision == 4
++        # 0.7500, 1.2500, 1.7500
++        expected_values = cudf.Series(
++            [Decimal("0.7500"), Decimal("1.2500"), Decimal("1.7500")]
++        )
++
++    result_series = cudf.Series._from_column(result)
++
++    assert_eq(result_series, expected_values, check_dtype=False)
++
++
++if __name__ == "__main__":
++    pytest.main([__file__])
+diff --git a/python/pylibcudf/pylibcudf/CMakeLists.txt b/python/pylibcudf/pylibcudf/CMakeLists.txt
+index efd989496d6..caaafc1bdf6 100644
+--- a/python/pylibcudf/pylibcudf/CMakeLists.txt
++++ b/python/pylibcudf/pylibcudf/CMakeLists.txt
+@@ -21,6 +21,7 @@ set(cython_sources
+     concatenate.pyx
+     copying.pyx
+     datetime.pyx
++    decimal_division.pyx
+     expressions.pyx
+     filling.pyx
+     gpumemoryview.pyx
+diff --git a/python/pylibcudf/pylibcudf/__init__.py b/python/pylibcudf/pylibcudf/__init__.py
+index 09dcfacca8c..7277f1a7137 100644
+--- a/python/pylibcudf/pylibcudf/__init__.py
++++ b/python/pylibcudf/pylibcudf/__init__.py
+@@ -18,6 +18,7 @@
+     contiguous_split,
+     copying,
+     datetime,
++    decimal_division,
+     expressions,
+     filling,
+     groupby,
+@@ -70,6 +71,7 @@
+     "contiguous_split",
+     "copying",
+     "datetime",
++    "decimal_division",
+     "expressions",
+     "filling",
+     "gpumemoryview",
+diff --git a/python/pylibcudf/pylibcudf/decimal_division.pyx b/python/pylibcudf/pylibcudf/decimal_division.pyx
+new file mode 100644
+index 00000000000..3dd7e8e6ffa
+--- /dev/null
++++ b/python/pylibcudf/pylibcudf/decimal_division.pyx
+@@ -0,0 +1,269 @@
++# Copyright (c) 2024-2025, NVIDIA CORPORATION.
++# Implementation of decimal division with scale preservation
++
++from enum import IntEnum
++
++from libcpp.memory cimport unique_ptr
++from libcpp.utility cimport move
++from .column cimport Column
++from pylibcudf.libcudf.column.column cimport column
++from pylibcudf.libcudf.decimal.decimal_ops cimport (
++    decimal_rounding_mode as cpp_decimal_rounding_mode,
++    divide_decimal as cpp_divide_decimal
++)
++from pylibcudf.types cimport type_id
++from pylibcudf.scalar cimport Scalar
++from pylibcudf.libcudf.scalar.scalar cimport scalar as cpp_scalar
++from cython.operator cimport dereference
++
++__all__ = [
++    "DecimalRoundingMode",
++    "divide_decimal",
++    "divide_decimal_column_scalar",
++    "divide_decimal_scalar_column"
++]
++
++
++class DecimalRoundingMode(IntEnum):
++    """
++    Rounding modes for decimal division.
++
++    Attributes
++    ----------
++    HALF_UP : int
++        Round half away from zero (0.5 rounds to 1, -0.5 rounds to -1)
++    HALF_EVEN : int
++        Round half to even (banker's rounding)
++    """
++    HALF_UP = 0
++    HALF_EVEN = 1
++
++
++cpdef Column divide_decimal(
++    Column lhs,
++    Column rhs,
++    rounding_mode=DecimalRoundingMode.HALF_UP
++):
++    """
++    Perform decimal division preserving the dividend's scale.
++
++    This function divides two decimal columns while maintaining the scale
++    of the dividend (left operand), similar to Java's BigDecimal.divide()
++    with a specified rounding mode.
++
++    Parameters
++    ----------
++    lhs : Column
++        The dividend (left operand) - a decimal column
++    rhs : Column
++        The divisor (right operand) - a decimal column or scalar
++    rounding_mode : DecimalRoundingMode, optional
++        The rounding mode to use (default: HALF_UP)
++
++    Returns
++    -------
++    Column
++        Result column with the same scale as the dividend
++
++    Raises
++    ------
++    TypeError
++        If input columns are not decimal types
++    ValueError
++        If division by zero is attempted
++
++    Examples
++    --------
++    >>> import pylibcudf
++    >>> # Create decimal columns
++    >>> lhs = pylibcudf.column_from_decimal_values([1.23, 4.56], scale=-2)
++    >>> rhs = pylibcudf.column_from_decimal_values([2.0, 3.0], scale=-1)
++    >>> # Divide preserving lhs scale
++    >>> result = divide_decimal(lhs, rhs, DecimalRoundingMode.HALF_UP)
++    >>> # Result has scale -2 (same as lhs)
++    """
++    cdef cpp_decimal_rounding_mode cpp_mode
++
++    # Convert Python enum to C++ enum
++    if rounding_mode == DecimalRoundingMode.HALF_UP:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_UP
++    elif rounding_mode == DecimalRoundingMode.HALF_EVEN:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_EVEN
++    else:
++        raise ValueError(f"Invalid rounding mode: {rounding_mode}")
++
++    # Check that both columns are decimal types
++    if lhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Left operand must be a decimal type, got {lhs.type()}")
++    if rhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Right operand must be a decimal type, got {rhs.type()}")
++
++    # Call the C++ divide_decimal function
++    cdef unique_ptr[column] result
++
++    with nogil:
++        result = cpp_divide_decimal(
++            lhs.view(),
++            rhs.view(),
++            cpp_mode
++        )
++
++    return Column.from_libcudf(move(result))
++
++
++cpdef Column divide_decimal_column_scalar(
++    Column lhs,
++    Scalar rhs,
++    rounding_mode=DecimalRoundingMode.HALF_UP
++):
++    """
++    Perform decimal division of a column by a scalar, preserving the column's scale.
++
++    This function divides a decimal column by a decimal scalar while maintaining
++    the scale of the dividend (column), similar to Java's BigDecimal.divide()
++    with a specified rounding mode.
++
++    Parameters
++    ----------
++    lhs : Column
++        The dividend column (must be a decimal type)
++    rhs : Scalar
++        The divisor scalar (must be a decimal type)
++    rounding_mode : DecimalRoundingMode, default DecimalRoundingMode.HALF_UP
++        The rounding mode to use:
++        - HALF_UP: Round half away from zero
++        - HALF_EVEN: Round half to even (banker's rounding)
++
++    Returns
++    -------
++    Column
++        Result column with the same scale as the dividend
++
++    Raises
++    ------
++    TypeError
++        If either operand is not a decimal type
++    ValueError
++        If an invalid rounding mode is provided
++
++    Examples
++    --------
++    >>> import pylibcudf
++    >>> # Column [10.50, 20.25] / Scalar 2.50
++    >>> # Result: [4.20, 8.10] (scale preserved)
++    """
++    cdef cpp_decimal_rounding_mode cpp_mode
++
++    # Convert rounding mode
++    if rounding_mode == DecimalRoundingMode.HALF_UP:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_UP
++    elif rounding_mode == DecimalRoundingMode.HALF_EVEN:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_EVEN
++    else:
++        raise ValueError(f"Invalid rounding mode: {rounding_mode}")
++
++    # Check that column is decimal type
++    if lhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Left operand must be a decimal type, got {lhs.type()}")
++
++    # Check that scalar is decimal type
++    if rhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Right operand must be a decimal type, got {rhs.type()}")
++
++    # Call the C++ divide_decimal function for column/scalar
++    cdef unique_ptr[column] result
++    cdef const cpp_scalar* scalar_ptr = rhs.get()
++
++    with nogil:
++        result = cpp_divide_decimal(
++            lhs.view(),
++            dereference(scalar_ptr),
++            cpp_mode
++        )
++
++    return Column.from_libcudf(move(result))
++
++
++cpdef Column divide_decimal_scalar_column(
++    Scalar lhs,
++    Column rhs,
++    rounding_mode=DecimalRoundingMode.HALF_UP
++):
++    """
++    Perform decimal division of a scalar by a column, preserving the scalar's scale.
++
++    This function divides a decimal scalar by a decimal column while maintaining
++    the scale of the dividend (scalar), similar to Java's BigDecimal.divide()
++    with a specified rounding mode.
++
++    Parameters
++    ----------
++    lhs : Scalar
++        The dividend scalar (must be a decimal type)
++    rhs : Column
++        The divisor column (must be a decimal type)
++    rounding_mode : DecimalRoundingMode, default DecimalRoundingMode.HALF_UP
++        The rounding mode to use:
++        - HALF_UP: Round half away from zero
++        - HALF_EVEN: Round half to even (banker's rounding)
++
++    Returns
++    -------
++    Column
++        Result column with the same scale as the dividend scalar
++
++    Raises
++    ------
++    TypeError
++        If either operand is not a decimal type
++    ValueError
++        If an invalid rounding mode is provided
++
++    Examples
++    --------
++    >>> import pylibcudf
++    >>> # Scalar 100.00 / Column [4.00, 5.00, 10.00]
++    >>> # Result: [25.00, 20.00, 10.00] (scale preserved)
++    """
++    cdef cpp_decimal_rounding_mode cpp_mode
++
++    # Convert rounding mode
++    if rounding_mode == DecimalRoundingMode.HALF_UP:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_UP
++    elif rounding_mode == DecimalRoundingMode.HALF_EVEN:
++        cpp_mode = cpp_decimal_rounding_mode.HALF_EVEN
++    else:
++        raise ValueError(f"Invalid rounding mode: {rounding_mode}")
++
++    # Check that scalar is decimal type
++    if lhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Left operand must be a decimal type, got {lhs.type()}")
++
++    # Check that column is decimal type
++    if rhs.type().id() not in [
++        type_id.DECIMAL32, type_id.DECIMAL64, type_id.DECIMAL128
++    ]:
++        raise TypeError(f"Right operand must be a decimal type, got {rhs.type()}")
++
++    # Call the C++ divide_decimal function for scalar/column
++    cdef unique_ptr[column] result
++    cdef const cpp_scalar* scalar_ptr = lhs.get()
++
++    with nogil:
++        result = cpp_divide_decimal(
++            dereference(scalar_ptr),
++            rhs.view(),
++            cpp_mode
++        )
++
++    return Column.from_libcudf(move(result))
+diff --git a/python/pylibcudf/pylibcudf/libcudf/decimal/decimal_ops.pxd b/python/pylibcudf/pylibcudf/libcudf/decimal/decimal_ops.pxd
+new file mode 100644
+index 00000000000..006908560ec
+--- /dev/null
++++ b/python/pylibcudf/pylibcudf/libcudf/decimal/decimal_ops.pxd
+@@ -0,0 +1,30 @@
++# Copyright (c) 2025, NVIDIA CORPORATION.
++
++from libcpp.memory cimport unique_ptr
++from pylibcudf.libcudf.column.column cimport column
++from pylibcudf.libcudf.column.column_view cimport column_view
++from pylibcudf.libcudf.scalar.scalar cimport scalar
++
++cdef extern from "cudf/fixed_point/fixed_point.hpp" namespace "numeric" nogil:
++    cdef enum class decimal_rounding_mode:
++        HALF_UP
++        HALF_EVEN
++
++cdef extern from "cudf/decimal/decimal_ops.hpp" namespace "cudf" nogil:
++    cdef unique_ptr[column] divide_decimal(
++        const column_view& lhs,
++        const column_view& rhs,
++        decimal_rounding_mode rounding_mode
++    ) except +
++
++    cdef unique_ptr[column] divide_decimal(
++        const column_view& lhs,
++        const scalar& rhs,
++        decimal_rounding_mode rounding_mode
++    ) except +
++
++    cdef unique_ptr[column] divide_decimal(
++        const scalar& lhs,
++        const column_view& rhs,
++        decimal_rounding_mode rounding_mode
++    ) except +

@@ -1,0 +1,302 @@
+diff --git a/python/pylibcudf/pylibcudf/column.pxd b/python/pylibcudf/pylibcudf/column.pxd
+index 03cbbd7c206..14589eb3c8e 100644
+--- a/python/pylibcudf/pylibcudf/column.pxd
++++ b/python/pylibcudf/pylibcudf/column.pxd
+@@ -2,6 +2,7 @@
+ 
+ from libcpp.memory cimport unique_ptr
+ from libcpp.vector cimport vector
++from rmm.pylibrmm.stream cimport Stream
+ from pylibcudf.libcudf.column.column cimport column
+ from pylibcudf.libcudf.column.column_view cimport (
+     column_view,
+@@ -32,7 +33,7 @@ cdef class Column:
+     cdef mutable_column_view mutable_view(self) nogil
+ 
+     @staticmethod
+-    cdef Column from_libcudf(unique_ptr[column] libcudf_col)
++    cdef Column from_libcudf(unique_ptr[column] libcudf_col, Stream stream=*)
+ 
+     @staticmethod
+     cdef Column from_column_view(const column_view& cv, Column owner)
+diff --git a/python/pylibcudf/pylibcudf/column.pyx b/python/pylibcudf/pylibcudf/column.pyx
+index d5e7327c12e..91752f4b25c 100644
+--- a/python/pylibcudf/pylibcudf/column.pyx
++++ b/python/pylibcudf/pylibcudf/column.pyx
+@@ -3,6 +3,7 @@
+ from cython.operator cimport dereference
+ from libcpp.memory cimport make_unique, unique_ptr
+ from libcpp.utility cimport move
++from rmm.pylibrmm.stream cimport Stream
+ from pylibcudf.libcudf.column.column cimport column, column_contents
+ from pylibcudf.libcudf.column.column_factories cimport make_column_from_scalar
+ from pylibcudf.libcudf.scalar.scalar cimport scalar
+@@ -13,7 +14,7 @@ from rmm.pylibrmm.device_buffer cimport DeviceBuffer
+ from .gpumemoryview cimport gpumemoryview
+ from .scalar cimport Scalar
+ from .types cimport DataType, size_of, type_id
+-from .utils cimport int_to_bitmask_ptr, int_to_void_ptr
++from .utils cimport int_to_bitmask_ptr, int_to_void_ptr, _get_stream
+ 
+ import functools
+ 
+@@ -129,7 +130,7 @@ cdef class Column:
+         )
+ 
+     @staticmethod
+-    cdef Column from_libcudf(unique_ptr[column] libcudf_col):
++    cdef Column from_libcudf(unique_ptr[column] libcudf_col, Stream stream=None):
+         """Create a Column from a libcudf column.
+ 
+         This method is for pylibcudf's functions to use to ingest outputs of
+@@ -143,10 +144,11 @@ cdef class Column:
+ 
+         cdef column_contents contents = libcudf_col.get().release()
+ 
++        stream = _get_stream(stream)
+         # Note that when converting to cudf Column objects we'll need to pull
+         # out the base object.
+         cdef gpumemoryview data = gpumemoryview(
+-            DeviceBuffer.c_from_unique_ptr(move(contents.data))
++            DeviceBuffer.c_from_unique_ptr(move(contents.data), stream)
+         )
+ 
+         cdef gpumemoryview mask = None
+diff --git a/python/pylibcudf/pylibcudf/io/avro.pyx b/python/pylibcudf/pylibcudf/io/avro.pyx
+index 5ce402f100d..e3f92ca84a0 100644
+--- a/python/pylibcudf/pylibcudf/io/avro.pyx
++++ b/python/pylibcudf/pylibcudf/io/avro.pyx
+@@ -156,4 +156,4 @@ cpdef TableWithMetadata read_avro(
+     with nogil:
+         c_result = move(cpp_read_avro(options.c_obj, s.view()))
+ 
+-    return TableWithMetadata.from_libcudf(c_result)
++    return TableWithMetadata.from_libcudf(c_result, s)
+diff --git a/python/pylibcudf/pylibcudf/io/csv.pyx b/python/pylibcudf/pylibcudf/io/csv.pyx
+index 182274d0097..ca8637e7280 100644
+--- a/python/pylibcudf/pylibcudf/io/csv.pyx
++++ b/python/pylibcudf/pylibcudf/io/csv.pyx
+@@ -660,7 +660,7 @@ cpdef TableWithMetadata read_csv(
+     with nogil:
+         c_result = move(cpp_read_csv(options.c_obj, s.view()))
+ 
+-    cdef TableWithMetadata tbl_meta = TableWithMetadata.from_libcudf(c_result)
++    cdef TableWithMetadata tbl_meta = TableWithMetadata.from_libcudf(c_result, s)
+     return tbl_meta
+ 
+ 
+diff --git a/python/pylibcudf/pylibcudf/io/json.pyx b/python/pylibcudf/pylibcudf/io/json.pyx
+index f1974465e65..b9c11633867 100644
+--- a/python/pylibcudf/pylibcudf/io/json.pyx
++++ b/python/pylibcudf/pylibcudf/io/json.pyx
+@@ -718,7 +718,7 @@ cpdef tuple chunked_read_json(
+             )
+         new_chunk = [
+             col for col in TableWithMetadata.from_libcudf(
+-                c_result).columns
++                c_result, s).columns
+         ]
+ 
+         if len(final_columns) == 0:
+@@ -763,7 +763,7 @@ cpdef TableWithMetadata read_json(
+     with nogil:
+         c_result = move(cpp_read_json(options.c_obj, s.view()))
+ 
+-    return TableWithMetadata.from_libcudf(c_result)
++    return TableWithMetadata.from_libcudf(c_result, s)
+ 
+ 
+ cdef class JsonWriterOptions:
+diff --git a/python/pylibcudf/pylibcudf/io/orc.pyx b/python/pylibcudf/pylibcudf/io/orc.pyx
+index 7865aec2d69..9ef3daf2e9f 100644
+--- a/python/pylibcudf/pylibcudf/io/orc.pyx
++++ b/python/pylibcudf/pylibcudf/io/orc.pyx
+@@ -439,7 +439,7 @@ cpdef TableWithMetadata read_orc(OrcReaderOptions options, Stream stream = None)
+     with nogil:
+         c_result = move(cpp_read_orc(options.c_obj, s.view()))
+ 
+-    return TableWithMetadata.from_libcudf(c_result)
++    return TableWithMetadata.from_libcudf(c_result, s)
+ 
+ 
+ cpdef ParsedOrcStatistics read_parsed_orc_statistics(
+diff --git a/python/pylibcudf/pylibcudf/io/parquet.pxd b/python/pylibcudf/pylibcudf/io/parquet.pxd
+index c6fe7234448..142baf2dedb 100644
+--- a/python/pylibcudf/pylibcudf/io/parquet.pxd
++++ b/python/pylibcudf/pylibcudf/io/parquet.pxd
+@@ -57,6 +57,7 @@ cdef class ParquetReaderOptionsBuilder:
+ 
+ 
+ cdef class ChunkedParquetReader:
++    cdef readonly Stream stream
+     cdef unique_ptr[cpp_chunked_parquet_reader] reader
+ 
+     cpdef bool has_next(self)
+diff --git a/python/pylibcudf/pylibcudf/io/parquet.pyx b/python/pylibcudf/pylibcudf/io/parquet.pyx
+index 34290123ac6..10b3a3a6e79 100644
+--- a/python/pylibcudf/pylibcudf/io/parquet.pyx
++++ b/python/pylibcudf/pylibcudf/io/parquet.pyx
+@@ -272,14 +272,14 @@ cdef class ChunkedParquetReader:
+         size_t chunk_read_limit=0,
+         size_t pass_read_limit=1024000000,
+     ):
+-        cdef Stream s = _get_stream(stream)
++        self.stream = _get_stream(stream)
+         with nogil:
+             self.reader.reset(
+                 new cpp_chunked_parquet_reader(
+                     chunk_read_limit,
+                     pass_read_limit,
+                     options.c_obj,
+-                    s.view(),
++                    self.stream.view(),
+                 )
+             )
+ 
+@@ -312,7 +312,7 @@ cdef class ChunkedParquetReader:
+         with nogil:
+             c_result = move(self.reader.get()[0].read_chunk())
+ 
+-        return TableWithMetadata.from_libcudf(c_result)
++        return TableWithMetadata.from_libcudf(c_result, self.stream)
+ 
+ 
+ cpdef read_parquet(ParquetReaderOptions options, Stream stream = None):
+@@ -335,7 +335,7 @@ cpdef read_parquet(ParquetReaderOptions options, Stream stream = None):
+     with nogil:
+         c_result = move(cpp_read_parquet(options.c_obj, s.view()))
+ 
+-    return TableWithMetadata.from_libcudf(c_result)
++    return TableWithMetadata.from_libcudf(c_result, stream)
+ 
+ 
+ cdef class ParquetChunkedWriter:
+diff --git a/python/pylibcudf/pylibcudf/io/types.pxd b/python/pylibcudf/pylibcudf/io/types.pxd
+index 61fe33d6805..f93513a2a91 100644
+--- a/python/pylibcudf/pylibcudf/io/types.pxd
++++ b/python/pylibcudf/pylibcudf/io/types.pxd
+@@ -1,4 +1,4 @@
+-# Copyright (c) 2024, NVIDIA CORPORATION.
++# Copyright (c) 2024-2025, NVIDIA CORPORATION.
+ from libc.stdint cimport uint8_t, int32_t
+ from libcpp cimport bool
+ from libcpp.memory cimport unique_ptr
+@@ -24,6 +24,7 @@ from pylibcudf.libcudf.io.types cimport (
+ from pylibcudf.libcudf.types cimport size_type
+ from pylibcudf.table cimport Table
+ from pylibcudf.libcudf.types cimport size_type
++from rmm.pylibrmm.stream cimport Stream
+ 
+ cdef class PartitionInfo:
+     cdef partition_info c_obj
+@@ -78,7 +79,7 @@ cdef class TableWithMetadata:
+     cdef dict _parse_col_names(vector[column_name_info] infos)
+ 
+     @staticmethod
+-    cdef TableWithMetadata from_libcudf(table_with_metadata& tbl)
++    cdef TableWithMetadata from_libcudf(table_with_metadata& tbl, Stream stream=*)
+ 
+ cdef class SourceInfo:
+     cdef source_info c_obj
+diff --git a/python/pylibcudf/pylibcudf/io/types.pyx b/python/pylibcudf/pylibcudf/io/types.pyx
+index 7f986175e7f..82305bfd5ae 100644
+--- a/python/pylibcudf/pylibcudf/io/types.pyx
++++ b/python/pylibcudf/pylibcudf/io/types.pyx
+@@ -42,7 +42,8 @@ from cython.operator cimport dereference
+ from pylibcudf.libcudf.types cimport size_type
+ from cython.operator cimport dereference
+ from pylibcudf.libcudf.types cimport size_type
+-
++from rmm.pylibrmm.stream cimport Stream
++from pylibcudf.utils cimport _get_stream
+ __all__ = [
+     "ColumnEncoding",
+     "ColumnInMetadata",
+@@ -384,10 +385,13 @@ cdef class TableWithMetadata:
+         return names
+ 
+     @staticmethod
+-    cdef TableWithMetadata from_libcudf(table_with_metadata& tbl_with_meta):
++    cdef TableWithMetadata from_libcudf(
++        table_with_metadata& tbl_with_meta, Stream stream = None
++    ):
+         """Create a Python TableWithMetadata from a libcudf table_with_metadata"""
+         cdef TableWithMetadata out = TableWithMetadata.__new__(TableWithMetadata)
+-        out.tbl = Table.from_libcudf(move(tbl_with_meta.tbl))
++        stream = _get_stream(stream)
++        out.tbl = Table.from_libcudf(move(tbl_with_meta.tbl), stream)
+         out.metadata = tbl_with_meta.metadata
+         return out
+ 
+diff --git a/python/pylibcudf/pylibcudf/scalar.pyx b/python/pylibcudf/pylibcudf/scalar.pyx
+index e252d3072aa..4f47b0d78eb 100644
+--- a/python/pylibcudf/pylibcudf/scalar.pyx
++++ b/python/pylibcudf/pylibcudf/scalar.pyx
+@@ -31,7 +31,6 @@ from rmm.pylibrmm.memory_resource cimport get_current_device_resource
+ 
+ from .column cimport Column
+ from .types cimport DataType
+-
+ from functools import singledispatch
+ 
+ try:
+diff --git a/python/pylibcudf/pylibcudf/table.pxd b/python/pylibcudf/pylibcudf/table.pxd
+index b336134780c..62d39c301f7 100644
+--- a/python/pylibcudf/pylibcudf/table.pxd
++++ b/python/pylibcudf/pylibcudf/table.pxd
+@@ -3,7 +3,7 @@
+ from libcpp.memory cimport unique_ptr
+ from pylibcudf.libcudf.table.table cimport table
+ from pylibcudf.libcudf.table.table_view cimport table_view
+-
++from rmm.pylibrmm.stream cimport Stream
+ 
+ cdef class Table:
+     # List[pylibcudf.Column]
+@@ -15,7 +15,7 @@ cdef class Table:
+     cpdef int num_rows(self)
+ 
+     @staticmethod
+-    cdef Table from_libcudf(unique_ptr[table] libcudf_tbl)
++    cdef Table from_libcudf(unique_ptr[table] libcudf_tbl, Stream stream=*)
+ 
+     @staticmethod
+     cdef Table from_table_view(const table_view& tv, Table owner)
+diff --git a/python/pylibcudf/pylibcudf/table.pyx b/python/pylibcudf/pylibcudf/table.pyx
+index 9449aee3838..19d7b60dcbc 100644
+--- a/python/pylibcudf/pylibcudf/table.pyx
++++ b/python/pylibcudf/pylibcudf/table.pyx
+@@ -4,11 +4,13 @@ from cython.operator cimport dereference
+ from libcpp.memory cimport unique_ptr
+ from libcpp.utility cimport move
+ from libcpp.vector cimport vector
++from rmm.pylibrmm.stream cimport Stream
+ from pylibcudf.libcudf.column.column cimport column
+ from pylibcudf.libcudf.column.column_view cimport column_view
+ from pylibcudf.libcudf.table.table cimport table
+ 
+ from .column cimport Column
++from .utils cimport _get_stream
+ 
+ __all__ = ["Table"]
+ 
+@@ -45,7 +47,7 @@ cdef class Table:
+         return table_view(c_columns)
+ 
+     @staticmethod
+-    cdef Table from_libcudf(unique_ptr[table] libcudf_tbl):
++    cdef Table from_libcudf(unique_ptr[table] libcudf_tbl, Stream stream=None):
+         """Create a Table from a libcudf table.
+ 
+         This method is for pylibcudf's functions to use to ingest outputs of
+@@ -55,8 +57,9 @@ cdef class Table:
+         cdef vector[unique_ptr[column]] c_columns = dereference(libcudf_tbl).release()
+ 
+         cdef vector[unique_ptr[column]].size_type i
++        stream = _get_stream(stream)
+         return Table([
+-            Column.from_libcudf(move(c_columns[i]))
++            Column.from_libcudf(move(c_columns[i]), stream)
+             for i in range(c_columns.size())
+         ])
+ 

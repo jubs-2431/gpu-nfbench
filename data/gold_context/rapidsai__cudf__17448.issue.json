@@ -1,0 +1,15 @@
+{
+  "body": "**Describe the bug**\nWhen performing division on Decimal64Dtype columns in cuDF, the result consistently loses the decimal fraction and becomes zero, depending on the precisions and scales of the input columns. This behavior is incorrect and does not match the expected results when calculated manually.\n\n\n**Steps/Code to reproduce bug**\nHere is a minimal code sample that reproduces the issue:\n\n```\nimport cudf\nfrom decimal import Decimal\n\n# Test cases with varying precisions and scales\ntest_cases = [\n    {'a_dtype': cudf.Decimal64Dtype(2, 2), 'b_dtype': cudf.Decimal64Dtype(1, 0), 'description': 'Case 1: Dividing by an integer (scale=0)'},\n    {'a_dtype': cudf.Decimal64Dtype(2, 2), 'b_dtype': cudf.Decimal64Dtype(3, 2), 'description': 'Case 2: Dividing by a decimal-only real number (precision=scale)'},\n    {'a_dtype': cudf.Decimal64Dtype(3, 2), 'b_dtype': cudf.Decimal64Dtype(3, 2), 'description': 'Case 3: Dividing by a real number with both integer and decimal parts (precision > scale)'},\n]\n\n# Loop through the test cases\nfor case in test_cases:\n    print(case['description'])\n    df = cudf.DataFrame({'a': [Decimal('0.02')], 'b': [Decimal('2')]}).astype(\n        {\n            'a': case['a_dtype'],\n            'b': case['b_dtype'],\n        }\n    )\n    df['res'] = df['a'] / df['b']\n    print(df['res'], df['res'].dtype.precision, df['res'].dtype.scale)\n```\nRunning this script produces the following output:\n```\nCase 1: Dividing by an integer (scale=0)\n0    0.010000\nName: res, dtype: decimal64 6 6\nCase 2: Dividing by a decimal-only real number (precision=scale)\n0    0.000000\nName: res, dtype: decimal64 8 6\nCase 3: Dividing by a real number with both integer and decimal parts (precision > scale)\n0    0.000000\nName: res, dtype: decimal64 9 6\n```\n\n**Expected behavior**\nThe division results should retain the decimal fraction regardless of the precisions and scales of the input columns. Specifically:\n\n- Case 1 (Dividing by an integer): The result is correct (0.01) as expected.\n- Case 2 (Dividing by a decimal-only real number): The result is incorrect (0.00), but the expected value is 0.01.\n- Case 3 (Dividing by a real number with both integer and decimal parts): The result is incorrect (0.00), but the expected value is 0.01.\n\nFor all cases, the division operation should preserve precision and produce consistent and accurate results based on manual calculations.\n\n\n**Additional context**\nThis issue is consistently reproducible and appears to be related to how cuDF calculates the output precision and scale during division operations involving decimals. The incorrect handling leads to a loss of significant digits in the result.\n",
+  "closed_at": null,
+  "comments": 5,
+  "created_at": "2024-11-26T12:38:31Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/17448",
+  "labels": [
+    "question",
+    "Python"
+  ],
+  "number": 17448,
+  "state": "open",
+  "title": "[BUG] Decimal division loses precision when dividing by decimals with fractional parts",
+  "updated_at": "2025-09-01T14:54:49Z"
+}

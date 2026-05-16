@@ -1,0 +1,14 @@
+{
+  "body": "## Feature request\r\n\r\nIt would be great if there were a way to use atomic operations from within numba. Currently atomic operations are only supported when generating cuda or HSA code.\r\n\r\nI'm currently experimenting with using numba to write callbacks that are provided to a C++ concurrency library. In this context, atomics are useful in that they can reduce the amount of synchronization required (or to write the locks that are actually being used). You can technically use atomic operations now if you hide them inside a function pointer exported from C++, but the performance impacts of doing so aren't clear to me. At first glance, preventing inlining seems like a high price to pay for every atomic operation.\r\n\r\nWith regards to what would be the most useful, weak memory consistency is by far the most common thing that shows up in the applications I'm looking at right now, but what's needed is application specific in general. Other consistencies could potentially be useful to me for being able to acquire/release existing locks without having to route everything through an externally compiled function, but that's more of a secondary concern at the moment.",
+  "closed_at": null,
+  "comments": 15,
+  "created_at": "2018-05-23T22:06:47Z",
+  "html_url": "https://github.com/numba/numba/issues/2988",
+  "labels": [
+    "feature_request"
+  ],
+  "number": 2988,
+  "state": "open",
+  "title": "Support For CPU Atomics",
+  "updated_at": "2026-04-29T12:07:24Z"
+}

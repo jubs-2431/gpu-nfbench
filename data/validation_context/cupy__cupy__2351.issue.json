@@ -1,0 +1,15 @@
+{
+  "body": "After upgrading from CUDA 9.0 to CUDA 10.1, I noticed I'm not able to compute svd on big matrices because of a int32 overflow in sgesvd_bufferSize here: https://github.com/cupy/cupy/blob/master/cupy/linalg/decomposition.py#L257\r\nWhen bufferSize is just above `2**31 = 2147483648`, then `sgesvd_bufferSize` fails with `CUSOLVER_STATUS_INVALID_VALUE`, likely because of a wrong cast to negative values. If you continue increasing, you can get positive values again, but wrong ones. See graph below.\r\n\r\nThis might be an issue with cuSOLVER itself, not cupy, but since I'm not familiar with testing CUDA without cupy I can't tell.\r\nIt might be related to #1365 as well, but I haven't tested on CUDA 9.1 nor 10.0.\r\n\r\n```python\r\nimport numpy\r\nfrom cupy.cuda import cusolver\r\nfrom cupy.cuda import device\r\n\r\nhandle = device.get_cusolver_handle()\r\n\r\ndef test(m):\r\n  try:\r\n    return cusolver.sgesvd_bufferSize(handle, m, 1)\r\n  except:\r\n    return numpy.nan\r\nvalues = [(m, test(m)) for m in numpy.linspace(1, 150000, 200).astype('int')]    \r\n```\r\n\r\n![sgesvd_buffersize_overflow](https://user-images.githubusercontent.com/3266303/62173044-6e599700-b2e9-11e9-86dc-e177ba6f0225.png)\r\n\r\n```\r\nCuPy Version          : 6.2.0\r\nCUDA Build Version    : 10010\r\n```\r\n",
+  "closed_at": "2021-08-11T16:24:21Z",
+  "comments": 11,
+  "created_at": "2019-07-30T23:53:00Z",
+  "html_url": "https://github.com/cupy/cupy/issues/2351",
+  "labels": [
+    "cat:bug",
+    "prio:high"
+  ],
+  "number": 2351,
+  "state": "closed",
+  "title": "sgesvd_bufferSize int32 overflow with CUDA 10.1",
+  "updated_at": "2021-08-11T16:24:21Z"
+}

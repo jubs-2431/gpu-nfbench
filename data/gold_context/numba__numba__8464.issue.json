@@ -1,0 +1,15 @@
+{
+  "body": "This is an issue stub to track support for NumPy 1.24. Anticipated release date (guessing based on previous release cadence) will be sometime near the end of 2022.\r\n\r\nItems to address:\r\n\r\n- [ ] `np.MachAr` removal: https://github.com/numpy/numpy/pull/22638\r\n- [ ] Additional ufunc methods `resolve_dtypes()` and `_resolve_dtypes_and_context()`: https://github.com/numpy/numpy/pull/22422\r\n- [ ] Specifying a timedelta dtype for the `sum()` method of arrays is no longer allowed: https://github.com/numpy/numpy/pull/22540\r\n- [ ] Removal of `np.bool`\r\n- [ ] Removal of `np.float`\r\n- [ ] Some changes to exception messages we replicate (see `numba.tests.test_mathlib.TestMathLib.test_hypot`)",
+  "closed_at": "2023-03-08T09:34:51Z",
+  "comments": 25,
+  "created_at": "2022-09-27T09:30:12Z",
+  "html_url": "https://github.com/numba/numba/issues/8464",
+  "labels": [
+    "Task",
+    "numpy"
+  ],
+  "number": 8464,
+  "state": "closed",
+  "title": "NumPy 1.24 support",
+  "updated_at": "2023-03-17T17:25:00Z"
+}

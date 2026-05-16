@@ -1,0 +1,3 @@
+model_or_mode,evaluation_rows,accuracy,macro_f1
+fine_tuned_flan_t5_base,19,0.789,0.748
+gemini_batched_gemini-3.1-flash-lite,19,0.368,0.385

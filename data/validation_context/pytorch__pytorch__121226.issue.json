@@ -1,0 +1,16 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\nThe initial vector is a float tensor containing NaN. After I convert it to int32 using `torch.Tensor.to`, it should still be NaN. I get the correct result on CPU, but on the GPU, I get 0.\r\n\r\nFor the code on CPU:\r\n```\r\ninput_data = torch.tensor([float('nan')])\r\ndifferent_input = input_data.to(dtype=torch.int32)\r\nprint(different_input)\r\n```\r\n,we get the right result:\r\n```\r\ntensor([-2147483648], dtype=torch.int32)\r\n```\r\n\r\nFor the code on GPU:\r\n```\r\ninput_data = torch.tensor([float('nan')]).cuda()\r\ndifferent_input = input_data.to(dtype=torch.int32)\r\nprint(different_input)\r\n```\r\n,we get the wrong result:\r\n```\r\ntensor([0], device='cuda:0', dtype=torch.int32)\r\n```\n\n### Versions\n\nVersions of relevant libraries:\r\n[pip3] numpy==1.24.4\r\n[pip3] torch==2.2.1\r\n[pip3] triton==2.2.0\r\n[conda] numpy 1.24.4 pypi_0 pypi\r\n[conda] torch 2.2.1 pypi_0 pypi\r\n[conda] triton 2.2.0 pypi_0 pypi\n\ncc @malfet @albanD",
+  "closed_at": null,
+  "comments": 1,
+  "created_at": "2024-03-05T14:15:16Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/121226",
+  "labels": [
+    "module: error checking",
+    "triaged",
+    "module: python frontend"
+  ],
+  "number": 121226,
+  "state": "open",
+  "title": "input_data.to produce inconsistent results",
+  "updated_at": "2024-03-06T17:42:09Z"
+}

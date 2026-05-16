@@ -1,0 +1,15 @@
+{
+  "body": "I am getting an error where it appears I am specifying the proper signature for this device function, but it is still throwing an invalid usage of function error when compiling.  I am also a fairly new numba user so this could very well be user error\r\n\r\n```numba.errors.TypingError: Failed at nopython (nopython frontend)\r\nInvalid usage of Function(<DeviceFunction py_func=<function devfunc at 0x0000000F32607A60> signature=(array(float64, 1d, C),) -> float64>) with parameters (array(float64, 1d, C))\r\nKnown signatures:\r\n* (array(float64, 1d, C),) -> float64\r\nFile \"testingstuff.py\", line 13\r\n\r\n\r\n```\r\n\r\n```python \r\nimport numpy as np\r\nfrom numba import cuda\r\n\r\n@cuda.jit('float64(float64[::1])',device=True)\r\ndef devfunc(arr):\r\n    return 1.0;\r\n\r\n@cuda.jit('void(float64[:])')\r\ndef kern(arr):\r\n    toarr=cuda.local.array(10,'float64')\r\n    for i in range(10):\r\n        toarr[i] = arr[i]\r\n    print(devfunc(toarr))\r\n\r\nkern[1,1](np.zeros(10))\r\n```\r\n\r\n",
+  "closed_at": null,
+  "comments": 1,
+  "created_at": "2016-11-21T09:51:48Z",
+  "html_url": "https://github.com/numba/numba/issues/2205",
+  "labels": [
+    "feature_request",
+    "CUDA"
+  ],
+  "number": 2205,
+  "state": "open",
+  "title": "Support dtype from string spec in CUDA array allocators",
+  "updated_at": "2020-09-23T11:56:55Z"
+}

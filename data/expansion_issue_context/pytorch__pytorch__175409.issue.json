@@ -1,0 +1,22 @@
+{
+  "body": "### \ud83d\ude80 The feature, motivation and pitch\n\n`tensor.to(dtype)` performs a round-nearest conversion. This makes sense in most cases, but there are situations where other rounding modes are useful. For example in MXFP8 (microscaled float8) on Blackwell GPUs, we need to convert the scales to their next power of 2 and convert them to a float8_e8m0fnu (i.e., a biased uint8). This could be done in one shot via `scales.to(torch.float8_e8m0fnu, round=\"up\")`. Which then would allow PyTorch to match this exactly to the optimized PTX instruction `cvt.rp.satfinite.ue8m0x2.f32` (`.rp` means round-positive).\n\n### Alternatives\n\nSeveral less-readable alternatives, which will also make it harder for PyTorch and Inductor to understand the intent and thus optimize the code. For example one could go through torch.log and torch.ceil, or through torch.frexp, or do the cast with round-nearest and the conditionally adjust the result.\n\n### Additional context\n\n_No response_\n\ncc @ptrblck @msaroufim @eqy @jerryzh168 @tinglvv @nWEIdia @nairbv @mruberry @voznesenskym @penguinwu @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @ipiszy @kadeng @muchulee8 @amjames @chauhang @aakhundov @coconutruben @jataylo",
+  "closed_at": null,
+  "comments": 11,
+  "created_at": "2026-02-20T13:53:29Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/175409",
+  "labels": [
+    "module: cuda",
+    "triaged",
+    "module: type promotion",
+    "function request",
+    "oncall: pt2",
+    "module: inductor",
+    "module: floatx (formerly float8)",
+    "bot-triaged"
+  ],
+  "number": 175409,
+  "pull_request": null,
+  "state": "open",
+  "title": "Choose rounding mode when casting to dtype",
+  "updated_at": "2026-03-26T18:01:13Z"
+}

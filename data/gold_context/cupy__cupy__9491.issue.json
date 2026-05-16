@@ -1,0 +1,16 @@
+{
+  "body": "### Description\n\nWhen the 'device' attribute for the sparse matrix cupyx.scipy.sparse.csr_matrix is called, NotImplementedError is shown.\n\n### To Reproduce\n\n```py\n# Write the code here\n```\nimport cupy as cp\nimport cupyx.scipy as cps\n\nrow  = cp.array([0, 0, 1, 2, 2, 2], dtype=cp.int32)\ncol   = cp.array([0, 2, 2, 0, 1, 2], dtype=cp.int32)\ndata = cp.array([1, 2, 3, 4, 5, 6], dtype=cp.float32)\nA      = cps.sparse.csr_matrix((data, (row, col)), dtype=cp.float32)\nprint(A.device)\n\n### Installation\n\nWheel (`pip install cupy-cuda12x)\n\n### Environment\n\n```\n# Paste the output here\n```\n---------------------------------------------------------------------------\nNotImplementedError                       Traceback (most recent call last)\nCell In[8], line 8\n      6 data = cp.array([1, 2, 3, 4, 5, 6], dtype=cp.float32)\n      7 A = cps.sparse.csr_matrix((data, (row, col)), dtype=cp.float32)\n----> 8 print(A.device)\n\nFile [~\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\cupyx\\scipy\\sparse\\_base.py:42](http://localhost:8888/lab/tree/~/AppData/Local/Programs/Python/Python311/Lib/site-packages/cupyx/scipy/sparse/_base.py#line=41), in spmatrix.device(self)\n     39 @property\n     40 def device(self):\n     41     \"\"\"CUDA device on which this array resides.\"\"\"\n---> 42     raise NotImplementedError\n\nNotImplementedError:\n\n### Additional Information\n\n_No response_",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2025-11-19T15:46:13Z",
+  "html_url": "https://github.com/cupy/cupy/issues/9491",
+  "labels": [
+    "contribution welcome",
+    "cat:feature",
+    "prio:low"
+  ],
+  "number": 9491,
+  "state": "open",
+  "title": "Sparse matrix (cupyx.scipy.sparse.csr_matrix) attribute 'device' shows not implemented error",
+  "updated_at": "2025-11-27T23:01:27Z"
+}

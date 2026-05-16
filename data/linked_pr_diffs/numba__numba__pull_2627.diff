@@ -1,0 +1,416 @@
+diff --git a/numba/llvmthreadsafe.py b/numba/llvmthreadsafe.py
+deleted file mode 100644
+index 620ee90f830..00000000000
+--- a/numba/llvmthreadsafe.py
++++ /dev/null
+@@ -1,68 +0,0 @@
+-"""
+-Utils for managing LLVM for threadsafe usage.
+-"""
+-import types
+-import threading
+-import functools
+-import contextlib
+-import llvmlite.binding as llvm
+-
+-
+-class LockLLVM(object):
+-    """
+-    For locking LLVM.
+-    Usable as contextmanager and decorator.
+-    """
+-
+-    def __init__(self):
+-        self._llvm_lock = threading.RLock()
+-
+-    def __enter__(self):
+-        self._llvm_lock.acquire()
+-
+-    def __exit__(self, *args, **kwargs):
+-        self._llvm_lock.release()
+-
+-    def __call__(self, fn):
+-        @functools.wraps(fn)
+-        def wrapped(*args, **kwargs):
+-            with self:
+-                return fn(*args, **kwargs)
+-        return wrapped
+-
+-
+-# Make singleton
+-lock_llvm = LockLLVM()
+-del LockLLVM
+-
+-
+-def _patch_dispose(llvmobj):
+-    """
+-    Patch the _dispose method of the llvm object to use the llvm lock.
+-    """
+-    dtor = llvmobj._dispose
+-
+-    def _ts_dispose():
+-        with lock_llvm:
+-            dtor()
+-
+-    llvmobj._dispose = _ts_dispose
+-    return llvmobj
+-
+-
+-def _patch_retval_dispose(fn):
+-    """
+-    Patch the _dispose method of the return value of the wrapped function.
+-    """
+-    @functools.wraps(fn)
+-    def wrapper(*args, **kwargs):
+-        return _patch_dispose(fn(*args, **kwargs))
+-    return wrapper
+-
+-
+-# Bind llvm API with the lock
+-parse_assembly = lock_llvm(_patch_retval_dispose(llvm.parse_assembly))
+-parse_bitcode = lock_llvm(_patch_retval_dispose(llvm.parse_bitcode))
+-create_mcjit_compiler = lock_llvm(_patch_retval_dispose(llvm.create_mcjit_compiler))
+-create_module_pass_manager = lock_llvm(_patch_retval_dispose(llvm.create_module_pass_manager))
+-create_function_pass_manager = lock_llvm(_patch_retval_dispose(llvm.create_function_pass_manager))
+diff --git a/numba/runtime/nrt.py b/numba/runtime/nrt.py
+index 52fe3c062b0..2c12ca0b9b1 100644
+--- a/numba/runtime/nrt.py
++++ b/numba/runtime/nrt.py
+@@ -5,7 +5,6 @@
+ from . import nrtdynmod
+ from llvmlite import binding as ll
+ 
+-from ..llvmthreadsafe import lock_llvm
+ from numba.utils import finalize as _finalize
+ from . import _nrt_python as _nrt
+ 
+@@ -16,35 +15,37 @@ class _Runtime(object):
+     def __init__(self):
+         self._init = False
+ 
+-    @lock_llvm # prevent race to install compiled library functions
+     def initialize(self, ctx):
+         """Initializes the NRT
+ 
+         Must be called before any actual call to the NRT API.
+         Safe to be called multiple times.
+         """
+-        if self._init:
+-            # Already initialized
+-            return
++        from numba.compiler import lock_compiler
+ 
+-        # Register globals into the system
+-        for py_name in _nrt.c_helpers:
+-            c_name = "NRT_" + py_name
+-            c_address = _nrt.c_helpers[py_name]
+-            ll.add_symbol(c_name, c_address)
++        with lock_compiler:
++            if self._init:
++                # Already initialized
++                return
+ 
+-        # Compile atomic operations
+-        self._library = nrtdynmod.compile_nrt_functions(ctx)
++            # Register globals into the system
++            for py_name in _nrt.c_helpers:
++                c_name = "NRT_" + py_name
++                c_address = _nrt.c_helpers[py_name]
++                ll.add_symbol(c_name, c_address)
+ 
+-        self._ptr_inc = self._library.get_pointer_to_function("nrt_atomic_add")
+-        self._ptr_dec = self._library.get_pointer_to_function("nrt_atomic_sub")
+-        self._ptr_cas = self._library.get_pointer_to_function("nrt_atomic_cas")
++            # Compile atomic operations
++            self._library = nrtdynmod.compile_nrt_functions(ctx)
+ 
+-        # Install atomic ops to NRT
+-        _nrt.memsys_set_atomic_inc_dec(self._ptr_inc, self._ptr_dec)
+-        _nrt.memsys_set_atomic_cas(self._ptr_cas)
++            self._ptr_inc = self._library.get_pointer_to_function("nrt_atomic_add")
++            self._ptr_dec = self._library.get_pointer_to_function("nrt_atomic_sub")
++            self._ptr_cas = self._library.get_pointer_to_function("nrt_atomic_cas")
+ 
+-        self._init = True
++            # Install atomic ops to NRT
++            _nrt.memsys_set_atomic_inc_dec(self._ptr_inc, self._ptr_dec)
++            _nrt.memsys_set_atomic_cas(self._ptr_cas)
++
++            self._init = True
+ 
+     @staticmethod
+     def shutdown():
+diff --git a/numba/runtime/nrtopt.py b/numba/runtime/nrtopt.py
+index c09ef7823f2..dd39d9e36dc 100644
+--- a/numba/runtime/nrtopt.py
++++ b/numba/runtime/nrtopt.py
+@@ -3,9 +3,7 @@
+ """
+ import re
+ from collections import defaultdict, deque
+-
+-import numba.llvmthreadsafe as llvmts
+-
++from llvmlite import binding as ll
+ 
+ _regex_incref = re.compile(r'\s*(?:tail)?\s*call void @NRT_incref\((.*)\)')
+ _regex_decref = re.compile(r'\s*(?:tail)?\s*call void @NRT_decref\((.*)\)')
+@@ -164,4 +162,4 @@ def remove_redundant_nrt_refct(ll_module):
+         return ll_module
+ 
+     newll = _remove_redundant_nrt_refct(str(ll_module))
+-    return llvmts.parse_assembly(newll)
++    return ll.parse_assembly(newll)
+diff --git a/numba/targets/base.py b/numba/targets/base.py
+index 52d36706a84..a8d227b3e46 100644
+--- a/numba/targets/base.py
++++ b/numba/targets/base.py
+@@ -13,7 +13,6 @@
+ from llvmlite.llvmpy.core import Type, Constant, LLVMException
+ import llvmlite.binding as ll
+ 
+-from numba import llvmthreadsafe as llvmts
+ from numba import types, utils, cgutils, typing, funcdesc, debuginfo
+ from numba import _dynfunc, _helperlib
+ from numba.pythonapi import PythonAPI
+@@ -997,7 +996,6 @@ def add_dynamic_addr(self, builder, intaddr, info):
+         gv.initializer = addr
+         return builder.load(gv)
+ 
+-    @llvmts.lock_llvm
+     def get_abi_sizeof(self, ty):
+         """
+         Get the ABI size of LLVM type *ty*.
+@@ -1029,7 +1027,6 @@ def create_module(self, name):
+         return lc.Module(name)
+ 
+ 
+-
+ class _wrap_impl(object):
+     """
+     A wrapper object to call an implementation function with some predefined
+diff --git a/numba/targets/codegen.py b/numba/targets/codegen.py
+index 5969262d756..7df200450b2 100644
+--- a/numba/targets/codegen.py
++++ b/numba/targets/codegen.py
+@@ -15,7 +15,6 @@
+ from numba import config, utils, cgutils
+ from numba.runtime.nrtopt import remove_redundant_nrt_refct
+ from numba.runtime import rtsys
+-from numba import llvmthreadsafe as llvmts
+ 
+ _x86arch = frozenset(['x86', 'i386', 'i486', 'i586', 'i686', 'i786',
+                       'i886', 'i986'])
+@@ -73,7 +72,7 @@ def __init__(self, codegen, name):
+         self._codegen = codegen
+         self._name = name
+         self._linking_libraries = set()
+-        self._final_module = llvmts.parse_assembly(
++        self._final_module = ll.parse_assembly(
+             str(self._codegen._create_empty_module(self._name)))
+         self._final_module.name = cgutils.normalize_ir_text(self._name)
+         self._shared_module = None
+@@ -151,13 +150,11 @@ def _get_module_for_linking(self):
+                                "no available functions in %s"
+                                % (self,))
+         if to_fix:
+-            # lock to clone, patch returned with a threadsafe _dispose
+-            with llvmts.lock_llvm:
+-                mod = llvmts._patch_dispose(mod.clone())
+-                for name in to_fix:
+-                    # NOTE: this will mark the symbol WEAK if serialized
+-                    # to an ELF file
+-                    mod.get_function(name).linkage = 'linkonce_odr'
++            mod = mod.clone()
++            for name in to_fix:
++                # NOTE: this will mark the symbol WEAK if serialized
++                # to an ELF file
++                mod.get_function(name).linkage = 'linkonce_odr'
+         self._shared_module = mod
+         return mod
+ 
+@@ -184,10 +181,9 @@ def add_ir_module(self, ir_module):
+         self._raise_if_finalized()
+         assert isinstance(ir_module, llvmir.Module)
+         ir = cgutils.normalize_ir_text(str(ir_module))
+-        with llvmts.lock_llvm:
+-            ll_module = llvmts.parse_assembly(ir)
+-            ll_module.name = ir_module.name
+-            ll_module.verify()
++        ll_module = ll.parse_assembly(ir)
++        ll_module.name = ir_module.name
++        ll_module.verify()
+         self.add_llvm_module(ll_module)
+ 
+     def _scan_dynamic_globals(self, ll_module):
+@@ -198,7 +194,6 @@ def _scan_dynamic_globals(self, ll_module):
+             if gv.name.startswith("numba.dynamic.globals"):
+                 self._dynamic_globals.append(gv.name)
+ 
+-    @llvmts.lock_llvm
+     def add_llvm_module(self, ll_module):
+         self._scan_dynamic_globals(ll_module)
+         self._optimize_functions(ll_module)
+@@ -206,7 +201,6 @@ def add_llvm_module(self, ll_module):
+         ll_module = remove_redundant_nrt_refct(ll_module)
+         self._final_module.link_in(ll_module)
+ 
+-    @llvmts.lock_llvm
+     def finalize(self):
+         """
+         Finalize the library.  After this call, nothing can be added anymore.
+@@ -236,7 +230,6 @@ def finalize(self):
+         self._final_module.verify()
+         self._finalize_final_module()
+ 
+-    @llvmts.lock_llvm
+     def _finalize_final_module(self):
+         """
+         Make the underlying LLVM module ready to use.
+@@ -296,7 +289,6 @@ def get_asm_str(self):
+         self._sentry_cache_disable_inspection()
+         return str(self._codegen._tm.emit_assembly(self._final_module))
+ 
+-    @llvmts.lock_llvm
+     def get_function_cfg(self, name):
+         """
+         Get control-flow graph of the LLVM function
+@@ -384,7 +376,6 @@ def _object_getbuffer_hook(cls, ll_module):
+             self._compiled_object = None
+             return buf
+ 
+-    @llvmts.lock_llvm
+     def serialize_using_bitcode(self):
+         """
+         Serialize this library using its bitcode as the cached representation.
+@@ -392,7 +383,6 @@ def serialize_using_bitcode(self):
+         self._ensure_finalized()
+         return (self._name, 'bitcode', self._final_module.as_bitcode())
+ 
+-    @llvmts.lock_llvm
+     def serialize_using_object_code(self):
+         """
+         Serialize this library using its object code as the cached
+@@ -405,21 +395,20 @@ def serialize_using_object_code(self):
+         return (self._name, 'object', data)
+ 
+     @classmethod
+-    @llvmts.lock_llvm
+     def _unserialize(cls, codegen, state):
+         name, kind, data = state
+         self = codegen.create_library(name)
+         assert isinstance(self, cls)
+         if kind == 'bitcode':
+             # No need to re-run optimizations, just make the module ready
+-            self._final_module = llvmts.parse_bitcode(data)
++            self._final_module = ll.parse_bitcode(data)
+             self._finalize_final_module()
+             return self
+         elif kind == 'object':
+             object_code, shared_bitcode = data
+             self.enable_object_caching()
+             self._set_compiled_object(object_code)
+-            self._shared_module = llvmts.parse_bitcode(shared_bitcode)
++            self._shared_module = ll.parse_bitcode(shared_bitcode)
+             self._finalize_final_module()
+             # Load symbols from cache
+             self._codegen._engine._load_defined_symbols(self._shared_module)
+@@ -455,7 +444,6 @@ def _finalize_specific(self):
+ 
+ class JITCodeLibrary(CodeLibrary):
+ 
+-    @llvmts.lock_llvm
+     def get_pointer_to_function(self, name):
+         """
+         Generate native code for function named *name* and return a pointer
+@@ -477,7 +465,6 @@ def get_pointer_to_function(self, name):
+         else:
+             return self._codegen._engine.get_function_address(name)
+ 
+-    @llvmts.lock_llvm
+     def _finalize_specific(self):
+         self._codegen._scan_and_fix_unresolved_refs(self._final_module)
+         self._codegen._engine.finalize_object()
+@@ -542,8 +529,7 @@ def resolve(self, engine):
+ def _proxy(old):
+     @functools.wraps(old)
+     def wrapper(self, *args, **kwargs):
+-        with llvmts.lock_llvm:
+-            return old(self._ee, *args, **kwargs)
++        return old(self._ee, *args, **kwargs)
+     return wrapper
+ 
+ 
+@@ -606,7 +592,7 @@ def __init__(self, module_name):
+ 
+         self._libraries = set()
+         self._data_layout = None
+-        self._llvm_module = llvmts.parse_assembly(
++        self._llvm_module = ll.parse_assembly(
+             str(self._create_empty_module(module_name)))
+         self._llvm_module.name = "global_codegen_module"
+         self._rtlinker = RuntimeLinker()
+@@ -620,7 +606,7 @@ def _init(self, llvm_module):
+         self._tm_features = self._customize_tm_features()
+         self._customize_tm_options(tm_options)
+         tm = target.create_target_machine(**tm_options)
+-        engine = llvmts.create_mcjit_compiler(llvm_module, tm)
++        engine = ll.create_mcjit_compiler(llvm_module, tm)
+ 
+         self._tm = tm
+         self._engine = JitEngine(engine)
+@@ -664,14 +650,14 @@ def unserialize_library(self, serialized):
+         return self._library_class._unserialize(self, serialized)
+ 
+     def _module_pass_manager(self):
+-        pm = llvmts.create_module_pass_manager()
++        pm = ll.create_module_pass_manager()
+         self._tm.add_analysis_passes(pm)
+         with self._pass_manager_builder() as pmb:
+             pmb.populate(pm)
+         return pm
+ 
+     def _function_pass_manager(self, llvm_module):
+-        pm = llvmts.create_function_pass_manager(llvm_module)
++        pm = ll.create_function_pass_manager(llvm_module)
+         self._tm.add_analysis_passes(pm)
+         with self._pass_manager_builder() as pmb:
+             pmb.populate(pm)
+@@ -705,7 +691,7 @@ def _check_llvm_bugs(self):
+                 ret double 1.23e+01
+             }
+             """
+-        mod = llvmts.parse_assembly(ir)
++        mod = ll.parse_assembly(ir)
+         ir_out = str(mod)
+         if "12.3" in ir_out or "1.23" in ir_out:
+             # Everything ok
+@@ -819,7 +805,6 @@ def _add_module(self, module):
+         # return functools.partial(self._engine.remove_module, module)
+ 
+ 
+-@llvmts.lock_llvm
+ def initialize_llvm():
+     """Safe to use multiple times.
+     """
+diff --git a/numba/targets/externals.py b/numba/targets/externals.py
+index 4896fdf2113..b3d4aca9741 100644
+--- a/numba/targets/externals.py
++++ b/numba/targets/externals.py
+@@ -8,7 +8,6 @@
+ from llvmlite import ir
+ import llvmlite.binding as ll
+ 
+-from numba import llvmthreadsafe as llvmts
+ from numba import utils, config
+ from numba import _helperlib
+ from . import intrinsics
+@@ -196,7 +195,7 @@ def compile_fnclex(context):
+ }
+     """
+     ll.initialize_native_asmparser()
+-    library.add_llvm_module(llvmts.parse_assembly(ir_mod))
++    library.add_llvm_module(ll.parse_assembly(ir_mod))
+     library.finalize()
+     return library
+ 

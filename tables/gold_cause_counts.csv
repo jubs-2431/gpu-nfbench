@@ -1,0 +1,8 @@
+gold_secondary_cause,issues,share
+hardware_backend,175,91.6%
+memory_mask_bounds,145,75.9%
+compiler_codegen,141,73.8%
+async_race_ordering,101,52.9%
+api_semantics,76,39.8%
+reduction_accumulation,61,31.9%
+environment_configuration,27,14.1%

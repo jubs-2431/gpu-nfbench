@@ -1,0 +1,15 @@
+{
+  "body": "## Report incorrect documentation\n\n**Location of incorrect documentation**\n\nhttps://docs.rapids.ai/api/dask-cudf/stable/best_practices/#enable-cudf-spilling\n\n**Describe the problems or issues found in the documentation**\n\nhttps://github.com/rapidsai/dask-cuda/pull/1631 deprecated the jit-unspilling feature in dask-cuda. The dask-cudf docs contain references to it.\n\n**Steps taken to verify documentation is incorrect**\nList any steps you have taken:\n\n**Suggested fix for documentation**\nDetail proposed changes to fix the documentation if you have any.\n",
+  "closed_at": "2026-03-09T17:47:05Z",
+  "comments": 0,
+  "created_at": "2026-03-06T18:37:44Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/21687",
+  "labels": [
+    "doc",
+    "dask"
+  ],
+  "number": 21687,
+  "state": "closed",
+  "title": "[DOC]: Update dask-cudf for dask-cuda jit-unspilling deprecation.",
+  "updated_at": "2026-03-09T17:47:05Z"
+}

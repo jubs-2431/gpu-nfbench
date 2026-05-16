@@ -1,0 +1,15 @@
+{
+  "body": "Original context: See #2644.\r\n\r\nSome of CUDA libraries like cuFFT and cuSOLVER provide native multi-GPU support. However, there is no guarantee that multiple GPUs will outperform single GPU; on the contrary, for cuFFT I found in https://github.com/cupy/cupy/pull/2644#issuecomment-558835428 that any workload that can be handled in one GPU should ***not*** be processed using multi GPUs; the extra data transfer just kills the performance (even if NVLinks are present). I suspect the same holds for cuSOLVER.\r\n\r\nSince CuPy operations incurs additional memory overhead, I think it is clear that multi-GPU is useful only when the workload is too large to fit in one GPU. For such excessive workloads, it's better/unavoidable to start from NumPy arrays directly, such as the \"NumPy-in, NumPy-out\" feature currently implemented in #2644. **This thread is for discussions regarding this feature and other possible alternative strategies.**",
+  "closed_at": "2020-09-02T08:29:54Z",
+  "comments": 11,
+  "created_at": "2019-12-02T08:11:13Z",
+  "html_url": "https://github.com/cupy/cupy/issues/2742",
+  "labels": [
+    "cat:feature",
+    "pr-ongoing"
+  ],
+  "number": 2742,
+  "state": "closed",
+  "title": "Discussion on multi-GPU support for cuFFT and cuSOLVER",
+  "updated_at": "2021-03-17T16:10:46Z"
+}

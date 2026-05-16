@@ -1,0 +1,17 @@
+{
+  "body": "### Description\n\nscipy.ndimage.correlate support `mode='grid-constant'` but the cupyx analog does not\r\n\r\n```\r\nIn [1]: import cupy as xp\r\n\r\nIn [2]: from cupyx.scipy import ndimage as c_ndi\r\n\r\nIn [3]: c_ndi.correlate(xp.array([[1, 2, 3],\r\n   ...:                           [4, 5, 6]], dtype=xp.int8),\r\n   ...:                 xp.array([[1., 0.],\r\n   ...:                           [0., 1.]], dtype=xp.float32),\r\n   ...:                 mode='grid-constant')\r\n   ...: \r\n   ...: \r\n   ...: \r\n---------------------------------------------------------------------------\r\nRuntimeError                              Traceback (most recent call last)\r\nCell In[3], line 1\r\n----> 1 c_ndi.correlate(xp.array([[1, 2, 3],\r\n      2                           [4, 5, 6]], dtype=xp.int8), \r\n      3                 xp.array([[1., 0.],\r\n      4                           [0., 1.]], dtype=xp.float32), \r\n      5                 mode='grid-constant')\r\n\r\nFile ~/.conda/envs/scipy-dev/lib/python3.11/site-packages/cupyx/scipy/ndimage/_filters.py:43, in correlate(input, weights, output, mode, cval, origin)\r\n     12 def correlate(input, weights, output=None, mode='reflect', cval=0.0, origin=0):\r\n     13     \"\"\"Multi-dimensional correlate.\r\n     14 \r\n     15     The array is correlated with the given kernel.\r\n   (...)\r\n     41         from SciPy due to floating-point rounding of intermediate results.\r\n     42     \"\"\"\r\n---> 43     return _correlate_or_convolve(input, weights, output, mode, cval, origin)\r\n\r\nFile ~/.conda/envs/scipy-dev/lib/python3.11/site-packages/cupyx/scipy/ndimage/_filters.py:155, in _correlate_or_convolve(input, weights, output, mode, cval, origin, convolution)\r\n    153 def _correlate_or_convolve(input, weights, output, mode, cval, origin,\r\n    154                            convolution=False):\r\n--> 155     origins, int_type = _filters_core._check_nd_args(input, weights,\r\n    156                                                      mode, origin)\r\n    157     if weights.size == 0:\r\n    158         return cupy.zeros_like(input)\r\n\r\nFile ~/.conda/envs/scipy-dev/lib/python3.11/site-packages/cupyx/scipy/ndimage/_filters_core.py:61, in _check_nd_args(input, weights, mode, origin, wghts_name)\r\n     60 def _check_nd_args(input, weights, mode, origin, wghts_name='filter weights'):\r\n---> 61     _util._check_mode(mode)\r\n     62     # Weights must always be less than 2 GiB\r\n     63     if weights.nbytes >= (1 << 31):\r\n\r\nFile ~/.conda/envs/scipy-dev/lib/python3.11/site-packages/cupyx/scipy/ndimage/_util.py:92, in _check_mode(mode)\r\n     89 if mode not in ('reflect', 'constant', 'nearest', 'mirror', 'wrap',\r\n     90                 'grid-mirror', 'grid-wrap', 'grid-reflect'):\r\n     91     msg = f'boundary mode not supported (actual: {mode})'\r\n---> 92     raise RuntimeError(msg)\r\n     93 return mode\r\n\r\nRuntimeError: boundary mode not supported (actual: grid-constant)\r\n```\n\n### Additional Information\n\n_No response_",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2024-06-29T11:15:08Z",
+  "html_url": "https://github.com/cupy/cupy/issues/8404",
+  "labels": [
+    "contribution welcome",
+    "cat:feature",
+    "prio:medium"
+  ],
+  "number": 8404,
+  "pull_request": null,
+  "state": "open",
+  "title": "ndimage.correlate does not support `mode='grid-constant'`",
+  "updated_at": "2024-07-01T05:34:23Z"
+}

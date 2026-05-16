@@ -1,0 +1,12 @@
+{
+  "body": "Context: we are trying to upgrade trition pin in pytorch and start encountering test failure for `python test/inductor/test_pattern_matcher.py -k test_mixed_mm`\r\n\r\nDoing a type conversion for an input tensor to tl.dot starts to fail. It works in triton commit: e6216047b8b0aef1fe8da6ca8667a3ad0a016411 , but fail on a recent commit 0410652666ddcad54aa4c403276b478a36379b90 .\r\n\r\nHere is a standalone repro w.py:  https://gist.github.com/shunting314/3a3b8ce1ccee7b51b8ee0d9a2d24dd3d \r\nRunning `python w.py` will report the following error in the new commit:\r\n```\r\nloc(\"/tmp/torchinductor_shunting/bm/cbm7qsh5esh6xdkdddmv7l2ilel4kdbfwgy2luolzmme62njagrb.py\":64:17): error: LLVM Translation failed for operation: builtin.unrealized_conversion_cast\r\nFailed to emit LLVM IR\r\nTranslate to LLVM IR failedLLVM ERROR: Failed to translate TritonGPU to LLVM IR.\r\nAborted (core dumped)\r\n``` \r\n\r\nHere is a same repro but with inductor dependencies removed: https://gist.github.com/shunting314/4eb4a6a7d8cbfc6396726518196e26d1 ",
+  "closed_at": null,
+  "comments": 21,
+  "created_at": "2023-08-22T22:21:45Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/2156",
+  "labels": [],
+  "number": 2156,
+  "state": "open",
+  "title": "type conversion before tl.dot fails compilation",
+  "updated_at": "2024-05-08T05:34:34Z"
+}

@@ -1,0 +1,13 @@
+blind_id,primary_failure_label,secondary_cause_labels,is_true_numerical_failure,evidence_quote,confidence,model,provider,elapsed_seconds,error,raw_response
+GNF-0001-f56f80f3,dtype_casting,api_semantics,no,"ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)",high,gemini-3.1-flash-lite,gemini_batched,3.838,,"[
+  {
+    ""blind_id"": ""GNF-0001-f56f80f3"",
+    ""primary_failure_label"": ""dtype_casting"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)"",
+    ""confidence"": ""high""
+  }
+]"

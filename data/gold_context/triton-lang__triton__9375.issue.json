@@ -1,0 +1,12 @@
+{
+  "body": "Hi I want to write a kernel that dynamically selects which descriptor to use inside the kernel.\n(I cannot combine them into one large descriptor since base addresses are not contiguous)\n\nI tried to pass multiple host created descriptors and use conditionals to select inside the kernel:\n\n```python\ndesc1 = TensorDescriptor(base1, ...)\ndesc2 = TensorDescriptor(base2, ...)\ndesc3 = TensorDescriptor(base3, ...)\n\n@triton.jit\ndef kernel(desc1, desc2, desc3):\n    desc_idx = ...  # computed at runtime\n    desc = tl.where(desc_idx == 0, desc1, tl.where(desc_idx == 1, desc2, desc3))\n\n    ...\n```\n\nBut `TensorDescriptor` isn't a tensor, so `tl.where` doesn't work on them.\nEven if this was supported, I don't want many conditionals inside my kernel.\n\nI want to do this instead:\n```python\ndesc1 = TensorDescriptor(base1, ...)\ndesc2 = TensorDescriptor(base2, ...)\ndesc3 = TensorDescriptor(base3, ...)\ndesc_ptrs = [desc1.data_ptr(), desc2.data_ptr(), desc3.data_ptr()]\n\n@triton.jit\ndef kernel(desc_ptrs):\n    desc_idx = ...\n    desc = tl.gather(desc_ptrs, desc_idx, axis=0) \n```\n\nI can do this trick using pointer indexing (by directly passing torch.tensor), but once I wrap with `TensorDescriptor`, I can't call data_ptr since it is not a torch.tensor anymore..\n\nIs there a supported way to dynamically index into descriptors without descriptor creation inside the kernel?",
+  "closed_at": null,
+  "comments": 7,
+  "created_at": "2026-02-04T18:06:42Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/9375",
+  "labels": [],
+  "number": 9375,
+  "state": "open",
+  "title": "Can I dynamically index into an array of TensorDescriptors at runtime?",
+  "updated_at": "2026-02-12T03:03:49Z"
+}

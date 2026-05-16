@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "CONTRIBUTOR",
+    "body": "Thanks for the report, I can confirm this is what happens (mainline, version .30dev).\r\n\r\nThere's two things going on here.\r\n1. There is a problem in that creating an array with a `dtype` specified by string doesn't work yet, https://github.com/numba/numba/issues/2201.\r\n2. Numba should have reported that opposed to giving the error you report.\r\n\r\nThankfully, as a user end fix, if the `dtype` to `cuda.local.array` is specified like:\r\n```\r\nfrom numba import float64\r\n...\r\n...\r\ndef kern(arr)\r\n    toarr=cuda.local.array(10, float64)\r\n```\r\nthen your code should compile.\r\n\r\n",
+    "created_at": "2016-11-21T10:55:30Z",
+    "html_url": "https://github.com/numba/numba/issues/2205#issuecomment-261905895",
+    "id": 261905895,
+    "issue_url": "https://api.github.com/repos/numba/numba/issues/2205",
+    "node_id": "MDEyOklzc3VlQ29tbWVudDI2MTkwNTg5NQ==",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/numba/numba/issues/comments/261905895/reactions"
+    },
+    "updated_at": "2016-11-21T10:55:30Z",
+    "url": "https://api.github.com/repos/numba/numba/issues/comments/261905895",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/907717?v=4",
+      "events_url": "https://api.github.com/users/stuartarchibald/events{/privacy}",
+      "followers_url": "https://api.github.com/users/stuartarchibald/followers",
+      "following_url": "https://api.github.com/users/stuartarchibald/following{/other_user}",
+      "gists_url": "https://api.github.com/users/stuartarchibald/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/stuartarchibald",
+      "id": 907717,
+      "login": "stuartarchibald",
+      "node_id": "MDQ6VXNlcjkwNzcxNw==",
+      "organizations_url": "https://api.github.com/users/stuartarchibald/orgs",
+      "received_events_url": "https://api.github.com/users/stuartarchibald/received_events",
+      "repos_url": "https://api.github.com/users/stuartarchibald/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/stuartarchibald/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/stuartarchibald/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/stuartarchibald",
+      "user_view_type": "public"
+    }
+  }
+]

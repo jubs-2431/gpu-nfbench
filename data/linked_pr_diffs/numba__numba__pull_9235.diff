@@ -1,0 +1,109 @@
+diff --git a/docs/upcoming_changes/9235.cuda.rst b/docs/upcoming_changes/9235.cuda.rst
+new file mode 100644
+index 00000000000..4f72afc8ecb
+--- /dev/null
++++ b/docs/upcoming_changes/9235.cuda.rst
+@@ -0,0 +1,5 @@
++Make grid() and gridsize() use 64-bit integers
++==============================================
++
++`cuda.grid()` and `cuda.gridsize()` now use 64-bit integers, so they no longer
++overflow when the grid contains more than ``2 ** 31`` threads.
+diff --git a/numba/cuda/intrinsics.py b/numba/cuda/intrinsics.py
+index 746669ed8d7..ae8096744b7 100644
+--- a/numba/cuda/intrinsics.py
++++ b/numba/cuda/intrinsics.py
+@@ -15,9 +15,9 @@
+ def _type_grid_function(ndim):
+     val = ndim.literal_value
+     if val == 1:
+-        restype = types.int32
++        restype = types.int64
+     elif val in (2, 3):
+-        restype = types.UniTuple(types.int32, val)
++        restype = types.UniTuple(types.int64, val)
+     else:
+         raise ValueError('argument can only be 1, 2, 3')
+ 
+@@ -48,7 +48,7 @@ def grid(typingctx, ndim):
+ 
+     def codegen(context, builder, sig, args):
+         restype = sig.return_type
+-        if restype == types.int32:
++        if restype == types.int64:
+             return nvvmutils.get_global_id(builder, dim=1)
+         elif isinstance(restype, types.UniTuple):
+             ids = nvvmutils.get_global_id(builder, dim=restype.count)
+@@ -80,15 +80,16 @@ def gridsize(typingctx, ndim):
+     sig = _type_grid_function(ndim)
+ 
+     def _nthreads_for_dim(builder, dim):
++        i64 = ir.IntType(64)
+         ntid = nvvmutils.call_sreg(builder, f"ntid.{dim}")
+         nctaid = nvvmutils.call_sreg(builder, f"nctaid.{dim}")
+-        return builder.mul(ntid, nctaid)
++        return builder.mul(builder.sext(ntid, i64), builder.sext(nctaid, i64))
+ 
+     def codegen(context, builder, sig, args):
+         restype = sig.return_type
+         nx = _nthreads_for_dim(builder, 'x')
+ 
+-        if restype == types.int32:
++        if restype == types.int64:
+             return nx
+         elif isinstance(restype, types.UniTuple):
+             ny = _nthreads_for_dim(builder, 'y')
+diff --git a/numba/cuda/nvvmutils.py b/numba/cuda/nvvmutils.py
+index adf8e619e04..9a7dcde02b4 100644
+--- a/numba/cuda/nvvmutils.py
++++ b/numba/cuda/nvvmutils.py
+@@ -217,9 +217,10 @@ def nctaid(self, xyz):
+         return call_sreg(self.builder, 'nctaid.%s' % xyz)
+ 
+     def getdim(self, xyz):
+-        tid = self.tid(xyz)
+-        ntid = self.ntid(xyz)
+-        nctaid = self.ctaid(xyz)
++        i64 = ir.IntType(64)
++        tid = self.builder.sext(self.tid(xyz), i64)
++        ntid = self.builder.sext(self.ntid(xyz), i64)
++        nctaid = self.builder.sext(self.ctaid(xyz), i64)
+         res = self.builder.add(self.builder.mul(ntid, nctaid), tid)
+         return res
+ 
+diff --git a/numba/cuda/tests/cudapy/test_intrinsics.py b/numba/cuda/tests/cudapy/test_intrinsics.py
+index 6d03c322da7..af02f136b9f 100644
+--- a/numba/cuda/tests/cudapy/test_intrinsics.py
++++ b/numba/cuda/tests/cudapy/test_intrinsics.py
+@@ -440,6 +440,31 @@ def test_simple_gridsize1d(self):
+         compiled[nctaid, ntid](ary)
+         self.assertEqual(ary[0], nctaid * ntid)
+ 
++    @skip_on_cudasim('Requires too many threads')
++    def test_issue_9229(self):
++        # Ensure that grid and grid size are correct - #9229 showed that they
++        # overflowed an int32.
++        @cuda.jit
++        def f(grid_error, gridsize_error):
++            i1 = cuda.grid(1)
++            i2 = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
++            gs1 = cuda.gridsize(1)
++            gs2 = cuda.blockDim.x * cuda.gridDim.x
++            if i1 != i2:
++                grid_error[0] = 1
++            if gs1 != gs2:
++                gridsize_error[0] = 1
++
++        grid_error = np.zeros(1, dtype=np.uint64)
++        gridsize_error = np.zeros(1, dtype=np.uint64)
++
++        # A large enough grid for thread IDs to overflow an int32
++        # (22121216 * 256 = 5663031296, which is greater than 2 ** 32)
++        f[22121216, 256](grid_error, gridsize_error)
++
++        self.assertEqual(grid_error[0], 0)
++        self.assertEqual(gridsize_error[0], 0)
++
+     @skip_on_cudasim('Tests PTX emission')
+     def test_selp(self):
+         sig = (int64[:], int64, int64[:])

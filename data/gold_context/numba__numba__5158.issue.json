@@ -1,0 +1,15 @@
+{
+  "body": "- [X] I am using the latest released version of Numba (most recent is visible in\r\n the change log (https://github.com/numba/numba/blob/master/CHANGE_LOG).\r\n- [X] I have included below a minimal working reproducer (if you are unsure how\r\n to write one see http://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports).\r\n\r\nThe documentation of what `bind()` says it will do and what the implementation does don't seem to match (or if they do, the documentation is pretty ambiguous) - in https://github.com/numba/numba/blob/master/numba/cuda/cudadrv/devicearray.py#L135-L141\r\n\r\n```python\r\ndef bind(self, stream=0):\r\n    \"\"\"Bind a CUDA stream to this object so that all subsequent operation\r\n    on this array defaults to the given stream.\r\n    \"\"\"\r\n    clone = copy.copy(self)\r\n    clone.stream = stream\r\n    return clone\r\n```\r\n\r\nUsing a modified reproducer from the now-closed #2664:\r\n\r\n```python\r\nfrom numba import cuda\r\nimport numpy as np\r\nstream = cuda.stream()\r\nwith stream.auto_synchronize():\r\n    arr = cuda.device_array(\r\n        (3, 3), \r\n        dtype=np.float64)\r\n    arr.bind(stream)\r\n    assert arr.stream == stream\r\n```\r\n\r\nresults in:\r\n\r\n```\r\n$ python repro.py \r\nTraceback (most recent call last):\r\n  File \"repro.py\", line 9, in <module>\r\n    assert arr.stream == stream\r\nAssertionError\r\n```\r\n",
+  "closed_at": null,
+  "comments": 1,
+  "created_at": "2020-01-29T15:11:03Z",
+  "html_url": "https://github.com/numba/numba/issues/5158",
+  "labels": [
+    "bug",
+    "CUDA"
+  ],
+  "number": 5158,
+  "state": "open",
+  "title": "DeviceNDArray.bind() does not seem to bind the stream to self",
+  "updated_at": "2020-01-29T16:09:25Z"
+}

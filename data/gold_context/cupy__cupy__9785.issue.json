@@ -1,0 +1,15 @@
+{
+  "body": "While the current ability to pass a dict of dtypes to `rtol=` and `atol=` is nice, in practice it is used pretty rarely meaning that double precision routines are often tested with the same precision as single precision ones.\n\nThis is mostly fine, since correctness errors should still fail, but it gives very little with respect to testing expected higher precision of `double` versions.\n\nI think it would be helpful to add a testing mechanism based on `assert_array_almost_equal_nulp`.  Or something similar to it, maybe an integer meaning a multiple of the `finfo(...).eps` or so.",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2026-03-06T08:13:15Z",
+  "html_url": "https://github.com/cupy/cupy/issues/9785",
+  "labels": [
+    "cat:enhancement",
+    "prio:medium"
+  ],
+  "number": 9785,
+  "state": "open",
+  "title": "Create a numpy_cupy_allclose with `NULP` (or similar) mechanism",
+  "updated_at": "2026-04-16T05:46:47Z"
+}

@@ -1,0 +1,15 @@
+{
+  "body": "Odd discrepancies for simple maths without overflow potential where there shouldn't really be disagreement\r\n\r\n```bash\r\nnvidia-docker run --rm -it cupy/cupy /bin/bash -c python\r\n```\r\n```python\r\nimport numpy as np\r\nimport cupy as cp\r\nb = np.arange(1e3, dtype='float64'); b2=(b**2-b-5)/2.0\r\na = cp.arange(1e3, dtype='float64'); a2=(a**2-a-5)/2.0\r\nprint((a2==cp.array(b2)).mean().item())\r\n0.937  # should be 1\r\ncp.show_config()\r\n```\r\n```\r\nCuPy Version          : 7.0.0a1\r\nCUDA Root             : /usr/local/cuda\r\nCUDA Build Version    : 9020\r\nCUDA Driver Version   : 10010\r\nCUDA Runtime Version  : 9020\r\ncuDNN Build Version   : 7402\r\ncuDNN Version         : 7402\r\nNCCL Build Version    : 2402\r\nNCCL Runtime Version  : 2402\r\n```",
+  "closed_at": "2020-07-08T07:42:31Z",
+  "comments": 2,
+  "created_at": "2019-06-08T15:53:55Z",
+  "html_url": "https://github.com/cupy/cupy/issues/2248",
+  "labels": [
+    "st:awaiting-author",
+    "issue-checked"
+  ],
+  "number": 2248,
+  "state": "closed",
+  "title": "floating point errors",
+  "updated_at": "2020-07-08T08:23:49Z"
+}

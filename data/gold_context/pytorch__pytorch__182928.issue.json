@@ -1,0 +1,19 @@
+{
+  "body": "### \ud83d\ude80 The feature, motivation and pitch\n\nThe current workflow for the triton heuristics is to generate a series of triton configs and then run autotune to a best config. Usually these config generated are based on well known practices, and at the same time try to cover as many cases as possible because autotune is a onetime effort and it doesn't seem to hurt much to evaluate more configs. With max_autotune, it also tend to add or keep more configs to bench.\n\nThis workflow is simple and straight forward. But we saw the config included lacks the consideration of the device capabilities such as the number CTAs especially when the GPU in the market becomes more diverse: low end GPU may have a few CTAs per GPU, while high end GPU have hundreds. For example, for the following case:\n\n```\nimport torch\nimport time\n\nstart_time = time.perf_counter()\n\nclass TestModule(torch.nn.Module):\n    # Input tensors that are generated randomly\n    def __init__(self, sel_device, training):\n        torch.manual_seed(777)\n        super(TestModule, self).__init__()\n        self.inp = torch.empty_strided(size=[16, 4096, 1024], stride=[4194304, 1024, 1], dtype=torch.bfloat16, device='cpu').uniform_(-1, 1).to(device=sel_device).requires_grad_(training)\n\n    def forward(self):\n        r = torch.sum(self.inp, [0], False) # traced line: 1010\n        return r\n\ndevice = \"xpu\"\nm = TestModule(device, False)\nm = torch.compile(m)     \n\nout = m()\nout = out.to(\"cpu\")\n\nend_time = time.perf_counter()\nprint(\"Total time:\", str(end_time - start_time))\n```\nInductor persistent_reduction will generate and auto tune 4 XBLOCK configurations with the reduction size = 16:\n```\n1. {'XBLOCK': 1}\n2. {'XBLOCK': 8}  \n3. {'XBLOCK': 32}  \n4. {'XBLOCK': 128} \n```\nThese will bench 4 grid configurations:\n```\n1. {'XBLOCK': 1} -> grid (4194304, 1, 1)\n2. {'XBLOCK': 8}  -> grid (524288, 1, 1)\n3. {'XBLOCK': 32}  -> grid (131072, 1, 1)\n4. {'XBLOCK': 128} -> grid (32768, 1, 1)\n```\nExtreme cases like 4194304 thread blocks /work groups with reduction on 16 elements is obviously bad and will mostly perform the worst. We will spend much of the time benchmarking some very bad config without a chance to win. What's more, when we running this config in weak GPU or in a simulator, this kind of extreme case will take much of the time and make the benchmark time unacceptable.\n\nOne method to deal with this is to avoid including such a config at the beginning by applying the knowledge of the problem size and the device capabilities. But this will make the config logic too complex and dynamic considering we already have a lot of cases to handle for pointwise, reduction, persistent reduction and so on. The existing way doing limited check and adding configs is still ideal for simplicity.\n\nThe suggest approach is to simply add the capability to perform a scrub process which filter out the extreme triton config by device information after all configs are created.  This makes the logic of filtering centralized and not intrusive for the config generation logic. And this filtering config by device information can be controlled by a flag so that user can turn on or off.\n\n@ezyang @EikanWang \n\n### Alternatives\n\n_No response_\n\n### Additional context\n\n_No response_",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2026-05-08T05:25:10Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/182928",
+  "labels": [
+    "module: performance",
+    "feature",
+    "triaged",
+    "oncall: pt2",
+    "module: inductor",
+    "bot-triaged"
+  ],
+  "number": 182928,
+  "state": "open",
+  "title": "[Inductor] Filter extremely bad triton configs by device information for triton heuristics",
+  "updated_at": "2026-05-09T02:27:11Z"
+}

@@ -1,0 +1,40 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,retrieved_example_ids,retrieved_example_labels,weak_candidate_primary,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+GNF-0001-f56f80f3,llama3.2:3b,fold_safe_rag_generated,,0,7.48,GNF-0167-13076e98|GNF-0022-a403f994|GNF-0034-77cd048a|GNF-0013-bd88dbb3|GNF-0056-d1d1b50f|GNF-0140-0369d89c|GNF-0163-93b2beac|GNF-0061-039345f1,nan_inf|dtype_casting|dtype_casting|nan_inf|overflow_underflow|overflow_underflow|precision_tolerance|not_numerical_failure,precision_tolerance,precision_tolerance,unknown,unclear,low,Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits."",
+  ""confidence"": ""low""
+}",
+GNF-0002-16e149fe,llama3.2:3b,fold_safe_rag_generated,,0,6.57,GNF-0132-01bc7af7|GNF-0118-6cddc10b|GNF-0172-1596bb30|GNF-0140-0369d89c|GNF-0111-4b909a91|GNF-0094-5130df2b|GNF-0073-9d1db2bf|GNF-0044-58d8c7b3,dtype_casting|nan_inf|dtype_casting|overflow_underflow|nan_inf|overflow_underflow|crash_compile|not_numerical_failure,dtype_casting,dtype_casting,compiler_codegen,yes,high,"if your model is in fp8 from the start (loaded from disk in fp8), re-quantizing it to an integer datatype introduces further error.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""compiler_codegen""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""if your model is in fp8 from the start (loaded from disk in fp8), re-quantizing it to an integer datatype introduces further error."",
+  ""confidence"": ""high""
+}",
+GNF-0003-eaa63fac,llama3.2:3b,fold_safe_rag_generated,,0,8.37,GNF-0076-60dcd2da|GNF-0037-7af727c1|GNF-0027-933bf558|GNF-0018-86e41701|GNF-0098-a1e24269|GNF-0079-ec781ba7|GNF-0026-8ee693c5|GNF-0129-c9f64c60,not_numerical_failure|not_numerical_failure|dtype_casting|dtype_casting|overflow_underflow|overflow_underflow|performance_only|nan_inf,performance_only,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""async_race_ordering""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""compute-sanitizer --tool=racecheck python -m pytest -v python/cudf/cudf/tests/text/test_text_methods.py::test_jaccard_index_random_strings -x --pdb ========= COMPUTE-SANITIZER ================================================================ test session starts ================================================================ platform linux -- Python 3.10.12, pytest-7.4.0, pluggy-1.2.0 -- /home/wence/Documents/src/rapids/compose/etc/conda/cuda_11.8/envs/rapids/bin/python cachedir: .pytest_cache benchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000) hypothesis profile 'default' -> database=",
+GNF-0004-e5162a33,llama3.2:3b,fold_safe_rag_generated,,0,4.86,GNF-0035-1d6522c2|GNF-0101-ca19a99c|GNF-0124-5e35db0b|GNF-0005-80aeca70|GNF-0084-8e030aa9|GNF-0032-76c19db8|GNF-0041-2e844e08|GNF-0015-04273d95,precision_tolerance|not_numerical_failure|overflow_underflow|overflow_underflow|nan_inf|dtype_casting|dtype_casting|nan_inf,dtype_casting,dtype_casting,hardware_backend,unclear,low,cc @lezcano TIL that we allow in most operations to specify an `out=` with a less precise dtype than that of the result.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""hardware_backend""],
+  ""is_true_numerical_failure"": ""unclear"",
+  ""evidence_quote"": ""cc @lezcano TIL that we allow in most operations to specify an `out=` with a less precise dtype than that of the result."",
+  ""confidence"": ""low""
+}",
+GNF-0005-80aeca70,llama3.2:3b,fold_safe_rag_generated,,0,5.29,GNF-0133-3e76eecf|GNF-0158-41ca2b85|GNF-0067-0064f2a6|GNF-0089-074c6391|GNF-0088-bbebe2a7|GNF-0060-3368e422|GNF-0051-53841ba4|GNF-0023-93595bc9,overflow_underflow|dtype_casting|nan_inf|dtype_casting|nan_inf|overflow_underflow|not_numerical_failure|crash_compile,overflow_underflow,nan_inf,unknown,yes,high,"float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""dtype_casting""
+  ],
+  ""is_true_numerical_failure"": ""yes"",
+  ""evidence_quote"": ""float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded."",
+  ""confidence"": ""high""
+}",

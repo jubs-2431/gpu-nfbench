@@ -1,0 +1,15 @@
+{
+  "body": "`cuda.grid(1)` returns an incorrect value in the following code:\r\n\r\n```py\r\nimport numpy as np\r\nfrom numba import cuda\r\n\r\n\r\n@cuda.jit\r\ndef bug(out):\r\n    i = cuda.threadIdx.x + cuda.blockIdx.x * cuda.blockDim.x\r\n    i2 = cuda.grid(1)\r\n    if i != i2:\r\n        # this shouldn't happen\r\n        print(i, i2)\r\n\r\n\r\nfree_mem, _ = cuda.current_context().get_memory_info()\r\n# max_num_parallel_iter is around 566281830 on my 4090\r\nmax_num_parallel_iter = free_mem // 4 - 128 * 1024 * 1024\r\ndev_out = cuda.device_array(max_num_parallel_iter, dtype=np.float32)\r\nbug[22121216, 256](dev_out)\r\n```\r\n\r\nOne example of a case which is printed is when `i = 2147551327` and `i2 = -214741596`, which likely indicates a signed 32 bit integer overflow. The bug doesn't appear when setting `max_num_parallel_iter` to an integer constant, which must mean it's somehow related to the calculation from the memory info.",
+  "closed_at": "2023-11-29T09:32:57Z",
+  "comments": 4,
+  "created_at": "2023-10-09T02:03:14Z",
+  "html_url": "https://github.com/numba/numba/issues/9229",
+  "labels": [
+    "CUDA",
+    "bug - miscompile"
+  ],
+  "number": 9229,
+  "state": "closed",
+  "title": "cuda.grid(1) returns incorrect value due to signed integer overflow",
+  "updated_at": "2023-11-29T09:32:57Z"
+}

@@ -1,0 +1,16 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\nAs per torch.norm documentation, it can take out tensor. If we set out tensor to be bfloat16 and in input to be float32 then it fails with error:\r\n```\r\nRuntimeError: Expected out tensor to have dtype float, but got c10::BFloat16 instead\r\n```\r\nIt used to work for PT 1.13. Use below code to reproduce the issue.\r\n\r\n```\r\ntorch.norm(torch.tensor([3.]), 2, [0], False, out=torch.tensor([], dtype=torch.bfloat16))\r\n```\n\n### Versions\n\nName: torch\r\nVersion: 2.0.0\r\nSummary: Tensors and Dynamic neural networks in Python with strong GPU acceleration\r\nHome-page: https://pytorch.org/\r\nAuthor: PyTorch Team\r\nAuthor-email: [packages@pytorch.org](mailto:packages@pytorch.org)\r\nLicense: BSD-3\r\nLocation: /home/jthakur/.pt_2_0/lib/python3.8/site-packages\r\nRequires: filelock, jinja2, networkx, nvidia-cublas-cu11, nvidia-cuda-cupti-cu11, nvidia-cuda-nvrtc-cu11, nvidia-cuda-runtime-cu11, nvidia-cudnn-cu11, nvidia-cufft-cu11, nvidia-curand-cu11, nvidia-cusolver-cu11, nvidia-cusparse-cu11, nvidia-nccl-cu11, nvidia-nvtx-cu11, sympy, triton, typing-extensions\r\nRequired-by: torchaudio, torchvision, triton",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2023-04-26T12:40:00Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/100085",
+  "labels": [
+    "triaged",
+    "module: regression",
+    "module: norms and normalization"
+  ],
+  "number": 100085,
+  "state": "open",
+  "title": "[regression] torch.norm with out dtype bfloat16 cause runtime error",
+  "updated_at": "2023-04-27T17:17:31Z"
+}

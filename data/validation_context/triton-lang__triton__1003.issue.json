@@ -1,0 +1,14 @@
+{
+  "body": "Hello all\r\n\r\nI am trying to write a kernel that captures the forward pass of a HMM. Basically, this involves taking an emission matrix of shape `(sequence_length, batch_size, num_states)` and iteratively doing numerically-stable dot products against a transition matrix of size `(num_states, num_states)`. When `sequence_length` is long and `batch_size` is small and `num_states` are small (1.2M, 1, and 32, respectively, for an example I'm working with) the overhead of launching >1.2M PyTorch ops takes up the majority of the time. I was hoping I could capture the entire forward pass in a Triton kernel to get rid of some of this overhead.\r\n\r\nToday was my first day doing GPU programming of any sort, so apologies if the kernel or the question are silly, but this is what I have so far:\r\n\r\n```python\r\n@triton.jit\r\ndef _forward_kernel(\r\n\tf_ptr, t_ptr,\r\n\tL, M, K,\r\n\tstride_fl, stride_fm, stride_fk,\r\n\tstride_tk, stride_tn,\r\n\tBLOCK_SIZE: tl.constexpr\r\n):\r\n\r\n\trow_idx = tl.program_id(axis=0)\r\n\trow_start_ptr = f_ptr + row_idx * stride_fm\r\n\r\n\toffsets = tl.arange(0, BLOCK_SIZE)\r\n\r\n\trow_ptrs = row_start_ptr + offsets\r\n\tcol_ptrs = t_ptr + offsets[:, None]*stride_tk + offsets[None, :]*stride_tn\r\n\tout_ptrs = row_ptrs + stride_fl\r\n\r\n\tcols = tl.load(col_ptrs)\r\n\trow = tl.load(row_ptrs)\r\n\temissions = tl.load(out_ptrs)\r\n\r\n\tfor i in range(L-1):\r\n\t\trow_max = tl.max(row, axis=0)\r\n\t\trow_norm = tl.exp(row - row_max)\r\n\r\n\t\tdot = tl.sum(row_norm[:, None] * cols, axis=0)\r\n\t\tlog_dot = tl.log(dot) + row_max\r\n\t\t\r\n\t\ttl.store(out_ptrs, log_dot + emissions)\r\n\r\n\t\trow_ptrs += stride_fl\r\n\t\tout_ptrs += stride_fl\r\n\r\n\t\trow = log_dot\r\n\t\temissions = tl.load(out_ptrs)\r\n```\r\n\r\nI'm almost positive that the underlying logic is correct because of other tests I've run but I keep getting nans in the output. However, if I set the loop to `for i in range(1)` then the first output is correct. This suggests to me that the issue is due to the asynchronous operations. Is there a way to force a kernel to synchronize that I can do at the end of each loop? Alternatively, is there a better way to do what I'd like to do regarding reducing overhead of tons of small operations?\r\n\r\nThanks!",
+  "closed_at": "2023-01-05T04:12:29Z",
+  "comments": 3,
+  "created_at": "2022-12-21T08:24:40Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/1003",
+  "labels": [
+    "help wanted"
+  ],
+  "number": 1003,
+  "state": "closed",
+  "title": "Any way to synchronize within kernel?",
+  "updated_at": "2023-01-05T04:12:29Z"
+}

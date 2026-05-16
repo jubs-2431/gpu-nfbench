@@ -1,0 +1,14 @@
+{
+  "body": "Hi! I'm an experimental high energy physicist interested in rapid data analysis, in high energy physics we predominantly use the ROOT which has a pleasant python implementation here: https://github.com/scikit-hep/uproot5\r\n\r\ncudf's cuFile and nvcomp based file i/o is extremely powerful (recently benchmarked this ourselves). However, I noticed that https://github.com/rapidsai/kvikio implements this i/o and decompression layer more generally for other libraries, and it is not used in cudf.\r\n\r\nWould there be any lost performance from using kvikio as opposed to a dedicated C++ implementation, since uproot is nominally a python only implementation of the ROOT i/o standard? i.e. are there any major performance reasons reasons cudf does not use kvikio?\r\n\r\n@martindurant @jpivarski",
+  "closed_at": "2025-01-30T23:46:16Z",
+  "comments": 28,
+  "created_at": "2024-06-12T16:03:22Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/16004",
+  "labels": [
+    "question"
+  ],
+  "number": 16004,
+  "state": "closed",
+  "title": "[QST] cudf and kvikio? (this is actually a question about implementing RDMA in another library)",
+  "updated_at": "2025-01-30T23:46:17Z"
+}

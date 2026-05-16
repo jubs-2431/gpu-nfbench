@@ -1,0 +1,15 @@
+{
+  "body": "To enable higher-accuracy reductions, we should consider rewriting the internal reductions code to have independent input and accumulation/output datatypes. When summing integer types (e.g. Int8), the sum can be much larger than the input datatype can represent. So for higher accuracy one might want to use a 32-bit or 64-bit type for the accumulation and result. This is what Numpy does for `sum()` with integer types. In fact, it automatically uses the machine default integer size unless the user specifies the datatype.\r\n\r\nhttps://docs.scipy.org/doc/numpy/reference/generated/numpy.sum.html\r\n\"dtype : dtype, optional\r\nThe type of the returned array and of the accumulator in which the elements are summed. The dtype of a is used by default unless a has an integer dtype of less precision than the default platform integer. In that case, if a is signed then the platform integer is used while if a is unsigned then an unsigned integer of the same precision as the platform integer is used.\"",
+  "closed_at": "2019-04-12T15:41:14Z",
+  "comments": 2,
+  "created_at": "2018-12-03T10:10:29Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/446",
+  "labels": [
+    "feature request",
+    "libcudf"
+  ],
+  "number": 446,
+  "state": "closed",
+  "title": "CUDA reductions should have independent input and output types",
+  "updated_at": "2019-04-12T15:41:14Z"
+}

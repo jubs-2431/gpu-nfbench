@@ -1,0 +1,97 @@
+blind_id,primary_failure_label,secondary_cause_labels,is_true_numerical_failure,evidence_quote,confidence,model,provider,elapsed_seconds,error,raw_response
+GNF-0001-f56f80f3,not_numerical_failure,api_semantics,unclear,"im unsure how to add it because none of the other functions seem to have multiple outputs ... ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)",low,gemini-3-flash-preview,gemini_batched,26.874,,"[
+  {
+    ""blind_id"": ""GNF-0001-f56f80f3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""im unsure how to add it because none of the other functions seem to have multiple outputs ... ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0002-16e149fe"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Triton compilation failed: triton_poi_fused__to_copy_mul_0 ... Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type). But if the function is compiled it fails"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0003-eaa63fac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""racecheck reports some potential data races: ... Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve"",
+    ""confidence"": 0.95
+  }
+]"
+GNF-0002-16e149fe,crash_compile,hardware_backend,unclear,"Triton compilation failed: triton_poi_fused__to_copy_mul_0 ... Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type). But if the function is compiled it fails",low,gemini-3-flash-preview,gemini_batched,26.874,,"[
+  {
+    ""blind_id"": ""GNF-0001-f56f80f3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""im unsure how to add it because none of the other functions seem to have multiple outputs ... ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0002-16e149fe"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Triton compilation failed: triton_poi_fused__to_copy_mul_0 ... Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type). But if the function is compiled it fails"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0003-eaa63fac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""racecheck reports some potential data races: ... Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve"",
+    ""confidence"": 0.95
+  }
+]"
+GNF-0003-eaa63fac,not_numerical_failure,async_race_ordering,unclear,racecheck reports some potential data races: ... Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve,low,gemini-3-flash-preview,gemini_batched,26.874,,"[
+  {
+    ""blind_id"": ""GNF-0001-f56f80f3"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""api_semantics""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""im unsure how to add it because none of the other functions seem to have multiple outputs ... ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0002-16e149fe"",
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [
+      ""hardware_backend""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Triton compilation failed: triton_poi_fused__to_copy_mul_0 ... Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type). But if the function is compiled it fails"",
+    ""confidence"": 0.95
+  },
+  {
+    ""blind_id"": ""GNF-0003-eaa63fac"",
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [
+      ""async_race_ordering""
+    ],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""racecheck reports some potential data races: ... Warning: Race reported between Write access at 0xf0 in void cuco::detail::pair_retrieve"",
+    ""confidence"": 0.95
+  }
+]"

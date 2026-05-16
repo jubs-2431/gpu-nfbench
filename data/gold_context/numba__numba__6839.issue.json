@@ -1,0 +1,14 @@
+{
+  "body": "xref https://github.com/pandas-dev/pandas/issues/40454\r\n\r\n```\r\nlldb -- python3 -m pytest pandas/tests/window/test_numba.py::TestTableMethod::test_table_method_rolling_methods\r\nrun\r\n\r\npandas/tests/window/test_numba.py 0  lldb                     0x00000001072bf575 llvm::sys::PrintStackTrace(llvm::raw_ostream&) + 37\r\n1  lldb                     0x00000001072beb55 llvm::sys::RunSignalHandlers() + 85\r\n2  lldb                     0x00000001072bfdd6 SignalHandler(int) + 262\r\n3  libsystem_platform.dylib 0x00007fff2035bd7d _sigtramp + 29\r\n4  libsystem_platform.dylib 0x00007ffcf96b9c30 _sigtramp + 18446744064468836048\r\n5  LLDB                     0x00000001076a7d31 lldb_private::AssertFrameRecognizer::RecognizeFrame(std::__1::shared_ptr<lldb_private::StackFrame>) + 689\r\n6  LLDB                     0x00000001076e78c3 StackFrameRecognizerManagerImpl::RecognizeFrame(std::__1::shared_ptr<lldb_private::StackFrame>) + 147\r\n7  LLDB                     0x00000001076e7777 lldb_private::StackFrameRecognizerManager::RecognizeFrame(std::__1::shared_ptr<lldb_private::StackFrame>) + 71\r\n8  LLDB                     0x00000001076e210f lldb_private::StackFrame::GetRecognizedFrame() + 63\r\n9  LLDB                     0x000000010773aed8 lldb_private::Thread::SelectMostRelevantFrame() + 72\r\n10 LLDB                     0x000000010773b169 lldb_private::Thread::WillStop() + 89\r\n11 LLDB                     0x00000001077443d4 lldb_private::ThreadList::ShouldStop(lldb_private::Event*) + 1716\r\n12 LLDB                     0x00000001076cbab4 lldb_private::Process::ShouldBroadcastEvent(lldb_private::Event*) + 436\r\n13 LLDB                     0x00000001076c81c9 lldb_private::Process::HandlePrivateEvent(std::__1::shared_ptr<lldb_private::Event>&) + 265\r\n14 LLDB                     0x00000001076cc81d lldb_private::Process::RunPrivateStateThread(bool) + 1293\r\n15 LLDB                     0x00000001076cbee5 lldb_private::Process::PrivateStateThread(void*) + 21\r\n16 LLDB                     0x00000001075db11f lldb_private::HostNativeThreadBase::ThreadCreateTrampoline(void*) + 111\r\n17 libsystem_pthread.dylib  0x00007fff20317950 _pthread_start + 224\r\n18 libsystem_pthread.dylib  0x00007fff2031347b thread_start + 15\r\nzsh: segmentation fault  lldb -- python3 -m pytest \r\n```\r\n\r\nTried using gdb following https://numba.pydata.org/numba-doc/latest/user/troubleshoot.html#basic-gdb-support, but thats apparently linux-only, and ive only gotten this segfault on mac.",
+  "closed_at": "2021-11-16T13:43:52Z",
+  "comments": 28,
+  "created_at": "2021-03-17T19:52:53Z",
+  "html_url": "https://github.com/numba/numba/issues/6839",
+  "labels": [
+    "no action required"
+  ],
+  "number": 6839,
+  "state": "closed",
+  "title": "BUG: segfault in pandas rolling test",
+  "updated_at": "2021-11-16T16:09:17Z"
+}

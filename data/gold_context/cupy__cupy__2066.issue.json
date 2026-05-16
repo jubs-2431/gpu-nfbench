@@ -1,0 +1,17 @@
+{
+  "body": "A NumPy fallback mode has been discussed to be introduced. It would for instance allow users to more easily port their NumPy code to CuPy.\r\n\r\n#### Some key points\r\n\r\n- Easier to port from NumPy code bases.\r\n- Introduce a mechanism to enable/disable the fallback mode, e.g. to avoid unnoticed performance degradation due to hidden synchronizations and transfers. It could be a flag, function, etc.",
+  "closed_at": "2020-05-12T09:54:05Z",
+  "comments": 4,
+  "created_at": "2019-02-28T04:49:29Z",
+  "html_url": "https://github.com/cupy/cupy/issues/2066",
+  "labels": [
+    "contribution welcome",
+    "cat:feature",
+    "prio:high",
+    "pr-ongoing"
+  ],
+  "number": 2066,
+  "state": "closed",
+  "title": "Should introduce NumPy fallback mode",
+  "updated_at": "2020-05-12T09:54:05Z"
+}

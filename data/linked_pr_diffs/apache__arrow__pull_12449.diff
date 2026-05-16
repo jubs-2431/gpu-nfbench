@@ -1,0 +1,114 @@
+diff --git a/cpp/src/parquet/arrow/arrow_reader_writer_test.cc b/cpp/src/parquet/arrow/arrow_reader_writer_test.cc
+index 30ee5922a252..f0427fe7a623 100644
+--- a/cpp/src/parquet/arrow/arrow_reader_writer_test.cc
++++ b/cpp/src/parquet/arrow/arrow_reader_writer_test.cc
+@@ -1256,6 +1256,28 @@ TEST_F(TestUInt32ParquetIO, Parquet_2_0_Compatibility) {
+   ASSERT_NO_FATAL_FAILURE(this->ReadAndCheckSingleColumnTable(values));
+ }
+ 
++using TestDurationParquetIO = TestParquetIO<::arrow::DurationType>;
++
++TEST_F(TestDurationParquetIO, Roundtrip) {
++  std::vector<bool> is_valid = {true, true, false, true};
++  std::vector<int64_t> values = {1, 2, 3, 4};
++
++  std::shared_ptr<Array> int_array, duration_arr;
++  ::arrow::ArrayFromVector<::arrow::Int64Type, int64_t>(::arrow::int64(), is_valid,
++                                                        values, &int_array);
++  ::arrow::ArrayFromVector<::arrow::DurationType, int64_t>(
++      ::arrow::duration(TimeUnit::NANO), is_valid, values, &duration_arr);
++
++  // When the original Arrow schema isn't stored, a Duration array comes
++  // back as int64 (how it is stored in Parquet)
++  this->RoundTripSingleColumn(duration_arr, int_array, default_arrow_writer_properties());
++
++  // When the original Arrow schema is stored, the Duration array type is preserved
++  const auto arrow_properties =
++      ::parquet::ArrowWriterProperties::Builder().store_schema()->build();
++  this->RoundTripSingleColumn(duration_arr, duration_arr, arrow_properties);
++}
++
+ TEST_F(TestUInt32ParquetIO, Parquet_1_0_Compatibility) {
+   // This also tests max_definition_level = 1
+   std::shared_ptr<Array> arr;
+diff --git a/cpp/src/parquet/arrow/reader_internal.cc b/cpp/src/parquet/arrow/reader_internal.cc
+index 85d6359b6115..0981a73c4472 100644
+--- a/cpp/src/parquet/arrow/reader_internal.cc
++++ b/cpp/src/parquet/arrow/reader_internal.cc
+@@ -701,6 +701,7 @@ Status TransferColumnData(RecordReader* reader, std::shared_ptr<DataType> value_
+       TRANSFER_INT32(DATE32, ::arrow::Date32Type);
+       TRANSFER_INT32(TIME32, ::arrow::Time32Type);
+       TRANSFER_INT64(TIME64, ::arrow::Time64Type);
++      TRANSFER_INT64(DURATION, ::arrow::DurationType);
+     case ::arrow::Type::DATE64:
+       RETURN_NOT_OK(TransferDate64(reader, pool, value_type, &result));
+       break;
+diff --git a/cpp/src/parquet/arrow/schema.cc b/cpp/src/parquet/arrow/schema.cc
+index 19f78a507a7e..f565f01e1fc3 100644
+--- a/cpp/src/parquet/arrow/schema.cc
++++ b/cpp/src/parquet/arrow/schema.cc
+@@ -387,6 +387,9 @@ Status FieldToNode(const std::string& name, const std::shared_ptr<Field>& field,
+             LogicalType::Time(/*is_adjusted_to_utc=*/true, LogicalType::TimeUnit::MICROS);
+       }
+     } break;
++    case ArrowTypeId::DURATION:
++      type = ParquetType::INT64;
++      break;
+     case ArrowTypeId::STRUCT: {
+       auto struct_type = std::static_pointer_cast<::arrow::StructType>(field->type());
+       return StructToNode(struct_type, name, field->nullable(), properties,
+@@ -916,6 +919,13 @@ Result<bool> ApplyOriginalStorageMetadata(const Field& origin_field,
+     modified = true;
+   }
+ 
++  if (origin_type->id() == ::arrow::Type::DURATION &&
++      inferred_type->id() == ::arrow::Type::INT64) {
++    // Read back int64 arrays as duration.
++    inferred->field = inferred->field->WithType(origin_type);
++    modified = true;
++  }
++
+   if (origin_type->id() == ::arrow::Type::DICTIONARY &&
+       inferred_type->id() != ::arrow::Type::DICTIONARY &&
+       IsDictionaryReadSupported(*inferred_type)) {
+diff --git a/cpp/src/parquet/column_writer.cc b/cpp/src/parquet/column_writer.cc
+index 0aa365b9f2ff..f7898c02d479 100644
+--- a/cpp/src/parquet/column_writer.cc
++++ b/cpp/src/parquet/column_writer.cc
+@@ -1862,6 +1862,7 @@ Status TypedColumnWriterImpl<Int64Type>::WriteArrowDense(
+       WRITE_SERIALIZE_CASE(UINT32, UInt32Type, Int64Type)
+       WRITE_SERIALIZE_CASE(UINT64, UInt64Type, Int64Type)
+       WRITE_ZERO_COPY_CASE(TIME64, Time64Type, Int64Type)
++      WRITE_ZERO_COPY_CASE(DURATION, DurationType, Int64Type)
+     default:
+       ARROW_UNSUPPORTED();
+   }
+diff --git a/python/pyarrow/tests/parquet/common.py b/python/pyarrow/tests/parquet/common.py
+index 90bfb55d1e6d..551db4a8fe6a 100644
+--- a/python/pyarrow/tests/parquet/common.py
++++ b/python/pyarrow/tests/parquet/common.py
+@@ -166,6 +166,7 @@ def alltypes_sample(size=10000, seed=0, categorical=False):
+         # them
+         'datetime': np.arange("2016-01-01T00:00:00.001", size,
+                               dtype='datetime64[ms]'),
++        'timedelta': np.arange(0, size, dtype="timedelta64[s]"),
+         'str': pd.Series([str(x) for x in range(size)]),
+         'empty_str': [''] * size,
+         'str_with_nulls': [None] + [str(x) for x in range(size - 2)] + [None],
+diff --git a/python/pyarrow/tests/parquet/test_datetime.py b/python/pyarrow/tests/parquet/test_datetime.py
+index 7c0895d2df9b..d73343521895 100644
+--- a/python/pyarrow/tests/parquet/test_datetime.py
++++ b/python/pyarrow/tests/parquet/test_datetime.py
+@@ -438,3 +438,12 @@ def test_noncoerced_nanoseconds_written_without_exception(tempdir):
+     filename = tempdir / 'not_written.parquet'
+     with pytest.raises(ValueError):
+         pq.write_table(tb, filename, coerce_timestamps='ms', version='2.6')
++
++
++def test_duration_type():
++    # ARROW-6780
++    arrays = [pa.array([0, 1, 2, 3], type=pa.duration(unit))
++              for unit in ["s", "ms", "us", "ns"]]
++    table = pa.Table.from_arrays(arrays, ["d[s]", "d[ms]", "d[us]", "d[ns]"])
++
++    _check_roundtrip(table)

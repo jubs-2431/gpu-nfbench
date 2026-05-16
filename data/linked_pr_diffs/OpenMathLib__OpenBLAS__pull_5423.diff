@@ -1,0 +1,1404 @@
+diff --git a/Makefile.arm64 b/Makefile.arm64
+index b98933b77a..bcdda04778 100644
+--- a/Makefile.arm64
++++ b/Makefile.arm64
+@@ -61,6 +61,11 @@ endif
+ ifeq ($(CORE), ARMV9SME)
+ CCOMMON_OPT += -march=armv9-a+sve2+sme
+ FCOMMON_OPT += -march=armv9-a+sve2
++ifdef OS_WINDOWS
++ifeq ($(C_COMPILER), CLANG)
++CCOMMON_OPT += --aarch64-stack-hazard-size=0
++endif
++endif
+ endif
+ 
+ ifeq ($(CORE), CORTEXA53)
+@@ -303,6 +308,20 @@ FCOMMON_OPT += -march=armv8.3-a
+ endif
+ endif
+ 
++ifeq ($(CORE), VORTEXM4)
++ifneq ($(C_COMPILER), GCC)
++ifeq ($(APPLECLANG),1)
++CCOMMON_OPT += -march=armv8.4-a+sme
++else
++CCOMMON_OPT += -march=armv8.4-a+sme
++override LDFLAGS += -lclang_rt_builtins-aarch64
++endif
++else
++CCOMMON_OPT += -march=armv8.4-a
++endif
++FCOMMON_OPT += -march=armv8.4-a
++endif
++
+ ifeq (1, $(filter 1,$(GCCVERSIONGTEQ9) $(ISCLANG)))
+ ifeq ($(CORE), TSV110)
+ CCOMMON_OPT += -march=armv8.2-a -mtune=tsv110
+diff --git a/Makefile.system b/Makefile.system
+index 9cfc98d482..ab463f53db 100644
+--- a/Makefile.system
++++ b/Makefile.system
+@@ -331,6 +331,7 @@ HAVE_SSE5=
+ HAVE_AVX=
+ HAVE_AVX2=
+ HAVE_FMA3=
++HAVE_SME=
+ include $(TOPDIR)/Makefile_kernel.conf
+ endif
+ 
+@@ -427,7 +428,7 @@ ifndef MACOSX_DEPLOYMENT_TARGET
+ ifeq ($(ARCH), arm64)
+ export MACOSX_DEPLOYMENT_TARGET=11.0
+ export NO_SVE = 1
+-export NO_SME = 1
++# export NO_SME = 1
+ else
+ export MACOSX_DEPLOYMENT_TARGET=10.8
+ endif
+@@ -721,6 +722,11 @@ DYNAMIC_CORE += A64FX
+ endif
+ ifneq ($(NO_SME), 1)
+ DYNAMIC_CORE += ARMV9SME
++ifeq ($(OSNAME), Darwin)
++ifneq ($(C_COMPILER), GCC)
++DYNAMIC_CORE += VORTEXM4
++endif
++endif
+ endif
+ DYNAMIC_CORE += THUNDERX
+ DYNAMIC_CORE += THUNDERX2T99
+@@ -1896,6 +1902,7 @@ ifndef NO_MSA
+   export HAVE_MSA
+   export MSA_FLAGS
+ endif
++export HAVE_SME
+ export KERNELDIR
+ export FUNCTION_PROFILE
+ export TARGET_CORE
+diff --git a/TargetList.txt b/TargetList.txt
+index b890c1440d..4903261e2c 100644
+--- a/TargetList.txt
++++ b/TargetList.txt
+@@ -111,6 +111,7 @@ THUNDERX2T99
+ TSV110
+ THUNDERX3T110
+ VORTEX
++VORTEXM4
+ A64FX
+ ARMV8SVE
+ ARMV9SME
+diff --git a/c_check b/c_check
+index 9801b87783..40db574702 100755
+--- a/c_check
++++ b/c_check
+@@ -335,7 +335,14 @@ if [ "$architecture" = "arm64" ]; then
+ fi
+ 
+ no_sme=0
++is_appleclang=0
+ if [ "$architecture" = "arm64" ]; then
++    if [ "$compiler" = "CLANG" ]; then
++        data=`$compiler_name --version`
++	case "$data" in Apple*)
++	is_appleclang=1
++	esac
++    fi
+     tmpd=$(mktemp -d 2>/dev/null || mktemp -d -t 'OBC')
+     tmpf="$tmpd/a.S"
+     printf ".text \n.global sme_test\n\nsme_test:\nsmstart\nsmstop\nret\n">> "$tmpf"
+@@ -469,6 +476,7 @@ done
+     [ "$no_avx512bf" -eq 1 ] && printf "NO_AVX512BF16=1\n"
+     [ "$no_avx2" -eq 1 ] && printf "NO_AVX2=1\n"
+     [ "$oldgcc" -eq 1 ] && printf "OLDGCC=1\n"
++    [ "$is_appleclang" -eq 1 ] && printf "APPLECLANG=1\n"
+     exit 0
+ }
+ 
+@@ -499,6 +507,7 @@ done
+     [ "$no_avx512bf" -eq 1 ] && printf "NO_AVX512BF16=1\n"
+     [ "$no_avx2" -eq 1 ] && printf "NO_AVX2=1\n"
+     [ "$oldgcc" -eq 1 ] && printf "OLDGCC=1\n"
++    [ "$is_appleclang" -eq 1 ] && printf "APPLECLANG=1\n"
+     [ "$no_lsx" -eq 1 ] && printf "NO_LSX=1\n"
+     [ "$no_lasx" -eq 1 ] && printf "NO_LASX=1\n"
+ } >> "$makefile"
+diff --git a/cmake/arch.cmake b/cmake/arch.cmake
+index f5e901a316..ef0b63654a 100644
+--- a/cmake/arch.cmake
++++ b/cmake/arch.cmake
+@@ -40,13 +40,16 @@ if (DYNAMIC_ARCH)
+       endif ()
+       if (${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 14) # SME ACLE supported in GCC >= 14
+         set(DYNAMIC_CORE ${DYNAMIC_CORE} ARMV9SME)
++      endif()
++	  if (${CMAKE_C_COMPILER_ID} MATCHES "Clang" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
++	    set(DYNAMIC_CORE ${DYNAMIC_CORE} VORTEXM4)
+       endif()
+     elseif (${CMAKE_C_COMPILER_ID} MATCHES "Clang")
+       if (${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 11) # SVE ACLE supported in LLVM >= 11
+         set(DYNAMIC_CORE ${DYNAMIC_CORE} NEOVERSEV1 NEOVERSEN2 ARMV8SVE A64FX)
+       endif ()
+-      if (${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 19) # SME ACLE supported in LLVM >= 19
+-        set(DYNAMIC_CORE ${DYNAMIC_CORE} ARMV9SME)
++      if (${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 19 OR (${CMAKE_C_COMPILER_ID} MATCHES AppleClang AND ${CMAKE_C_COMPILER_VERSION} VERSION_GREATER_EQUAL 17) ) # SME ACLE supported in LLVM >= 19 and AppleClang >= 17
++        set(DYNAMIC_CORE ${DYNAMIC_CORE} ARMV9SME VORTEXM4)
+       endif()
+     endif ()
+     if (DYNAMIC_LIST)
+diff --git a/cmake/cc.cmake b/cmake/cc.cmake
+index ccd7fc5bda..27afd357a5 100644
+--- a/cmake/cc.cmake
++++ b/cmake/cc.cmake
+@@ -315,7 +315,24 @@ if (${CORE} STREQUAL ARMV9SME)
+ 	    set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=host")
+     else ()
+     set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv9-a+sme")
++	if (${OSNAME} STREQUAL Windows AND ${CMAKE_C_COMPILER_ID} MATCHES "Clang" )
++	set (CCOMMON_OPT "${CCOMMON_OPT} --aarch64-stack-hazard-size=0")
+     endif ()
++	endif ()
++  endif ()
++endif ()
++
++if (${CORE} STREQUAL VORTEXM4)
++  if (NOT DYNAMIC_ARCH)
++    if (${CMAKE_C_COMPILER_ID} STREQUAL "NVC" AND NOT NO_SVE)
++	    set (CCOMMON_OPT  "${CCOMMON_OPT} -tp=host")
++    else ()
++	  if (${CMAKE_C_COMPILER_ID} STREQUAL "AppleClang")
++        set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.4-a+sme -mcpu=apple-m4")
++	  else ()
++	    set (CCOMMON_OPT "${CCOMMON_OPT} -march=armv8.4-a -mcpu=apple-m4")
++      endif ()
++	endif ()
+   endif ()
+ endif ()
+ 
+diff --git a/cmake/prebuild.cmake b/cmake/prebuild.cmake
+index 9320af9224..c503683015 100644
+--- a/cmake/prebuild.cmake
++++ b/cmake/prebuild.cmake
+@@ -1255,7 +1255,7 @@ endif ()
+     set(ZGEMM_UNROLL_M 4)
+     set(ZGEMM_UNROLL_N 4)
+     set(SYMV_P 16)
+-  elseif ("${TCORE}" STREQUAL "VORTEX")
++  elseif ("${TCORE}" STREQUAL "VORTEX" OR "${TCORE}" STREQUAL "VORTEXM4")
+     file(APPEND ${TARGET_CONF_TEMP}
+       "#define ARMV8\n"
+       "#define L1_CODE_SIZE\t32768\n"
+@@ -1639,6 +1639,8 @@ else(NOT CMAKE_CROSSCOMPILING)
+   unset (HAVE_VFP)
+   unset (HAVE_VFPV3)
+   unset (HAVE_VFPV4)
++  unset (HAVE_SVE)
++  unset (HAVE_SME)
+   message(STATUS "Running getarch")
+ 
+   # use the cmake binary w/ the -E param to run a shell command in a cross-platform way
+diff --git a/cmake/system.cmake b/cmake/system.cmake
+index 727afb660b..f16be31df5 100644
+--- a/cmake/system.cmake
++++ b/cmake/system.cmake
+@@ -367,6 +367,15 @@ if (${TARGET} STREQUAL NEOVERSEV1)
+   endif()
+   if (${TARGET} STREQUAL ARMV9SME)
+       set (KERNEL_DEFINITIONS  "${KERNEL_DEFINITIONS} -march=armv9-a+sme -O3")
++	  if (${CMAKE_SYSTEM_NAME} STREQUAL Windows AND ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
++	  set (KERNEL_DEFINITIONS  "${KERNEL_DEFINITIONS} --aarch64-stack-hazard-size=0")
++	  endif()
++  endif()
++  if (${TARGET} STREQUAL VORTEXM4)
++      set (KERNEL_DEFINITIONS  "${KERNEL_DEFINITIONS} -march=armv8.4-a+sme -O3")
++	  if (${CMAKE_SYSTEM_NAME} STREQUAL Windows AND ${CMAKE_C_COMPILER_ID} MATCHES "Clang")
++	  set (KERNEL_DEFINITIONS  "${KERNEL_DEFINITIONS} --aarch64-stack-hazard-size=0")
++	  endif()
+   endif()
+   if (${TARGET} STREQUAL A64FX)
+     if (${CMAKE_C_COMPILER_ID} STREQUAL "PGI" AND NOT NO_SVE)
+diff --git a/common_param.h b/common_param.h
+index b123092ef4..9e5edbb816 100644
+--- a/common_param.h
++++ b/common_param.h
+@@ -257,6 +257,7 @@ int (*shgemv_t) (BLASLONG, BLASLONG, float, hfloat16 *, BLASLONG, hfloat16 *, BL
+ #endif
+ #ifdef ARCH_ARM64
+   void (*sgemm_direct) (BLASLONG, BLASLONG, BLASLONG, float *, BLASLONG , float *, BLASLONG , float * , BLASLONG);
++  int  (*sgemm_direct_performant) (BLASLONG M, BLASLONG N, BLASLONG K);
+   void (*sgemm_direct_alpha_beta) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float, float * , BLASLONG);
+   void (*ssymm_direct_alpha_betaLU) (BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float, float * , BLASLONG);
+   void (*ssymm_direct_alpha_betaLL) (BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float, float * , BLASLONG);
+diff --git a/common_s.h b/common_s.h
+index f51d8d4520..e43b74b917 100644
+--- a/common_s.h
++++ b/common_s.h
+@@ -231,7 +231,7 @@
+ #define SGEMM_DIRECT_PERFORMANT gotoblas -> sgemm_direct_performant
+ #define  SGEMM_DIRECT		gotoblas -> sgemm_direct
+ #elif ARCH_ARM64
+-#define SGEMM_DIRECT_PERFORMANT    sgemm_direct_performant
++#define SGEMM_DIRECT_PERFORMANT gotoblas -> sgemm_direct_performant
+ #define  SGEMM_DIRECT		gotoblas -> sgemm_direct
+ #define  SGEMM_DIRECT_ALPHA_BETA		gotoblas -> sgemm_direct_alpha_beta
+ #define  SSYMM_DIRECT_ALPHA_BETA_LU		gotoblas -> ssymm_direct_alpha_betaLU
+diff --git a/cpuid_arm64.c b/cpuid_arm64.c
+index 314bc96a04..06b595e779 100644
+--- a/cpuid_arm64.c
++++ b/cpuid_arm64.c
+@@ -82,6 +82,7 @@ size_t length64=sizeof(value64);
+ #define CPU_AMPERE1      25
+ // Apple
+ #define CPU_VORTEX       13
++#define CPU_VORTEXM4     26 
+ // Fujitsu
+ #define CPU_A64FX	 15
+ // Phytium
+@@ -113,7 +114,8 @@ static char *cpuname[] = {
+   "FT2000",
+   "CORTEXA76",
+   "NEOVERSEV2",
+-  "AMPERE1"
++  "AMPERE1",
++  "VORTEXM4",
+ };
+ 
+ static char *cpuname_lower[] = {
+@@ -143,7 +145,7 @@ static char *cpuname_lower[] = {
+   "cortexa76",
+   "neoversev2",
+   "ampere1",
+-  "ampere1a"
++  "vortexm4"
+ };
+ 
+ static int cpulowperf=0;
+@@ -402,7 +404,8 @@ int detect(void)
+ 	if (value64 ==131287967|| value64 == 458787763 ) return CPU_VORTEX; //A12/M1
+ 	if (value64 == 3660830781) return CPU_VORTEX; //A15/M2
+         if (value64 == 2271604202) return CPU_VORTEX; //A16/M3
+-        if (value64 == 1867590060) return CPU_VORTEX; //M4
++        if (value64 == 1867590060) return CPU_VORTEXM4; //M4
++	    if (value64 == 492472296) return CPU_VORTEXM4; //M5
+ #else
+ #ifdef OS_WINDOWS
+ 	HKEY reghandle;
+@@ -749,6 +752,29 @@ void get_cpuconfig(void)
+ 		break;
+ 	    case CPU_VORTEX:
+ 		printf("#define VORTEX			      \n");
++#ifdef __APPLE__
++		length64 = sizeof(value64);
++		sysctlbyname("hw.l1icachesize",&value64,&length64,NULL,0);
++		printf("#define L1_CODE_SIZE	     %lld       \n",value64);
++		length64 = sizeof(value64);
++		sysctlbyname("hw.cachelinesize",&value64,&length64,NULL,0);
++		printf("#define L1_CODE_LINESIZE     %lld       \n",value64);
++		printf("#define L1_DATA_LINESIZE     %lld       \n",value64);
++		length64 = sizeof(value64);
++		sysctlbyname("hw.l1dcachesize",&value64,&length64,NULL,0);
++		printf("#define L1_DATA_SIZE	     %lld       \n",value64);
++		length64 = sizeof(value64);
++		sysctlbyname("hw.l2cachesize",&value64,&length64,NULL,0);
++		printf("#define L2_SIZE	     %lld       \n",value64);
++#endif	
++		printf("#define DTB_DEFAULT_ENTRIES  64       \n");
++		printf("#define DTB_SIZE             4096     \n");
++		break;
++	    case CPU_VORTEXM4:
++		printf("#define VORTEXM4		      \n");
++#ifdef __clang__
++		printf("#define HAVE_SME 1		      \n");
++#endif
+ #ifdef __APPLE__
+ 		length64 = sizeof(value64);
+ 		sysctlbyname("hw.l1icachesize",&value64,&length64,NULL,0);
+diff --git a/driver/others/dynamic_arm64.c b/driver/others/dynamic_arm64.c
+index 70b51f6fce..412057f9e2 100644
+--- a/driver/others/dynamic_arm64.c
++++ b/driver/others/dynamic_arm64.c
+@@ -128,6 +128,12 @@ extern gotoblas_t gotoblas_ARMV9SME;
+ #else
+ #define gotoblas_ARMV9SME gotoblas_ARMV8
+ #endif
++#ifdef DYN_VORTEXM4
++extern gotoblas_t gotoblas_VORTEXM4;
++#else
++#error "dont have vortexm4"
++#define gotoblas_VORTEXM4 gotoblas_ARMV8
++#endif
+ #ifdef DYN_CORTEXA55
+ extern gotoblas_t  gotoblas_CORTEXA55;
+ #else
+@@ -155,17 +161,26 @@ extern gotoblas_t  gotoblas_NEOVERSEV1;
+ extern gotoblas_t  gotoblas_NEOVERSEN2;
+ extern gotoblas_t  gotoblas_ARMV8SVE;
+ extern gotoblas_t  gotoblas_A64FX;
+-#ifndef NO_SME
+-extern gotoblas_t  gotoblas_ARMV9SME;
+-#else
+-#define gotoblas_ARMV9SME gotoblas_ARMV8SVE
+-#endif
+ #else
+ #define gotoblas_NEOVERSEV1 gotoblas_ARMV8
+ #define gotoblas_NEOVERSEN2 gotoblas_ARMV8
+ #define gotoblas_ARMV8SVE   gotoblas_ARMV8
+ #define gotoblas_A64FX      gotoblas_ARMV8
+-#define gotoblas_ARMV9SME   gotoblas_ARMV8
++#endif
++#ifndef NO_SME
++extern gotoblas_t  gotoblas_ARMV9SME;
++#if defined (__clang__) && defined(OS_DARWIN)
++extern gotoblas_t  gotoblas_VORTEXM4;
++#else
++#define gotoblas_VORTEXM4 gotoblas_NEOVERSEN1
++#endif
++#else
++#ifndef NO_SVE
++#define gotoblas_ARMV9SME gotoblas_ARMV8SVE
++#else
++#define gotoblas_ARMV9SME gotoblas_NEOVERSEN1
++#endif
++#define gotoblas_VORTEXM4 gotoblas_NEOVERSEN1
+ #endif
+ 
+ extern gotoblas_t  gotoblas_THUNDERX3T110;
+@@ -176,7 +191,7 @@ extern void openblas_warning(int verbose, const char * msg);
+ #define FALLBACK_VERBOSE 1
+ #define NEOVERSEN1_FALLBACK "OpenBLAS : Your OS does not support SVE instructions. OpenBLAS is using Neoverse N1 kernels as a fallback, which may give poorer performance.\n"
+ 
+-#define NUM_CORETYPES   19
++#define NUM_CORETYPES   20
+ 
+ /*
+  * In case asm/hwcap.h is outdated on the build system, make sure
+@@ -216,6 +231,7 @@ static char *corename[] = {
+   "armv8sve",
+   "a64fx",
+   "armv9sme",
++  "vortexm4",
+   "unknown"
+ };
+ 
+@@ -239,6 +255,7 @@ char *gotoblas_corename(void) {
+   if (gotoblas == &gotoblas_ARMV8SVE)     return corename[16];
+   if (gotoblas == &gotoblas_A64FX)        return corename[17];
+   if (gotoblas == &gotoblas_ARMV9SME)     return corename[18];
++  if (gotoblas == &gotoblas_VORTEXM4)     return corename[19];
+   return corename[NUM_CORETYPES];
+ }
+ 
+@@ -277,6 +294,7 @@ static gotoblas_t *force_coretype(char *coretype) {
+     case 16: return (&gotoblas_ARMV8SVE);
+     case 17: return (&gotoblas_A64FX);
+     case 18: return (&gotoblas_ARMV9SME);
++    case 19: return (&gotoblas_VORTEXM4);
+   }
+   snprintf(message, 128, "Core not found: %s\n", coretype);
+   openblas_warning(1, message);
+@@ -288,11 +306,11 @@ static gotoblas_t *get_coretype(void) {
+   char coremsg[128];
+ 
+ #if defined (OS_DARWIN)
+-//future	#if !defined(NO_SME)
+-//  		if (support_sme1()) {
+-//    			return &gotoblas_ARMV9SME;
+-//		  }
+-//		#endif
++#if !defined(NO_SME)
++  if (support_sme1()) {
++   	return &gotoblas_VORTEXM4;
++  }
++#endif
+   return &gotoblas_NEOVERSEN1;
+ #endif
+ 	
+@@ -463,7 +481,7 @@ static gotoblas_t *get_coretype(void) {
+       }
+       break;
+     case 0x61: // Apple
+-//future	if (support_sme1()) return &gotoblas_ARMV9SME;
++	if (support_sme1()) return &gotoblas_VORTEXM4;
+ 	return &gotoblas_NEOVERSEN1;
+       break;
+     default:
+diff --git a/getarch.c b/getarch.c
+index 2f0bccfaf7..8b70248098 100644
+--- a/getarch.c
++++ b/getarch.c
+@@ -1654,6 +1654,28 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #define CORENAME  "VORTEX"
+ #endif
+ 
++#ifdef FORCE_VORTEXM4
++#define FORCE
++#define ARCHITECTURE    "ARM64"
++#define SUBARCHITECTURE "VORTEXM4"
++#define SUBDIRNAME      "arm64"
++#ifdef __clang__
++#define ARCHCONFIG   "-DVORTEXM4 " \
++       "-DL1_DATA_SIZE=32768 -DL1_DATA_LINESIZE=64 " \
++       "-DL2_SIZE=262144 -DL2_LINESIZE=64 " \
++       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 -DL2_ASSOCIATIVE=32 " \
++       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DHAVE_SME -DARMV8"
++#else
++#define ARCHCONFIG   "-DVORTEX " \
++       "-DL1_DATA_SIZE=32768 -DL1_DATA_LINESIZE=64 " \
++       "-DL2_SIZE=262144 -DL2_LINESIZE=64 " \
++       "-DDTB_DEFAULT_ENTRIES=64 -DDTB_SIZE=4096 -DL2_ASSOCIATIVE=32 " \
++       "-DHAVE_VFPV4 -DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON -DARMV8"
++#endif
++#define LIBNAME   "vortexm4"
++#define CORENAME  "VORTEXM4"
++#endif
++
+ #ifdef FORCE_A64FX
+ #define ARMV8
+ #define FORCE
+diff --git a/interface/gemm.c b/interface/gemm.c
+index a16df81ec4..4b1c9a93cc 100644
+--- a/interface/gemm.c
++++ b/interface/gemm.c
+@@ -266,6 +266,7 @@ void NAME(char *TRANSA, char *TRANSB,
+ 
+   int transa, transb, nrowa, nrowb;
+   blasint info;
++  int order = -1;
+ 
+   char transA, transB;
+   IFLOAT *buffer;
+@@ -424,30 +425,6 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
+ 
+   PRINT_DEBUG_CNAME;
+ 
+-#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+-#if defined(ARCH_x86) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+-#if defined(DYNAMIC_ARCH)
+-  if (support_avx512() )
+-#endif
+-  if (beta == 0 && alpha == 1.0 && order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans && SGEMM_DIRECT_PERFORMANT(m,n,k)) {
+-	SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
+-	return;
+-  }
+-#endif
+-#if defined(ARCH_ARM64) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+-#if defined(DYNAMIC_ARCH)
+- if (support_sme1())
+-#endif
+-  if (beta == 0 && alpha == 1.0 && order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans) {
+-	SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
+-	return;
+-  }else if (order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans) {
+-	SGEMM_DIRECT_ALPHA_BETA(m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+-	return;
+-  }
+-#endif
+-#endif
+-
+ #ifndef COMPLEX
+   args.alpha = (void *)&alpha;
+   args.beta  = (void *)&beta;
+@@ -564,6 +541,40 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
+     return;
+   }
+ 
++
++  if ((args.m == 0) || (args.n == 0)) return;
++#if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
++#if defined(ARCH_x86) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
++#if defined(DYNAMIC_ARCH)
++  if (support_avx512() )
++#endif
++  if (order == CblasRowMajor && beta == 0 && alpha == 1.0 && TransA == CblasNoTrans && TransB == CblasNoTrans && SGEMM_DIRECT_PERFORMANT(m,n,k)) {
++        SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
++        return;
++  }
++#endif
++#if defined(ARCH_ARM64) && (defined(USE_SGEMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
++#if defined(DYNAMIC_ARCH)
++if (strcmp(gotoblas_corename(), "armv9sme") == 0
++#if defined(__clang__)
++ || strcmp(gotoblas_corename(), "vortexm4") == 0
++#endif
++)
++// if (support_sme1())
++#endif
++  if (order == CblasRowMajor && m==lda && n ==ldb && k==ldc && beta == 0 && alpha == 1.0 && TransA == CblasNoTrans && TransB == CblasNoTrans&& SGEMM_DIRECT_PERFORMANT(m,n,k)) {
++        SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
++        return;
++  }
++else
++ if (order == CblasRowMajor && m==lda && n==ldb && k==ldc && TransA == CblasNoTrans && TransB == CblasNoTrans&& SGEMM_DIRECT_PERFORMANT(m,n,k)) {
++        SGEMM_DIRECT_ALPHA_BETA(m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
++        return;
++  }
++
++#endif
++#endif
++
+ #endif
+ 
+ #if defined(__linux__) && defined(__x86_64__) && defined(BFLOAT16)
+diff --git a/interface/symm.c b/interface/symm.c
+index 04a8fab7de..ea00217050 100644
+--- a/interface/symm.c
++++ b/interface/symm.c
+@@ -97,6 +97,9 @@
+ #define GEMM_MULTITHREAD_THRESHOLD 4
+ #endif
+ 
++#ifdef DYNAMIC_ARCH
++extern char* gotoblas_corename(void);                                
++#endif                                                               
+ 
+ #ifdef SMP
+ #ifndef COMPLEX
+@@ -374,7 +377,11 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_SIDE Side, enum CBLAS_UPLO Uplo,
+ #if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+ #if defined(ARCH_ARM64) && (defined(USE_SSYMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+ #if defined(DYNAMIC_ARCH)
+- if (support_sme1())
++if (strcmp(gotoblas_corename(), "armv9sme") == 0
++#if defined(__clang__)
++ || strcmp(gotoblas_corename(), "vortexm4") == 0
++#endif
++)
+ #endif
+    if (args.m == 0 || args.n == 0) return;
+    if (order == CblasRowMajor && m == lda && n == ldb && n == ldc)
+diff --git a/interface/syr2k.c b/interface/syr2k.c
+index 635dd3ed0d..bfdc1c0297 100644
+--- a/interface/syr2k.c
++++ b/interface/syr2k.c
+@@ -345,12 +345,21 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_UPLO Uplo, enum CBLAS_TRANSPOSE Tr
+     return;
+   }
+ 
++  if (args.n == 0) return;
++
++#ifdef DYNAMIC_ARCH
++extern char* gotoblas_corename(void);
++#endif
++
+ #if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+ #if defined(ARCH_ARM64) && (defined(USE_SSYR2K_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+ #if defined(DYNAMIC_ARCH)
+- if (support_sme1())
++if (strcmp(gotoblas_corename(), "armv9sme") == 0
++#if defined(__clang__)
++ || strcmp(gotoblas_corename(), "vortexm4") == 0
++#endif
++)
+ #endif
+-   if (args.n == 0) return;
+    if (order == CblasRowMajor && n == ldc) {
+      if (Trans == CblasNoTrans && k == lda && k == ldb) {
+       if (Uplo == CblasUpper) {
+@@ -376,7 +385,6 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_UPLO Uplo, enum CBLAS_TRANSPOSE Tr
+ 
+ #endif
+ 
+-  if (args.n == 0) return;
+ 
+   IDEBUG_START;
+ 
+diff --git a/interface/syrk.c b/interface/syrk.c
+index 9e493b00fe..3647ac5cfd 100644
+--- a/interface/syrk.c
++++ b/interface/syrk.c
+@@ -338,12 +338,22 @@ double NNK;
+     BLASFUNC(xerbla)(ERROR_NAME, &info, sizeof(ERROR_NAME));
+     return;
+   }
++
++  if (args.n == 0) return;
++
++#ifdef DYNAMIC_ARCH
++extern char* gotoblas_corename(void);
++#endif
++	
+ #if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+ #if defined(ARCH_ARM64) && (defined(USE_SSYRK_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+ #if defined(DYNAMIC_ARCH)
+- if (support_sme1())
++if (strcmp(gotoblas_corename(), "armv9sme") == 0
++#if defined(__clang__)
++ || strcmp(gotoblas_corename(), "vortexm4") == 0
++#endif
++)
+ #endif
+-  if (args.n == 0) return;
+   if (order == CblasRowMajor && n == ldc) {
+     if (Trans == CblasNoTrans && k == lda) {
+       (Uplo == CblasUpper ? SSYRK_DIRECT_ALPHA_BETA_UN : SSYRK_DIRECT_ALPHA_BETA_LN)(n, k, alpha, a, lda, beta, c, ldc);
+@@ -358,7 +368,6 @@ double NNK;
+ 
+ #endif
+ 
+-  if (args.n == 0) return;
+ 
+   IDEBUG_START;
+ 
+diff --git a/interface/trsm.c b/interface/trsm.c
+index dcc64769d4..6584bb4d75 100644
+--- a/interface/trsm.c
++++ b/interface/trsm.c
+@@ -87,6 +87,10 @@
+ #define SMP_FACTOR 128
+ #endif
+ 
++#ifdef DYNAMIC_ARCH
++extern char* gotoblas_corename(void);                                
++#endif                                                               
++
+ static int (*trsm[])(blas_arg_t *, BLASLONG *, BLASLONG *, FLOAT *, FLOAT *, BLASLONG) = {
+ #ifndef TRMM
+   TRSM_LNUU, TRSM_LNUN, TRSM_LNLU, TRSM_LNLN,
+@@ -358,7 +362,11 @@ void CNAME(enum CBLAS_ORDER order,
+ #if !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)  && !defined(HFLOAT16)
+ #if defined(ARCH_ARM64) && (defined(USE_STRMM_KERNEL_DIRECT)||defined(DYNAMIC_ARCH))
+ #if defined(DYNAMIC_ARCH)
+- if (support_sme1())
++if (strcmp(gotoblas_corename(), "armv9sme") == 0
++#if defined(__clang__)
++ || strcmp(gotoblas_corename(), "vortexm4") == 0
++#endif
++)
+ #endif
+   if (args.m == 0 || args.n == 0) return;
+   if (order == CblasRowMajor && Diag == CblasNonUnit && Side == CblasLeft && m == lda && n == ldb) {
+diff --git a/kernel/CMakeLists.txt b/kernel/CMakeLists.txt
+index a8849400ee..8932d3fe96 100644
+--- a/kernel/CMakeLists.txt
++++ b/kernel/CMakeLists.txt
+@@ -261,7 +261,7 @@ function (build_core TARGET_CORE KDIR TSUFFIX KERNEL_DEFINITIONS)
+     if (ARM64)
+        set(USE_DIRECT_SSYMM true)
+     endif()
+-    if (UC_TARGET_CORE MATCHES ARMV9SME)
++    if (UC_TARGET_CORE MATCHES ARMV9SME OR UC_TARGET_CORE MATCHES VORTEXM4)
+           set (HAVE_SME true)
+     endif ()
+ 
+@@ -274,14 +274,16 @@ function (build_core TARGET_CORE KDIR TSUFFIX KERNEL_DEFINITIONS)
+ 	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTKERNEL}" "" "gemm_direct" false "" "" false SINGLE)
+ 	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTPERFORMANT}" "" "gemm_direct_performant" false "" "" false  SINGLE)
+ 	    elseif (ARM64)
++	  set (SGEMMDIRECTPERFORMANT sgemm_direct_performant.c)
+ 	  set (SGEMMDIRECTKERNEL sgemm_direct_arm64_sme1.c)
+ 	  set (SGEMMDIRECTKERNEL_ALPHA_BETA sgemm_direct_alpha_beta_arm64_sme1.c)
+-	  set (SGEMMDIRECTSMEKERNEL sgemm_direct_sme1.S)
++	  set (SGEMMDIRECTSMEKERNEL sgemm_direct_sme1_2VLx2VL.S)
+ 	  set (SGEMMDIRECTPREKERNEL sgemm_direct_sme1_preprocess.S)
++	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTPERFORMANT}" "" "gemm_direct_performant" false "" "" false  SINGLE)
+ 	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTKERNEL}" "" "gemm_direct" false "" "" false SINGLE)
+ 	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTKERNEL_ALPHA_BETA}" "" "gemm_direct_alpha_beta" false "" "" false SINGLE)
+    	  if (HAVE_SME)
+-	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTSMEKERNEL}" "" "gemm_direct_sme1" false "" "" false SINGLE)
++	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTSMEKERNEL}" "" "gemm_direct_sme1_2VLx2VL" false "" "" false SINGLE)
+ 	  GenerateNamedObjects("${KERNELDIR}/${SGEMMDIRECTPREKERNEL}" "" "gemm_direct_sme1_preprocess" false "" "" false SINGLE)
+ 	  endif ()
+    	  endif ()
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 84cd482a06..014908c7eb 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -27,7 +27,29 @@ endif
+ 
+ ifdef TARGET_CORE
+ ifeq ($(TARGET_CORE), ARMV9SME)
+- override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -DHAVE_SME -march=armv9-a+sve2+sme
++ override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -march=armv9-a+sve2+sme
++ ifdef OS_WINDOWS
++ ifeq ($(C_COMPILER), CLANG)
++   override CFLAGS += --aarch64-stack-hazard-size=0
++ endif
++ endif
++endif
++ifeq ($(TARGET_CORE), VORTEXM4)
++  ifeq ($(C_COMPILER), GCC)
++    override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -UHAVE_SME -march=armv8.4-a
++  else
++    ifeq ($(APPLECLANG),1)
++      override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -march=armv8.4-a+sme
++    else
++      override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -march=armv8.4-a+sme
++	  override LDFLAGS += -lclang_rt_builtins-aarch64
++    endif
++    ifdef OS_WINDOWS
++      ifeq ($(C_COMPILER), CLANG)
++        override CFLAGS += --aarch64-stack-hazard-size=0
++      endif
++    endif
++  endif
+ endif
+ ifeq ($(TARGET_CORE), SAPPHIRERAPIDS)
+  override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE)
+diff --git a/kernel/Makefile.L3 b/kernel/Makefile.L3
+index 3329472b9b..64a87ee25e 100644
+--- a/kernel/Makefile.L3
++++ b/kernel/Makefile.L3
+@@ -53,9 +53,17 @@ ifeq ($(ARCH), arm64)
+ USE_TRMM = 1
+ USE_DIRECT_SGEMM = 1
+ USE_DIRECT_SSYMM = 1
+-USE_DIRECT_STRMM = 1
+ USE_DIRECT_SSYRK = 1
+ USE_DIRECT_SSYR2K = 1
++USE_DIRECT_STRMM = 1
++ifeq ($(CORE), ARMV9SME)
++USE_SME = 1
++endif
++ifeq ($(CORE), VORTEXM4)
++ifneq ($(C_COMPILER), GCC)
++USE_SME = 1
++endif
++endif
+ endif
+ 
+ ifeq ($(ARCH), riscv64)
+@@ -132,11 +140,9 @@ SGEMMDIRECTKERNEL = sgemm_direct_skylakex.c
+ SGEMMDIRECTPERFORMANT = sgemm_direct_performant.c
+ endif
+ ifeq ($(ARCH), arm64)
+-ifeq ($(TARGET_CORE), ARMV9SME)
+-HAVE_SME = 1
+-endif
+ SGEMMDIRECTKERNEL = sgemm_direct_arm64_sme1.c
+ SGEMMDIRECTKERNEL_ALPHA_BETA = sgemm_direct_alpha_beta_arm64_sme1.c
++SGEMMDIRECTPERFORMANT = sgemm_direct_performant.c
+ endif
+ endif
+ endif
+@@ -144,9 +150,6 @@ endif
+ ifdef USE_DIRECT_SSYMM
+ ifndef SSYMMDIRECTKERNEL_ALPHA_BETA
+ ifeq ($(ARCH), arm64)
+-ifeq ($(TARGET_CORE), ARMV9SME)
+-HAVE_SME = 1
+-endif
+ SSYMMDIRECTKERNEL_ALPHA_BETA = ssymm_direct_alpha_beta_arm64_sme1.c
+ endif
+ endif
+@@ -155,9 +158,6 @@ endif
+ ifdef USE_DIRECT_STRMM
+ ifndef STRMMDIRECTKERNEL
+ ifeq ($(ARCH), arm64)
+-ifeq ($(TARGET_CORE), ARMV9SME)
+-HAVE_SME = 1
+-endif
+ STRMMDIRECTKERNEL = strmm_direct_arm64_sme1.c
+ endif
+ endif
+@@ -166,9 +166,6 @@ endif
+ ifdef USE_DIRECT_SSYRK
+ ifndef SSYRKDIRECTKERNEL_ALPHA_BETA
+ ifeq ($(ARCH), arm64)
+-ifeq ($(TARGET_CORE), ARMV9SME)
+-HAVE_SME = 1
+-endif
+ SSYRKDIRECTKERNEL_ALPHA_BETA = ssyrk_direct_alpha_beta_arm64_sme1.c
+ endif
+ endif
+@@ -257,11 +254,12 @@ SKERNELOBJS += \
+ endif
+ ifeq ($(ARCH), arm64)
+ SKERNELOBJS += \
++	sgemm_direct_performant$(TSUFFIX).$(SUFFIX) \
+ 	sgemm_direct$(TSUFFIX).$(SUFFIX) \
+ 	sgemm_direct_alpha_beta$(TSUFFIX).$(SUFFIX)
+-ifdef HAVE_SME
++ifdef USE_SME
+ SKERNELOBJS += \
+-	sgemm_direct_sme1$(TSUFFIX).$(SUFFIX) \
++	sgemm_direct_sme1_2VLx2VL$(TSUFFIX).$(SUFFIX) \
+ 	sgemm_direct_sme1_preprocess$(TSUFFIX).$(SUFFIX)
+ endif
+ endif
+@@ -287,8 +285,8 @@ endif
+ ifdef USE_DIRECT_SSYRK
+ ifeq ($(ARCH), arm64)
+ SKERNELOBJS += \
+-	ssyrk_direct_alpha_betaUN$(TSUFFIX).$(SUFFIX) ssyrk_direct_alpha_betaUT$(TSUFFIX).$(SUFFIX) \
+-	ssyrk_direct_alpha_betaLN$(TSUFFIX).$(SUFFIX) ssyrk_direct_alpha_betaLT$(TSUFFIX).$(SUFFIX)
++        ssyrk_direct_alpha_betaUN$(TSUFFIX).$(SUFFIX) ssyrk_direct_alpha_betaUT$(TSUFFIX).$(SUFFIX) \
++        ssyrk_direct_alpha_betaLN$(TSUFFIX).$(SUFFIX) ssyrk_direct_alpha_betaLT$(TSUFFIX).$(SUFFIX)
+ endif
+ endif
+ 
+@@ -1051,13 +1049,15 @@ $(KDIR)sgemm_direct$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SGEMMDIRECTKERNEL)
+ 	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX $< -o $@
+ endif
+ ifeq ($(ARCH), arm64)
++$(KDIR)sgemm_direct_performant$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SGEMMDIRECTPERFORMANT)
++	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX $< -o $@
+ $(KDIR)sgemm_direct$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SGEMMDIRECTKERNEL)
+ 	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX $< -o $@
+ $(KDIR)sgemm_direct_alpha_beta$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SGEMMDIRECTKERNEL_ALPHA_BETA)
+ 	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX $< -o $@
+-ifdef HAVE_SME
+-$(KDIR)sgemm_direct_sme1$(TSUFFIX).$(SUFFIX) : 
+-	$(CC) $(CFLAGS) -c $(KERNELDIR)/sgemm_direct_sme1.S -UDOUBLE -UCOMPLEX  -o $@
++ifdef USE_SME
++$(KDIR)sgemm_direct_sme1_2VLx2VL$(TSUFFIX).$(SUFFIX) : 
++	$(CC) $(CFLAGS) -c $(KERNELDIR)/sgemm_direct_sme1_2VLx2VL.S -UDOUBLE -UCOMPLEX  -o $@
+ $(KDIR)sgemm_direct_sme1_preprocess$(TSUFFIX).$(SUFFIX) : 
+ 	$(CC) $(CFLAGS) -c $(KERNELDIR)/sgemm_direct_sme1_preprocess.S -UDOUBLE -UCOMPLEX  -o $@
+ endif
+@@ -1073,6 +1073,22 @@ $(KDIR)ssymm_direct_alpha_betaLL$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYMMDIREC
+ endif
+ endif
+ 
++ifdef USE_DIRECT_SSYRK
++ifeq ($(ARCH), arm64)
++$(KDIR)ssyrk_direct_alpha_betaUN$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
++	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -DUPPER -UTRANSA $< -o $@
++
++$(KDIR)ssyrk_direct_alpha_betaUT$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
++	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -DUPPER -DTRANSA $< -o $@
++
++$(KDIR)ssyrk_direct_alpha_betaLN$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
++	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -UUPPER -UTRANSA $< -o $@
++
++$(KDIR)ssyrk_direct_alpha_betaLT$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
++	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -UUPPER -DTRANSA $< -o $@
++endif
++endif
++
+ ifeq ($(BUILD_BFLOAT16), 1)
+ $(KDIR)bgemm_kernel$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(BGEMMKERNEL) 
+ 	$(CC) $(CFLAGS) -c -DBFLOAT16 -DBGEMM -UDOUBLE -UCOMPLEX $< -o $@
+@@ -1199,21 +1215,6 @@ $(KDIR)xgemm_kernel_r$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(XGEMMKERNEL) $(XGEMMD
+ $(KDIR)xgemm_kernel_b$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(XGEMMKERNEL) $(XGEMMDEPEND)
+ 	$(CC) $(CFLAGS) -c -DXDOUBLE -DCOMPLEX -DCC $< -o $@
+ 
+-ifdef USE_DIRECT_SSYRK
+-ifeq ($(ARCH), arm64)
+-$(KDIR)ssyrk_direct_alpha_betaUN$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
+-	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -DUPPER -UTRANSA $< -o $@
+-
+-$(KDIR)ssyrk_direct_alpha_betaUT$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
+-	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -DUPPER -DTRANSA $< -o $@
+-
+-$(KDIR)ssyrk_direct_alpha_betaLN$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
+-	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -UUPPER -UTRANSA $< -o $@
+-
+-$(KDIR)ssyrk_direct_alpha_betaLT$(TSUFFIX).$(SUFFIX) : $(KERNELDIR)/$(SSYRKDIRECTKERNEL_ALPHA_BETA)
+-	$(CC) $(CFLAGS) -c -UDOUBLE -UCOMPLEX -UUPPER -DTRANSA $< -o $@
+-endif
+-endif
+ 
+ ifdef USE_DIRECT_SSYR2K
+ ifeq ($(ARCH), arm64)
+diff --git a/kernel/arm64/KERNEL.VORTEXM4 b/kernel/arm64/KERNEL.VORTEXM4
+new file mode 100644
+index 0000000000..46a34469c3
+--- /dev/null
++++ b/kernel/arm64/KERNEL.VORTEXM4
+@@ -0,0 +1 @@
++include $(KERNELDIR)/KERNEL.NEOVERSEN1
+diff --git a/kernel/arm64/sgemm_direct_alpha_beta_arm64_sme1.c b/kernel/arm64/sgemm_direct_alpha_beta_arm64_sme1.c
+index d9de3ace3f..f9017c7645 100644
+--- a/kernel/arm64/sgemm_direct_alpha_beta_arm64_sme1.c
++++ b/kernel/arm64/sgemm_direct_alpha_beta_arm64_sme1.c
+@@ -8,16 +8,29 @@
+ #include <inttypes.h>
+ #include <math.h>
+ #include "sme_abi.h"
++
++#if defined(DYNAMIC_ARCH)
++#define COMBINE(a,b) a ## b
++#define COMBINE2(a,b) COMBINE(a,b)
++#define SME1_PREPROCESS_BASE sgemm_direct_sme1_preprocess
++#define SME1_PREPROCESS COMBINE2(SME1_PREPROCESS_BASE,TS)
++#define SME1_KERNEL2X2_BASE sgemm_direct_alpha_beta_sme1_2VLx2VL
++#define SME1_KERNEL2X2 COMBINE2(SME1_KERNEL2X2_BASE,TS)
++#else
++#define SME1_PREPROCESS sgemm_direct_sme1_preprocess
++#define SME1_KERNEL2X2  sgemm_direct_alpha_beta_sme1_2VLx2VL
++#endif
++
++/* Function prototypes */
++extern void SME1_PREPROCESS(uint64_t nbr, uint64_t nbc,\
++                                  const float * restrict a, float *  a_mod);
++
+ #if defined(HAVE_SME)
+ 
+ #if defined(__ARM_FEATURE_SME) && defined(__clang__) && __clang_major__ >= 16
+ #include <arm_sme.h>
+ #endif
+ 
+-/* Function prototypes */
+-extern void sgemm_direct_sme1_preprocess(uint64_t nbr, uint64_t nbc,\
+-                                  const float * restrict a, float *  a_mod) __asm__("sgemm_direct_sme1_preprocess");
+-
+ /* Function Definitions */
+ static uint64_t sve_cntw() {
+     uint64_t cnt;
+@@ -99,10 +112,11 @@ kernel_2x2(const float *A, const float *B, float *C, size_t shared_dim,
+     svst1_hor_za32(/*tile*/2, /*slice*/i, pg_c_0, &C[i * ldc]);
+     svst1_hor_za32(/*tile*/3, /*slice*/i, pg_c_1, &C[i * ldc + svl]);
+   }
++return;
+ }
+ 
+ __arm_new("za") __arm_locally_streaming
+-void sgemm_direct_alpha_beta_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
++void SME1_KERNEL2X2(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
+                                    const float *ba, const float *restrict bb, const float* beta,\
+                                    float *restrict C) {
+ 
+@@ -125,6 +139,7 @@ void sgemm_direct_alpha_beta_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n, co
+   // Block over row dimension of C
+   for (; row_idx < num_rows; row_idx += row_batch) {
+     row_batch = MIN(row_batch, num_rows - row_idx);
++
+     uint64_t col_idx = 0;
+     uint64_t col_batch = 2*svl;
+ 
+@@ -141,9 +156,9 @@ void sgemm_direct_alpha_beta_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n, co
+ }
+ 
+ #else
+-void sgemm_direct_alpha_beta_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
++void SME1_KERNEL2X2(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
+                                    const float *ba, const float *restrict bb, const float* beta,\
+-                                   float *restrict C){}
++                                   float *restrict C){fprintf(stderr,"empty sgemm_alpha_beta2x2 should never get called!!!\n");}
+ #endif
+ 
+ /*void sgemm_kernel_direct (BLASLONG M, BLASLONG N, BLASLONG K,\
+@@ -166,7 +181,7 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float alpha, float * __restrict
+ 	     * of reading directly from vector (z) registers.
+ 	     * */
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+-                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
++                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15", "d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+                          "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15",
+                          "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23",
+@@ -175,17 +190,19 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float alpha, float * __restrict
+         /* Pre-process the left matrix to make it suitable for 
+            matrix sum of outer-product calculation
+          */
+-        sgemm_direct_sme1_preprocess(M, K, A, A_mod);
++
++        SME1_PREPROCESS(M, K, A, A_mod);
+        
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+-                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
++                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15","d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+                          "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15",
+                          "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23",
+                          "z24", "z25", "z26", "z27", "z28", "z29", "z30", "z31");
+ 
+         /* Calculate C = alpha*A*B + beta*C */
+-        sgemm_direct_alpha_beta_sme1_2VLx2VL(M, K, N, &alpha, A_mod, B, &beta, R);
++
++        SME1_KERNEL2X2(M, K, N, &alpha, A_mod, B, &beta, R);
+ 
+         free(A_mod);
+ }
+@@ -194,6 +211,6 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float alpha, float * __restrict
+ 
+ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float alpha, float * __restrict A,\
+             BLASLONG strideA, float * __restrict B, BLASLONG strideB ,\
+-            float beta, float * __restrict R, BLASLONG strideR){}
+- 
++            float beta, float * __restrict R, BLASLONG strideR){fprintf(stderr,"empty sgemm_direct_alpha_beta should not be called!!!\n");}
+ #endif
++
+diff --git a/kernel/arm64/sgemm_direct_arm64_sme1.c b/kernel/arm64/sgemm_direct_arm64_sme1.c
+index 13c337a13e..b9e79f1977 100644
+--- a/kernel/arm64/sgemm_direct_arm64_sme1.c
++++ b/kernel/arm64/sgemm_direct_arm64_sme1.c
+@@ -7,18 +7,29 @@
+ #include <stdlib.h>
+ #include <inttypes.h>
+ #include <math.h>
++#if defined(DYNAMIC_ARCH)
++#define COMBINE(a,b) a ## b
++#define COMBINE2(a,b) COMBINE(a,b)
++#define SME1_PREPROCESS_BASE sgemm_direct_sme1_preprocess
++#define SME1_PREPROCESS COMBINE2(SME1_PREPROCESS_BASE,TS)
++#define SME1_DIRECT2X2_BASE sgemm_direct_sme1_2VLx2VL
++#define SME1_DIRECT2X2 COMBINE2(SME1_DIRECT2X2_BASE,TS)
++#else
++#define SME1_PREPROCESS sgemm_direct_sme1_preprocess
++#define SME1_DIRECT2X2 sgemm_direct_sme1_2VLx2VL
++#endif
+ #if defined(HAVE_SME)
+-
+ /* Function prototypes */
+-extern void sgemm_direct_sme1_preprocess(uint64_t nbr, uint64_t nbc,\
+-                                  const float * restrict a, float *  a_mod) __asm__("sgemm_direct_sme1_preprocess");
+-extern void sgemm_direct_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n,\
++extern void SME1_PREPROCESS(uint64_t nbr, uint64_t nbc,\
++                                  const float * restrict a, float *  a_mod) ;
++
++extern void SME1_DIRECT2X2(uint64_t m, uint64_t k, uint64_t n,\
+                                const float * matLeft,\
+                                const float * restrict matRight,\
+-                               const float * restrict matResult) __asm__("sgemm_direct_sme1_2VLx2VL");
++                               const float * restrict matResult) ;
+ 
+ /* Function Definitions */
+-uint64_t sve_cntw() {
++static uint64_t sve_cntw() {
+     uint64_t cnt;
+     asm volatile(
+         "rdsvl  %[res], #1\n"
+@@ -39,7 +50,6 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float * __restrict A,\
+         uint64_t m_mod, vl_elms;
+         
+         vl_elms = sve_cntw();
+-
+         m_mod = ceil((double)M/(double)vl_elms) * vl_elms;
+ 
+         float *A_mod = (float *) malloc(m_mod*K*sizeof(float));
+@@ -48,7 +58,7 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float * __restrict A,\
+ 	     * of reading directly from vector (z) registers.
+ 	     * */
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+-                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
++                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15", "d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+                          "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15",
+                          "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23",
+@@ -57,13 +67,13 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float * __restrict A,\
+         /* Pre-process the left matrix to make it suitable for 
+            matrix sum of outer-product calculation
+          */
+-        sgemm_direct_sme1_preprocess(M, K, A, A_mod);
++        SME1_PREPROCESS(M, K, A, A_mod);
+         
+         /* Calculate C = A*B */
+-        sgemm_direct_sme1_2VLx2VL(M, K, N, A_mod, B, R);
++        SME1_DIRECT2X2(M, K, N, A_mod, B, R);
+        
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+-                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
++                         "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15", "d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+                          "z8", "z9", "z10", "z11", "z12", "z13", "z14", "z15",
+                          "z16", "z17", "z18", "z19", "z20", "z21", "z22", "z23",
+@@ -75,6 +85,16 @@ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float * __restrict A,\
+ 
+ void CNAME (BLASLONG M, BLASLONG N, BLASLONG K, float * __restrict A,\
+             BLASLONG strideA, float * __restrict B, BLASLONG strideB ,\
+-            float * __restrict R, BLASLONG strideR){}
+- 
++            float * __restrict R, BLASLONG strideR){
++fprintf(stderr,"EMPTY sgemm_kernel_direct should never be called \n");
++}
++void SME1_DIRECT2X2( uint64_t M , uint64_t K, uint64_t N,\
++                               const float * restrict A_base,\
++                               const float * restrict B_base,\
++                               const float * restrict C_base){}; 
++void SME1_PREPROCESS(uint64_t nbr, uint64_t nbc,\
++                                  const float * restrict a, float *  a_mod){};
++
++
+ #endif
++
+diff --git a/kernel/arm64/sgemm_direct_performant.c b/kernel/arm64/sgemm_direct_performant.c
+new file mode 100644
+index 0000000000..a20670e8b7
+--- /dev/null
++++ b/kernel/arm64/sgemm_direct_performant.c
+@@ -0,0 +1,15 @@
++#include "common.h"
++/* helper for the direct sgemm code adapted from Arjan van der Ven's x86_64 version */
++
++int CNAME(BLASLONG M, BLASLONG N, BLASLONG K)
++{
++if (M<3) return 0;
++	unsigned long long mnk = M * N * K;
++	/* benchmark performance on M4 peaks around 512 and crosses the graph of the NEON SGEMM at about 3100  */
++	if (mnk >= 3100L * 3100L * 3100L)
++		return 0;
++	
++	return 1;
++}
++
++
+diff --git a/kernel/arm64/sgemm_direct_sme1.S b/kernel/arm64/sgemm_direct_sme1_2VLx2VL.S
+similarity index 95%
+rename from kernel/arm64/sgemm_direct_sme1.S
+rename to kernel/arm64/sgemm_direct_sme1_2VLx2VL.S
+index 8c0a173f3d..afb662c1fb 100644
+--- a/kernel/arm64/sgemm_direct_sme1.S
++++ b/kernel/arm64/sgemm_direct_sme1_2VLx2VL.S
+@@ -35,16 +35,17 @@
+ #define K_exit       x15 //Exit condition for K loop
+ #define M_cntr       x16 //M loop counter
+ #define C1           x17 //Constant1: N*(SVLs+1);SVLs-No. of 32-bit elements
+-#define C2           x18 //Constant2: N + SVLs
+-#define C3           x19 //Constant3: K*SVLs + SVLs
+-#define C4           x20 //Constant4: SVLs-2
+-#define C5           x21 //Constant5: K*SVLs
+-#define C6           x22 //Constant6: N*SVLs
++#define C2           x19 //Constant2: N + SVLs
++#define C3           x20 //Constant3: K*SVLs + SVLs
++#define C4           x21 //Constant4: SVLs-2
++#define C5           x22 //Constant5: K*SVLs
++#define C6           x23 //Constant6: N*SVLs
+ 
+     .text
+-    .global sgemm_direct_sme1_2VLx2VL
++    .global ASMNAME
+ 
+-    sgemm_direct_sme1_2VLx2VL:
++    ASMNAME:
++    //sgemm_direct_sme1_2VLx2VL:
+ 
+     stp     x19, x20, [sp, #-48]!
+     stp     x21, x22, [sp, #16]
+@@ -61,7 +62,7 @@
+     add     C2, N, C4                  //N + SVLs
+     add     C3, C5, C4                 //K*SVLs + SVLs
+     whilelt p2.s, M_cntr, M            //Tile 0,1 predicate (M dimension)
+-    sub     w20, w20, #2               //SVLs-2
++    sub     w21, w21, #2               //SVLs-2
+ 
+ .M_Loop:
+     incw    M_cntr
+@@ -198,7 +199,7 @@ process_K_less_than_equal_2:
+     st1w    {za1h.s[w13, #0]},  p5, [Cptr1]
+     st1w    {za2h.s[w13, #0]},  p6, [Cptr0, C6, lsl #2]
+     st1w    {za3h.s[w13, #0]},  p7, [Cptr1, C6, lsl #2]
+-    cmp     w13, w20
++    cmp     w13, w21
+     b.mi    .Loop_store_ZA
+     psel    p4, p0, p2.s[w13, 1]
+     psel    p5, p1, p2.s[w13, 1]
+@@ -211,12 +212,12 @@ process_K_less_than_equal_2:
+     addvl   Cptr, Cptr, #2
+     addvl   Bptr, Bptr, #1
+     whilelt p0.b, Bptr, N_exit           //1st Tile predicate (N dimension)
+-    b.first .N_Loop
++    b.mi .N_Loop
+     add     A_base, A_base, C5, lsl #3   //A_base += 2*K*SVLs FP32 elements
+     add     C_base, C_base, C6, lsl #3   //C_base += 2*N*SVLs FP32 elements
+     incw    M_cntr
+     whilelt p2.s, M_cntr, M              //1st Tile predicate (M dimension)
+-    b.first    .M_Loop
++    b.mi    .M_Loop
+ 
+     smstop
+ 
+diff --git a/kernel/arm64/sgemm_direct_sme1_preprocess.S b/kernel/arm64/sgemm_direct_sme1_preprocess.S
+index fa13620751..6c51b0bf63 100644
+--- a/kernel/arm64/sgemm_direct_sme1_preprocess.S
++++ b/kernel/arm64/sgemm_direct_sme1_preprocess.S
+@@ -37,9 +37,9 @@
+ #define C6 x15               //Constant6: 3*ncol
+ 
+     .text
+-    .global sgemm_direct_sme1_preprocess
++    .global ASMNAME //sgemm_direct_sme1_preprocess
+ 
+-    sgemm_direct_sme1_preprocess:
++    ASMNAME:        //sgemm_direct_sme1_preprocess:
+ 
+     stp     x19, x20, [sp, #-48]!
+     stp     x21, x22, [sp, #16]
+@@ -114,14 +114,14 @@
+ 
+     addvl   mat_ptr0, mat_ptr0, #1          //mat_ptr0 += SVLb
+     whilelt p8.b, mat_ptr0, inner_loop_exit
+-    b.first .Loop_process
++    b.mi .Loop_process
+ 
+     add     mat_mod, mat_mod, C3, lsl #2    //mat_mod+=SVLs*nbc FP32 elements
+     add     mat, mat, C3, lsl #2            //mat+=SVLs*nbc FP32 elements
+     incw    outer_loop_cntr
+ 
+     whilelt p0.s, outer_loop_cntr, nrow
+-    b.first .M_Loop
++    b.mi .M_Loop
+ 
+     smstop
+ 
+diff --git a/kernel/arm64/ssymm_direct_alpha_beta_arm64_sme1.c b/kernel/arm64/ssymm_direct_alpha_beta_arm64_sme1.c
+index d89eb3dbbc..eeabab4c23 100644
+--- a/kernel/arm64/ssymm_direct_alpha_beta_arm64_sme1.c
++++ b/kernel/arm64/ssymm_direct_alpha_beta_arm64_sme1.c
+@@ -14,11 +14,23 @@
+ #include <arm_sme.h>
+ #endif
+ 
++#if defined(DYNAMIC_ARCH)
++#define COMBINE(a,b) a ## b
++#define COMBINE2(a,b) COMBINE(a,b)
++#define SGEMM_PREPROCESS_BASE sgemm_direct_sme1_preprocess
++#define SGEMM_PREPROCESS COMBINE2(SGEMM_PREPROCESS_BASE,TS)
++#define SGEMM_DIRECT2X2_BASE sgemm_direct_alpha_beta_sme1_2VLx2VL
++#define SGEMM_DIRECT2X2 COMBINE2(SGEMM_DIRECT2X2_BASE,TS)
++#else
++#define SGEMM_PREPROCESS sgemm_direct_sme1_preprocess
++#define SGEMM_DIRECT2X2 sgemm_direct_alpha_beta_sme1_2VLx2VL
++#endif
++
+ /* Function prototypes */
+-extern void sgemm_direct_sme1_preprocess(uint64_t nbr, uint64_t nbc,\
+-                                  const float * restrict a, float *  a_mod) __asm__("sgemm_direct_sme1_preprocess");
++extern void SGEMM_PREPROCESS(uint64_t nbr, uint64_t nbc,\
++                                  const float * restrict a, float *  a_mod);
+ 
+-extern void sgemm_direct_alpha_beta_sme1_2VLx2VL(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
++extern void SGEMM_DIRECT2X2(uint64_t m, uint64_t k, uint64_t n, const float* alpha,\
+                                    const float *ba, const float *restrict bb, const float* beta,\
+                                    float *restrict C);
+ /* Function Definitions */
+@@ -216,7 +228,7 @@ void CNAME(BLASLONG M, BLASLONG N, float alpha, float *__restrict A,
+ #endif
+ 
+   /* Calculate C = alpha*A*B + beta*C */
+-  sgemm_direct_alpha_beta_sme1_2VLx2VL(M, M, N, &alpha, A_mod, B, &beta, R);
++  SGEMM_DIRECT2X2(M, M, N, &alpha, A_mod, B, &beta, R);
+   free(A_mod);
+ }
+ 
+diff --git a/kernel/arm64/ssyr2k_direct_alpha_beta_arm64_sme1.c b/kernel/arm64/ssyr2k_direct_alpha_beta_arm64_sme1.c
+index 7cb715717c..a8c36271ad 100755
+--- a/kernel/arm64/ssyr2k_direct_alpha_beta_arm64_sme1.c
++++ b/kernel/arm64/ssyr2k_direct_alpha_beta_arm64_sme1.c
+@@ -7,6 +7,18 @@
+ #include <stdlib.h>
+ #include <inttypes.h>
+ #include <math.h>
++
++#if defined(DYNAMIC_ARCH)
++#define COMBINE(a,b) a ## b
++#define COMBINE2(a,b) COMBINE(a,b)
++#define SGEMM_PREPROCESS_BASE sgemm_direct_sme1_preprocess
++#define SGEMM_PREPROCESS COMBINE2(SGEMM_PREPROCESS_BASE,TS)
++#define SGEMM_DIRECT2X2_BASE sgemm_direct_alpha_beta_sme1_2VLx2VL
++#define SGEMM_DIRECT2X2 COMBINE2(SGEMM_DIRECT2X2_BASE,TS)
++#else
++#define SGEMM_PREPROCESS sgemm_direct_sme1_preprocess
++#define SGEMM_DIRECT2X2 sgemm_direct_alpha_beta_sme1_2VLx2VL
++#endif
+ #if defined(HAVE_SME)
+ 
+ #if defined(__ARM_FEATURE_SME) && defined(__clang__) && __clang_major__ >= 16
+@@ -14,8 +26,8 @@
+ #endif
+ 
+ /* Function prototypes */
+-extern void sgemm_direct_sme1_preprocess(uint64_t nbr, uint64_t nbc,\
+-                                  const float * restrict a, float *  a_mod) __asm__("sgemm_direct_sme1_preprocess");
++extern void SGEMM_PREPROCESS(uint64_t nbr, uint64_t nbc,\
++                                  const float * restrict a, float *  a_mod) ;
+ 
+ /* Function Definitions */
+ static uint64_t sve_cntw() {
+@@ -261,8 +273,8 @@ void CNAME (BLASLONG N, BLASLONG K, float alpha, float * __restrict A, \
+         /* Pre-process the left matrix to make it suitable for
+            matrix sum of outer-product calculation
+          */
+-        sgemm_direct_sme1_preprocess(N, K, A, A_mod);
+-        sgemm_direct_sme1_preprocess(N, K, B, B_mod);
++        SGEMM_PREPROCESS(N, K, A, A_mod);
++        SGEMM_PREPROCESS(N, K, B, B_mod);
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+                          "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+diff --git a/kernel/arm64/ssyrk_direct_alpha_beta_arm64_sme1.c b/kernel/arm64/ssyrk_direct_alpha_beta_arm64_sme1.c
+index f137767aaa..d1e6bcc92c 100644
+--- a/kernel/arm64/ssyrk_direct_alpha_beta_arm64_sme1.c
++++ b/kernel/arm64/ssyrk_direct_alpha_beta_arm64_sme1.c
+@@ -9,13 +9,26 @@
+ #include <math.h>
+ #if defined(HAVE_SME)
+ 
++#if defined(DYNAMIC_ARCH)
++#define COMBINE(a,b) a ## b
++#define COMBINE2(a,b) COMBINE(a,b)
++#define SGEMM_PREPROCESS_BASE sgemm_direct_sme1_preprocess
++#define SGEMM_PREPROCESS COMBINE2(SGEMM_PREPROCESS_BASE,TS)
++#define SGEMM_DIRECT2X2_BASE sgemm_direct_alpha_beta_sme1_2VLx2VL
++#define SGEMM_DIRECT2X2 COMBINE2(SGEMM_DIRECT2X2_BASE,TS)
++#else
++#define SGEMM_PREPROCESS sgemm_direct_sme1_preprocess
++#define SGEMM_DIRECT2X2 sgemm_direct_alpha_beta_sme1_2VLx2VL
++#endif
++
+ #if defined(__ARM_FEATURE_SME) && defined(__clang__) && __clang_major__ >= 16
+ #include <arm_sme.h>
+ #endif
+ 
+ /* Function prototypes */
+-extern void sgemm_direct_sme1_preprocess(uint64_t nbr, uint64_t nbc,\
+-                                  const float * restrict a, float *  a_mod) __asm__("sgemm_direct_sme1_preprocess");
++extern void SGEMM_PREPROCESS (uint64_t nbr, uint64_t nbc,\
++
++                                  const float * restrict a, float *  a_mod) ;
+ 
+ /* Function Definitions */
+ static uint64_t sve_cntw() {
+@@ -227,7 +240,7 @@ void CNAME (BLASLONG N, BLASLONG K, float alpha, float * __restrict A,\
+         /* Pre-process the left matrix to make it suitable for 
+            matrix sum of outer-product calculation
+          */
+-        sgemm_direct_sme1_preprocess(N, K, A, A_mod);
++        SGEMM_PREPROCESS (N, K, A, A_mod);
+         asm volatile("" : : :"p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7",
+                          "p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15",
+                          "z0", "z1", "z2", "z3", "z4", "z5", "z6", "z7",
+@@ -245,6 +258,8 @@ void CNAME (BLASLONG N, BLASLONG K, float alpha, float * __restrict A,\
+ #else
+ 
+ void CNAME (BLASLONG N, BLASLONG K, float alpha, float * __restrict A,\
+-            BLASLONG strideA, float beta, float * __restrict C, BLASLONG strideC){}
+- 
++            BLASLONG strideA, float beta, float * __restrict C, BLASLONG strideC){
++fprintf(stderr,"empty ssyrk_direct kernel should never be called\n");
++}
++
+ #endif
+diff --git a/kernel/setparam-ref.c b/kernel/setparam-ref.c
+index e0699a1f9f..24bd81a8e3 100644
+--- a/kernel/setparam-ref.c
++++ b/kernel/setparam-ref.c
+@@ -216,6 +216,7 @@ gotoblas_t TABLE_NAME = {
+ #endif
+ #ifdef ARCH_ARM64
+   sgemm_directTS,
++  sgemm_direct_performantTS,	
+   sgemm_direct_alpha_betaTS,
+   ssymm_direct_alpha_betaLUTS,
+   ssymm_direct_alpha_betaLLTS,
+diff --git a/param.h b/param.h
+index cdf2a29e51..8112e8915a 100644
+--- a/param.h
++++ b/param.h
+@@ -3375,7 +3375,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ #if defined(CORTEXA57) || defined(CORTEXX1) || \
+     defined(CORTEXA72) || defined(CORTEXA73) || \
+-    defined(FALKOR)    || defined(TSV110) || defined(EMAG8180) || defined(VORTEX) || defined(FT2000)
++    defined(FALKOR)    || defined(TSV110) || defined(EMAG8180) || defined(VORTEX) || defined(FT2000) || defined(VORTEXM4)
+ 
+ #define SGEMM_DEFAULT_UNROLL_M  16
+ #define SGEMM_DEFAULT_UNROLL_N  4
+@@ -3392,7 +3392,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ /*FIXME: this should be using the cache size, but there is currently no easy way to
+ query that on ARM. So if getarch counted more than 8 cores we simply assume the host
+ is a big desktop or server with abundant cache rather than a phone or embedded device */ 
+-#if NUM_CORES > 8 || defined(TSV110) || defined(EMAG8180) || defined(VORTEX)|| defined(CORTEXX1)
++#if NUM_CORES > 8 || defined(TSV110) || defined(EMAG8180) || defined(VORTEX)|| defined(CORTEXX1) || defined(VORTEXM4)
+   #define SGEMM_DEFAULT_P 512
+   #define DGEMM_DEFAULT_P 256
+   #define CGEMM_DEFAULT_P 256
+@@ -3864,7 +3864,7 @@ Until then, just keep it different than DGEMM_DEFAULT_UNROLL_N to keep copy rout
+ 
+ #endif /* ARMv8 */
+ 
+-#if defined(ARMV9SME) /* ARMv9 SME */
++#if defined(ARMV9SME) || (defined(VORTEXM4)&&defined(__clang__))  /* ARMv9 SME */
+ #define USE_SGEMM_KERNEL_DIRECT 1
+ #define USE_SSYMM_KERNEL_DIRECT 1
+ #define USE_STRMM_KERNEL_DIRECT 1

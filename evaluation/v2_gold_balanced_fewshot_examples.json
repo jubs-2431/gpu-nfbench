@@ -1,0 +1,968 @@
+{
+  "crash_compile": [
+    {
+      "id": "GNF-0003-eaa63fac",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Intermittent failures in test_jaccard_index_random_strings\ngithub_labels: bug\nissue_body_excerpt: **Describe the bug** Occasionally, `test_text_methods.py::test_jaccard_index_random_strings` fails, e.g. https://github.com/rapidsai/cudf/actions/runs/5657992802/job/15328867496?pr=13746 I can also intermittently reproduce locally on trunk. I don't have a debug build, but `racecheck` reports some potential data races: ``` compute-sanitizer --tool=racecheck python -m pytest -v python/cudf/cudf/tests/text/test_text_methods.py::test_jaccard_index_random_strings -x --pdb ========= COMPUTE-SANITIZER ================================================================ test session starts ================================================================ platform linux -- Python 3.10.12, pytest-7.4.0, pluggy-1.2.0 -- /home/wence/Documents/src/rapids/compose/etc/conda/cuda_11.8/envs/rapids/bin/python cachedir: .pytest_cache benchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000) hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase('/home/wence/Documents/src/rapids/cudf/.hypothesis/examples') rootdir: /home/wence/Documents/src/rapids/cudf/python/cudf/cudf/tests configfile: pytest.ini plugins: xdist-3.3.1, benchmark-4.0.0, anyio-3.7.0, cov-4.1.0, repeat-0.9.1, rerunfailures-11.1.2, hypothesis-6.80.0, cases-3.6.14, timeout-2.1.0 collected 1 item python/cu...\ncomments_excerpt: Just to note, I think the data races are real problems, so I reported https://github.com/NVIDIA/cuCollections/issues/336 Thanks! Yeah I agree, they're probably real issues in cuco. They just happen to be red herrings here.",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0007-5a435abf",
+      "input": "repository: pytorch/pytorch\ntitle: [inductor] Multiple randint calls cause inconsistent RNG results between eager and compiled mode after fixing the rng seed\ngithub_labels: high priority|triaged|module: random|oncall: pt2|module: inductor|PT2-Bug-Bash\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug To reproduce: ```python import torch import torch._dynamo torch._inductor.config.fallback_random = True def fn(): torch.manual_seed(0) out = torch.randint(0, 100, (4,1), dtype=torch.int64) # Shape and integer range are not important. other = torch.randint(0, 100, (2,1), dtype=torch.int64) # No inconsistency if remove this line, although the value won't be returned. return out cfunc = torch.compile(fn, backend='inductor') torch.manual_seed(0) out1 = fn() torch.manual_seed(0) out2 = cfunc() print(f'{out1=}') ''' out1=tensor([[44], [39], [33], [60]]) ''' print(f'{out2=}') ''' out2=tensor([[33], [60], [63], [79]]) ''' torch.testing.assert_close(out1, out2, equal_nan=True) ``` Problem: RNG state is inconsistent between eager execution and torch.compile(backend='inductor') execution, even after explicitly resetting the seed with torch.manual_seed(0) before each run. The issue occurs when two randint calls are called inside the compiled function:the output of the first randint already differs between eager and compiled mode, even though the second randint result is not returned. After a few debugging, I notice that the following version does NOT trigger the inconsistency: ```python def fn(): torch.manual_seed(0) out = torch.randint(0, 100, (4,1), dtype=torch.int64) torch.manual_seed(0) # Extra seed reset before second randint other = torch.randint(0, 100, (2,...\ncomments_excerpt: Reproduced with Inductor only. Not sure if this counts as silent incorrectness, so flagging for triage review. I've opened a draft PR with a proposed fix: [https://github.com/pytorch/pytorch/pull/176842](https://github.com/pytorch/pytorch/pull/176842) The change prevents RNG ops (such as `aten.randint`) from being reordered in `reorder_for_locality`, which can otherwise lead to inconsistent RNG results between eager and compiled execution. I would appreciate a response.",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "compiler_codegen|async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0017-f27cd16b",
+      "input": "repository: numba/numba\ntitle: DeviceNDArray.bind() does not seem to bind the stream to self\ngithub_labels: bug|CUDA\nissue_body_excerpt: - [X] I am using the latest released version of Numba (most recent is visible in the change log (https://github.com/numba/numba/blob/master/CHANGE_LOG). - [X] I have included below a minimal working reproducer (if you are unsure how to write one see http://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports). The documentation of what `bind()` says it will do and what the implementation does don't seem to match (or if they do, the documentation is pretty ambiguous) - in https://github.com/numba/numba/blob/master/numba/cuda/cudadrv/devicearray.py#L135-L141 ```python def bind(self, stream=0): \"\"\"Bind a CUDA stream to this object so that all subsequent operation on this array defaults to the given stream. \"\"\" clone = copy.copy(self) clone.stream = stream return clone ``` Using a modified reproducer from the now-closed #2664: ```python from numba import cuda import numpy as np stream = cuda.stream() with stream.auto_synchronize(): arr = cuda.device_array( (3, 3), dtype=np.float64) arr.bind(stream) assert arr.stream == stream ``` results in: ``` $ python repro.py Traceback (most recent call last): File \"repro.py\", line 9, in <module> assert arr.stream == stream AssertionError ```\ncomments_excerpt: Thanks for the report, I can reproduce. Seems like this it not managing to do what the docs suggest!",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "async_race_ordering|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0020-322072f7",
+      "input": "repository: cupy/cupy\ntitle: Runtime compilation failed - CUDA synchronization primitives are only supported for sm_70 and up\ngithub_labels: issue-checked\nissue_body_excerpt: ### Description ``` /home/lucas/mambaforge/envs/scipy-dev/lib/python3.11/site-packages/cupy/_logic/truth.py:52: in all return a.all(axis=axis, out=out, keepdims=keepdims) a = array([[ True, False], [ True, True], [ True, True], [ True, True], [ True, True]]) axis = None keepdims = False out = None cupy/_core/core.pyx:1169: in cupy._core.core._ndarray_base.all ??? cupy/_core/core.pyx:1171: in cupy._core.core._ndarray_base.all ??? cupy/_core/_routines_logic.pyx:8: in cupy._core._routines_logic._ndarray_all ??? cupy/_core/_reduction.pyx:618: in cupy._core._reduction._SimpleReductionKernel.__call__ ??? cupy/_core/_reduction.pyx:370: in cupy._core._reduction._AbstractReductionKernel._call ??? cupy/_core/_cub_reduction.pyx:689: in cupy._core._cub_reduction._try_to_call_cub_reduction ??? cupy/_core/_cub_reduction.pyx:526: in cupy._core._cub_reduction._launch_cub ??? cupy/_core/_cub_reduction.pyx:461: in cupy._core._cub_reduction._cub_two_pass_launch ??? cupy/_util.pyx:64: in cupy._util.memoize.decorator.ret ??? cupy/_core/_cub_reduction.pyx:240: in cupy._core._cub_reduction._SimpleCubReductionKernel_get_cached_function ??? cupy/_core/_cub_reduction.pyx:223: in cupy._core._cub_reduction._create_cub_reduction_function ??? cupy/_core/core.pyx:2254: in cupy._core.core.compile_with_cache ??? /home/lucas/mambaforge/envs/scipy-dev/lib/python3.11/site-packages/cupy/cuda/compiler.py:484: in...\ncomments_excerpt: I think this has been fixed in #8200 and will be available in CuPy v13.1.0. Any chance you can build from the latest main branch and confirm? > Any chance you can build from the latest main branch and confirm? What is the best way to do this with conda-forge? Just `pip install git+https://github.com/cupy/cupy.git`? That should work because I see you already have CUDA Toolkit installed locally (`/usr/local/cuda`). You may want to use a fresh conda env to test this, to avoid installing CUDA packages from conda-forge. Also, setting this should help accelerate compilation: ``` CUPY_NVCC_GENERATE_CODE=\"arch=compute_61,code=sm_61\" ``` see https://docs.cupy.dev/en/stable/reference/environment.html#envvar-CUPY_NVCC_GENERATE_CODE. Looks like my environment still needs some change: ```console Collecting git+https://github.com/cupy/cupy.git Cloning https://github.com/cupy/cupy.git to /tmp/pip-re...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0023-93595bc9",
+      "input": "repository: cupy/cupy\ntitle: `cupyx.scipy.special.erfcx` not working\ngithub_labels: contribution welcome|cat:numpy-compat|prio:medium\nissue_body_excerpt: ### Description I am running the following code using CuPy which crashes with the message: ``` Traceback (most recent call last): File \"/content/test-cupy-func.py\", line 21, in <module> w = wofz_gpu(z) ^^^^^^^^^^^ File \"/content/test-cupy-func.py\", line 15, in wofz_gpu return erfcx(-1j * z_gpu) ^^^^^^^^^^^^^^^^^^ File \"cupy/_core/_kernel.pyx\", line 1340, in cupy._core._kernel.ufunc.__call__ File \"cupy/_core/_kernel.pyx\", line 1660, in cupy._core._kernel._Ops.guess_routine TypeError: Wrong type ((<class 'numpy.complex128'>,)) of arguments for cupyx_scipy_special_erfcx ``` ### To Reproduce ```py import cupy as cp from cupyx.scipy.special import erfcx def wofz_gpu(z) -> cp.ndarray: \"\"\"Compute the complex Faddeeva function on GPU for complex128 inputs. Args: z: Array-like input (NumPy or CuPy). Converted to CuPy complex128. Returns: CuPy array (complex128) containing w(z). \"\"\" z_gpu = cp.asarray(z, dtype=cp.complex128) return erfcx(-1j * z_gpu) if __name__ == \"__main__\": # Example: everything remains on GPU. z = cp.array([1.0 + 2.0j, -0.5 + 0.25j, 3.0 - 1.0j], dtype=cp.complex128) w = wofz_gpu(z) print(\"Input dtype:\", z.dtype) print(\"Output dtype:\", w.dtype) print(\"Output (GPU array):\", w) from scipy.special import wofz import numpy as np z = cp.asnumpy(z) # Move to CPU for SciPy w = wofz(z) print(\"Input dtype:\", z.dtype) print(\"Output dtype:\", w.dtype) print(\"Output (CPU array)...\ncomments_excerpt: Made a custom implementation that can deal with complex number arguments. [CuPy complex specials](https://github.com/dutta-alankar/cupy_complex_scpecials.git) Might be useful, but, right now, it is standalone and not integrated directly into CuPy. Thanks for reporting. I think xsf already has the complex overload. @steppi do you think you can guide @dutta-alankar to plumb it through? \ud83d\ude42 > Thanks for reporting. I think xsf already has the complex overload. [@steppi](https://github.com/steppi) do you think you can guide [@dutta-alankar](https://github.com/dutta-alankar) to plumb it through? \ud83d\ude42 Sure. I should have some time to help in around 10 days. > > Thanks for reporting. I think xsf already has the complex overload. [@steppi](https://github.com/steppi) do you think you can guide [@dutta-alankar](https://github.com/dutta-alankar) to plumb it through? \ud83d\ude42 > > Sure. I should have some time...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0037-7af727c1",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] compute-sanitizer failure on `gtests/PARQUET_TEST` preventing its use in code reading parquet files\ngithub_labels: bug\nissue_body_excerpt: **Describe the bug** Running the `compute-sanitizer` tool on code invoking the parquet reader fails, this led me to try the `PARQUET_TESTS` unit tests which fail very early. This blocks me from using the tool in any code that reads parquet files. **Steps/Code to reproduce bug** Build `libcudf` with tests, and run the `PARQUET_TESTS` with the `compute-sanitizer` tool from the build tree: ``` compute-sanitizer ./gtests/PARQUET_TEST ========= COMPUTE-SANITIZER [==========] Running 339 tests from 94 test suites. [----------] Global test environment set-up. [----------] 12 tests from ParquetChunkedReaderTest [ RUN ] ParquetChunkedReaderTest.TestChunkedReadNoData [ OK ] ParquetChunkedReaderTest.TestChunkedReadNoData (314 ms) [ RUN ] ParquetChunkedReaderTest.TestChunkedReadSimpleData ========= Invalid __shared__ read of size 0 bytes ========= at void cudf::io::parquet::detail::<unnamed>::gpuDecodePageDataFixed<unsigned char>(cudf::io::parquet::detail::PageInfo *, cudf::device_span<const cudf::io::parquet::detail::ColumnChunkDesc, (unsigned long)18446744073709551615>, unsigned long, unsigned long, unsigned int *)+0x9110 ========= by thread (0,0,0) in block (0,0,0) ========= Address 0x348 is misaligned ========= Saved host backtrace up to driver entry point at kernel launch time ========= Host Frame: [0x2f16d0] ========= in /lib/x86_64-linux-gnu/libcuda.so.1 ========= Host Frame: [0x...\ncomments_excerpt: This is likely related to #15258 where I see nightly checks are failing. I'm not able to recreate this error. Our nightly builds run compute-sanitizer and are not failing for PARQUET_TESTS as of today on 24.10 https://github.com/rapidsai/cudf/actions/runs/10415753636/job/28846773770 Which version of libcudf are you using (looks like 24.06 from the printenv output) and which version of compute-sanitizer? 24.08 is what I am running on with the compute sanitizer that comes with the following toolkit ``` nvcc --version nvcc: NVIDIA (R) Cuda compiler driver Copyright (c) 2005-2023 NVIDIA Corporation Built on Wed_Nov_22_10:17:15_PST_2023 Cuda compilation tools, release 12.3, V12.3.107 Build cuda_12.3.r12.3/compiler.33567101_0 ``` This is running on an nvidia RTX-A5000 I see the same errors as above and an additional one ``` ========= Program hit cudaErrorLaunchFailure (error 719) due to \"un...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0042-938c1ba1",
+      "input": "repository: jax-ml/jax\ntitle: `jnp.searchsorted` fails with symbolic shapes on the sorted dimension during `jax.export`\ngithub_labels: bug\nissue_body_excerpt: ### Description `jnp.searchsorted` raises `InconclusiveDimensionOperation` when the sorted array has a symbolic shape and is traced via `jax.export`. The values array having a symbolic shape works fine. The root cause is an eager overflow check in `SearchSorted.__init__`. ```python out_dtype.type(sorted_arr_aval.shape[dimension]) ``` This converts the sorted dimension size to a concrete int, which fails when symbolic. ## Reproduction ```python import jax import jax.numpy as jnp from jax import export f = jax.jit(lambda a, v: jnp.searchsorted(a, v)) export.export(f)( jax.ShapeDtypeStruct(export.symbolic_shape(\"S\"), jnp.float32), jax.ShapeDtypeStruct((3,), jnp.float32), ) # InconclusiveDimensionOperation: Symbolic dimension 'S' used in a context that requires a constant ``` ### System info (python version, jaxlib version, accelerator, etc.) ``` An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu. jax: 0.9.2 jaxlib: 0.9.2 numpy: 2.4.4 python: 3.13.9 (main, Oct 31 2025, 23:02:44) [Clang 21.1.4 ] device info: cpu-1, 1 local devices\" process_count: 1 platform: uname_result(system='Linux', node='coder-nicholas-1gpu-west2', release='6.17.0-1010-gcp', version='#10~24.04.1-Ubuntu SMP Thu Mar 19 04:05:15 UTC 2026', machine='x86_64') $ nvidia-smi Tue Apr 14 13:52:07 2026 +----------------------------------------------------------...\ncomments_excerpt: As additional context: this was introduced in #34332. The old implementation works just fine. > As additional context: this was introduced in [#34332](https://github.com/jax-ml/jax/pull/34332). The old implementation works just fine. I don't think that's true; this is what I see when I run the above snippet in JAX v0.9.0 ```pytb --------------------------------------------------------------------------- TypeError Traceback (most recent call last) [/tmp/ipykernel_6975/1703611361.py](https://localhost:8080/#) in <cell line: 0>() 7 f = jax.jit(lambda a, v: jnp.searchsorted(a, v)) 8 ----> 9 export.export(f)( 10 jax.ShapeDtypeStruct(export.symbolic_shape(\"S\"), jnp.float32), 11 jax.ShapeDtypeStruct((3,), jnp.float32), [... skipping hidden 6 frame] [/usr/local/lib/python3.12/dist-packages/jax/_src/numpy/lax_numpy.py](https://localhost:8080/#) in _searchsorted_via_scan(unrolled, sorted_arr, q...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0062-3cbef3ba",
+      "input": "repository: rapidsai/cudf\ntitle: cuDF failure when reading Avro files (Cannot parse metadata)\ngithub_labels: bug|cuIO\nissue_body_excerpt: I have exported some data from BigQuery in AVRO format using DEFLATE compression. I can use fastavro to read through the AVRO file and output the dataframe, however when trying to use with `cudf.read_avro` I get the following error: `RuntimeError: cuDF failure at: /conda/conda-bld/libcudf_1571332739543/work/cpp/src/io/avro/avro_reader_impl.cu:79: Cannot parse metadata` Example code: ``` import pandas as pd import cudf import dask_cudf as dc import dask.dataframe as dd from fastavro import writer,reader, parse_schema #works with open('/data/lv.avro000000000000', 'rb') as fo: records = [r for r in reader(fo)] df = pd.DataFrame.from_records(records) df.head(2) alt | bearing | carrier | conn_type | context | device | ha | id | id_type | ip | ... | meta | partner | places | signal_type | speed | src | ssid | ts | user | va -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- None | None | None | NaN | None | {'make': None, 'model': None, 'ua': None, 'ver... | 37.0 | d855e41d-3c16-4091-ae78-ee37c9cc7353 | adid | | ... | [{'k': 'conn', 'v': 'EDGE'}] | 100001 | [] | gps | None | None | | 2019-11-08 12:35:18+00:00 | {'id': None, 'id_type': None} | None None | None | None | NaN | None | {'make': None, 'model': None, 'ua': None, 'ver... | 5.1 | c4626a4d-37a4-47a2-9ea8-cfe211166bab | idfa | | ... | [{'k': 'conn', 'v': 'EDGE'}] | 100001 |...\ncomments_excerpt: I'll have to take a closer look, but from the description, it looks this may be due to the nested schema (nested columns are currently not supported). Yes there are definitely nested columns, BigQuery uses them pretty heavily. What is involved in supporting nested columns? It is a pretty crucial feature as more and more big data platforms are pushing it as a more efficient storage method and it really helps with data modelling! Even if it is something as simple as having the ability to un-nest them? I should be able to take a closer look on monday. For simple nesting, we should be able to unnest columns by creating new columns such as \"structX.fieldstructY.fieldZ\" (this should already be supported in the cudf parquet/orc readers, not sure about avro). For more complex nesting, such as lists of structs, we need true nesting support in cudf. That would be fantastic, to give you an idea ...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant user-visible failure is a compile, build, runtime exception, or crash.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "crash_compile",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    }
+  ],
+  "dtype_casting": [
+    {
+      "id": "GNF-0001-f56f80f3",
+      "input": "repository: triton-lang/triton\ntitle: add libdevice.remquo\ngithub_labels: \nissue_body_excerpt: > Compute a double-precision floating-point remainder in the same way as the remainder() function. Argument quo returns part of quotient upon division of x by y. Value quo has the same sign as > and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits. [__nv_remquof](https://docs.nvidia.com/cuda/libdevice-users-guide/__nv_remquof.html) [__nv_remquo](https://docs.nvidia.com/cuda/libdevice-users-guide/__nv_remquo.html) im unsure how to add it because none of the other functions seem to have multiple outputs ```python @impl.extern def remquo(arg0, arg1, arg2, _builder=None): return extern.elementwise(\"libdevice\", LIBDEVICE_PATH, [arg0, arg1, arg2, ], {(core.dtype(\"fp32\"), core.dtype(\"fp32\"), core.dtype(\"int32\"),): (\"__nv_remquof\", core.dtype(\"fp32\")), (core.dtype(\"fp64\"), core.dtype(\"fp64\"), core.dtype(\"int64\"),): (\"__nv_remquo\", core.dtype(\"fp64\")), }, _builder) ``` results in ``` ValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32) ```\ncomments_excerpt: Please copy and paste your full script? ```python import torch import timeit device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\") torch.set_default_device(device) # torch.set_default_dtype(torch.float32) DIST_TO_BLACKHOLE = 2.52e20 GALAXY_RADIUS = 4.7e20 STARS_PER_CUBIC_METER = 9.7e-50 # need to be at no closer than 100m apart for int64 # f32 works up to 10km # i think 1024m per tile is probably good # the ever given is 400m long # 20,000m is reall big scifi ship # death star is 200,000m (def not a moon) # conclusion: probably want to use i64 + f64 for position FINE_FMT = dict(dtype=torch.float32) CORSE_FMT = dict(dtype=torch.int32) GRID_SIZE = 1024 # m, about 1km CHANNELS = 3 # lv, lpf, lpc DIMS = 3 COUNT = 2 ** 20 MAX_SPEED = 0.01 NUM_STEPS = 10_000 CORSE_SPAWN_RADIUS = 1024 # 1Mm DELTA_TIME = 0.1 def init_storage(): storage = torch.zeros((COUNT, DIMS, CHANNELS), dt...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "dtype(\"fp32\"), core",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0002-16e149fe",
+      "input": "repository: pytorch/pytorch\ntitle: float8_e4m3fn type conversion fails with torch.compile\ngithub_labels: triaged|oncall: pt2|module: inductor|upstream triton|module: floatx (formerly float8)\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug ```python import torch def fn(t, scale): return t.float() * scale compiled_fn = torch.compile(fn, fullgraph=True) t = torch.randn((100, ), device='cuda') scale = torch.tensor(2.5, device='cuda') t = t.to(torch.float8_e4m3fn) print(fn(t, scale)) # success print(compiled_fn(t, scale)) #failure ``` Even though this type isn't natively supported by RTX 3090s, it still can do type conversions (for dequantization and calculations in another type). But if the function is compiled it fails as follows: ``` tensor([ 1.0156, 2.8125, 0.5859, -1.5625, -1.0938, 5.6250, 4.0625, 3.1250, 2.3438, 4.3750, -1.0156, 2.1875, -2.5000, -1.2500, 3.4375, -4.6875, -5.6250, -0.9375, 2.3438, -1.8750, 1.0156, -1.7188, 0.4297, 3.7500, -0.8594, -1.4062, 1.5625, 0.6250, 2.3438, 1.0938, 3.1250, -0.1465, -2.0312, -0.2734, -4.0625, -1.1719, -0.0391, -1.2500, -0.9375, -1.5625, 1.0938, -1.4062, 0.7812, -0.9375, 1.4062, 0.3125, 0.0977, 0.5469, -0.6250, -0.7031, -1.0156, 2.5000, 1.8750, 4.0625, 2.1875, -0.1270, -4.0625, 0.5469, -2.8125, -1.0156, 0.3516, -1.8750, -1.7188, 1.8750, -0.1270, 0.3125, -3.7500, -1.4062, 1.4062, 0.7031, -0.7812, 2.8125, 0.1562, -1.5625, -1.0156, -0.0146, 2.5000, -1.4062, -1.2500, -2.0312, 0.2344, -3.7500, 0.9375, 1.5625, 0.6250, -0.7812, 1.0938, 5.0000, -2.5000, -2.1875, -1.2500, -1.7188, 1.8750, 2.8125, -4.3750, -3.1250, 1.2500, 3.7500, -4.3750, 3.4375], device='cu...\ncomments_excerpt: cc @drisspg If this dtype is not natively supported in your hardware, try `uint8` instead ? > If this dtype is not natively supported in your hardware, try `uint8` instead ? if your model is in fp8 from the start (loaded from disk in fp8), re-quantizing it to an integer datatype introduces further error. 3090s *are* able to convert fp8 to other dtypes, without torch.compile the sample code works on GPU. I think this issue should be reported to triton > I think this issue should be reported to triton could be. or it could be that torch has a specialized kernel for converting float8 to other dtypes for devices that don't natively support float8, implemented via bit manipulation. Then it would be reasonable for Triton to say it this isn't a bug on their part (dtype not supported), but it would be one of torch (assuming the goal of torch.compile is to be able to compile all GPU code). I d...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "float8_e4m3fn type conversion fails with torch",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0004-e5162a33",
+      "input": "repository: pytorch/pytorch\ntitle: [regression] torch.norm with out dtype bfloat16 cause runtime error\ngithub_labels: triaged|module: regression|module: norms and normalization\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug As per torch.norm documentation, it can take out tensor. If we set out tensor to be bfloat16 and in input to be float32 then it fails with error: ``` RuntimeError: Expected out tensor to have dtype float, but got c10::BFloat16 instead ``` It used to work for PT 1.13. Use below code to reproduce the issue. ``` torch.norm(torch.tensor([3.]), 2, [0], False, out=torch.tensor([], dtype=torch.bfloat16)) ``` ### Versions Name: torch Version: 2.0.0 Summary: Tensors and Dynamic neural networks in Python with strong GPU acceleration Home-page: https://pytorch.org/ Author: PyTorch Team Author-email: [packages@pytorch.org](mailto:packages@pytorch.org) License: BSD-3 Location: /home/jthakur/.pt_2_0/lib/python3.8/site-packages Requires: filelock, jinja2, networkx, nvidia-cublas-cu11, nvidia-cuda-cupti-cu11, nvidia-cuda-nvrtc-cu11, nvidia-cuda-runtime-cu11, nvidia-cudnn-cu11, nvidia-cufft-cu11, nvidia-curand-cu11, nvidia-cusolver-cu11, nvidia-cusparse-cu11, nvidia-nccl-cu11, nvidia-nvtx-cu11, sympy, triton, typing-extensions Required-by: torchaudio, torchvision, triton\ncomments_excerpt: cc @lezcano TIL that we allow in most operations to specify an `out=` with a less precise dtype than that of the result. Is this something we want to continue supporting @ezyang @ngimel @albanD ? Note that in PrimTorch we ask for the out dtype larger or equal than that of the result. This is working today for many pw and reduction ops, and this is working in numpy",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "norm with out dtype bfloat16 cause runtime error ### \ud83d\udc1b Describe the bug As per torch",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0006-82eaa858",
+      "input": "repository: jax-ml/jax\ntitle: Casts and operations in bf16 x bf16 -> fp32 matmul\ngithub_labels: bug\nissue_body_excerpt: ### Description This code is pretty straightforward: ```python import jax.numpy as jnp import jax.random as jr import jax.lax as jl import jax a = jr.normal(jr.PRNGKey(1), (15000, 1000)).astype(jnp.bfloat16) b = jr.normal(jr.PRNGKey(2), (1000, 15000)).astype(jnp.bfloat16) r = jl.dot(a, b, preferred_element_type=jnp.float32) jax.block_until_ready(r) ``` This code takes around 6 seconds to complete on RTX 3090, but when you add ```precision=jax.lax.Precision.HIGH``` it will take only 2.3 seconds. When you replace 15000 with 20000 this code will try to allocate 24Gb of RAM and simply OOM, while higher precision works just fine. What happens inside of JAX when it tries to execute it? ### What jax/jaxlib version are you using? jax 0.4.13, jaxlib 0.4.13+cuda12.cudnn89 ### Which accelerator(s) are you using? GPU - RTX 3090, Tesla A100 ### Additional system info Ubuntu 22.10 ### NVIDIA GPU info +---------------------------------------------------------------------------------------+ | NVIDIA-SMI 530.41.03 Driver Version: 530.41.03 CUDA Version: 12.1 | |-----------------------------------------+----------------------+----------------------+ | GPU Name Persistence-M| Bus-Id Disp.A | Volatile Uncorr. ECC | | Fan Temp Perf Pwr:Usage/Cap| Memory-Usage | GPU-Util Compute M. | | | | MIG M. | |=========================================+======================+======================| | 0 NVIDI...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "Casts and operations in bf16 x bf16 -> fp32 matmul ### Description This code is pretty straightforward: ```python i",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0008-4625af98",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] csv writer truncating timestamp data while writing to csv file\ngithub_labels: bug|libcudf|cuIO\nissue_body_excerpt: **Describe the bug** cudf csv writer seems to be truncating the sub-second level data incase of `datetim64` dtypes. The datetime values in the csv files are being written only upto seconds level precision, thus ignoring any sub-second data. **Steps/Code to reproduce bug** ```python In[64]: gdf = cudf.DataFrame({\"a\":cudf.Series([12323, 4334554, 2342345], dtype='datetime64[ns]')}) In[65]: gdf Out[65]: a 0 1970-01-01 00:00:00.000012323 1 1970-01-01 00:00:00.004334554 2 1970-01-01 00:00:00.002342345 In[66]: gdf.to_csv('temp') In[67]: cudf.read_csv('temp') Out[67]: Unnamed: 0 a 0 0 1970-01-01T00:00:00Z 1 1 1970-01-01T00:00:00Z 2 2 1970-01-01T00:00:00Z In[68]: pd.read_csv('temp') Out[68]: Unnamed: 0 a 0 0 1970-01-01T00:00:00Z 1 1 1970-01-01T00:00:00Z 2 2 1970-01-01T00:00:00Z In[69]: gdf.to_pandas().to_csv('temp-pandas') In[70]: pd.read_csv('temp-pandas') Out[70]: Unnamed: 0 a 0 0 1970-01-01 00:00:00.000012323 1 1 1970-01-01 00:00:00.004334554 2 2 1970-01-01 00:00:00.002342345 In[71]: cudf.read_csv('temp-pandas') Out[71]: Unnamed: 0 a 0 0 1970-01-01 00:00:00.000012323 1 1 1970-01-01 00:00:00.004334554 2 2 1970-01-01 00:00:00.002342345 ``` **Expected behavior** Csv writer should be writing out the entire sub-second data incase of `datetime64` dtypes. **Environment overview (please complete the following information)** - Environment location: Bare-metal - Method of cuDF install: from...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "1",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on dtype support, conversion, promotion, or type-specific behavior.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0009-f786b33b",
+      "input": "repository: numba/numba\ntitle: CUDA target overloads not handling kwargs\ngithub_labels: CUDA|bug - failure to compile|bug - typing\nissue_body_excerpt: <!-- Thanks for opening an issue! To help the Numba team handle your information efficiently, please first ensure that there is no other issue present that already describes the issue you have (search at https://github.com/numba/numba/issues?&q=is%3Aissue). --> ## Reporting a bug <!-- Before submitting a bug report please ensure that you can check off these boxes: --> - [x] I have tried using the latest released version of Numba (most recent is visible in the change log (https://github.com/numba/numba/blob/main/CHANGE_LOG). - [x] I have included a self contained code sample to reproduce the problem. i.e. it's possible to run as 'python bug.py'. This: ```python import numpy as np from numba.cuda import jit from numba.extending import overload def bar(): pass @overload(bar, target='cuda') def ol_bar(x, kw1=None): def impl(x, kw1=None): return 123 return impl @jit def foo(arr): arr[0] = bar(2) tmp = np.zeros((1,)) foo[1, 1](tmp) print(tmp) ``` Fails typing with `TypeError(\"Signature mismatch: 1 argument types given, but function takes 2 arguments\")`.\ncomments_excerpt: The issue seems to be that kwargs aren't considered when producing the args for compilation, this patch seems to fix it: ```diff diff --git a/numba/cuda/dispatcher.py b/numba/cuda/dispatcher.py --- a/numba/cuda/dispatcher.py +++ b/numba/cuda/dispatcher.py @@ -763,6 +763,7 @@ class CUDADispatcher(Dispatcher, serialize.ReduceMixin): # Ensure an exactly-matching overload is available if we can # compile. We proceed with the typing even if we can't compile # because we may be able to force a cast on the caller side. + pysig, args = self._compiler.fold_argument_types(args, kws) if self._can_compile: self.compile_device(tuple(args)) ``` cf. `_DispatcherBase` https://github.com/numba/numba/blob/f4b6fe0124fa7734ba2bb28c7685db5b6306c486/numba/core/dispatcher.py#L359 Notes from triage meeting: - There was a PR that attempted to add kwargs to CUDA, but I wasn't in support of the approach there, ...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "e typing even if we can't compile # because we may be able to force a cast on the caller side",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0014-9fb698b0",
+      "input": "repository: pytorch/pytorch\ntitle: FlopCounterMode doesn't support HOP\ngithub_labels: triaged|oncall: pt2|module: higher order operators|module: pt2-dispatcher|module: flop counter\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug I'm trying to add micro-benchmark for flex attention, which is implemented by HOP. I use ```torch.utils.flop_counter.FlopCounterMode```, but it doesn't support capture FLOP for HOP. ``` def run_flex_decoding_causal(device: str = \"cuda\"): dtype_flops_utilization_map = { torch.bfloat16: \"0.8\", } B = 4 H = 16 D = 64 q_len = [32] kv_len = [1024, 8192] results = [] def causal_mask(batch, head, token_q, token_kv): return token_q >= token_kv for dtype, expected_flops_utilization in dtype_flops_utilization_map.items(): flops_utilization = 0 for seqlen_q in q_len: for seqlen_kv in kv_len: query = torch.randn((B, H, seqlen_q, D), dtype=dtype, device=device, requires_grad=True) key = torch.randn((B, H, seqlen_q, D), dtype=dtype, device=device, requires_grad=True) value = torch.randn((B, H, seqlen_q, D), dtype=dtype, device=device, requires_grad=True) block_mask = create_block_mask(causal_mask, 1, 1, seqlen_q, seqlen_kv) with FlopCounterMode(display=False) as mode: flex_attention(query, key, value, block_mask=block_mask) flops = mode.get_total_flops() compiled_fn = torch.compile(flex_attention, dynamic=False) for _ in range(WARMUP_ITER): compiled_fn(query, key, value, block_mask=block_mask) us_per_iter = benchmarker.benchmark_gpu(lambda: compiled_fn(query, key, value, block_mask=block_mask)) * 1000 flops_utilization += us_per_iter * flops / 1e9 / A100_40G_BF16_TFL...\ncomments_excerpt: cc @zou3519 @Chillee You can register a FlopCounterMode formula via HOP.py_impl(FlopCounterMode) Could this simply reuse the formula enabled for `scaled_dot_product_attention`? This issue also affects the `torch.distributed._tools.fsdp2_mem_tracker.FSDPMemTracker` mode seems solved? Please feel free to re-open. > You can register a FlopCounterMode formula via HOP.py_impl(FlopCounterMode) Hi, I am still encountering the \"no rule registered for HOP flex_attention\" error while using **PyTorch 2.6.0**. How can this be resolved? re-open since there's still issue with it cc @zou3519 @bdhirsh > You can register a FlopCounterMode formula via HOP.py_impl(FlopCounterMode) @zou3519 I'm running into this same issue on torch 2.7.1. I have a RoPE triton kernel that I would effectively like to skip counting FLOPS for in both forward and backward but I can't figure out how to use `HigerOrderOperators...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "bfloat16: \"0",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0016-7e125a4d",
+      "input": "repository: triton-lang/triton\ntitle: Triton NVIDIA backend: 'ttng.tensormap_create' op pipeliner doesn't know how to predicate this op (CUDA 13.0, sm_90 + sm_100)\ngithub_labels: \nissue_body_excerpt: ## Summary Compiling a Triton kernel that calls `tl.make_tensor_descriptor` inside a `for`-loop whose body also contains a `tl.dot` consuming the descriptor load fails at JIT compile time on the NVIDIA backend with: ``` error: 'ttng.tensormap_create' op pipeliner doesn't know how to predicate this op. LLVM ERROR: Fatal pipeliner error error: Failures have been detected while processing an MLIR pass pipeline note: Pipeline failed while executing [`TritonGPUPipeline` on 'builtin.module' operation] ``` Reproduces on every NVIDIA GPU we tested: B200 (sm_100, Blackwell) and H200 NVL (sm_90, Hopper). ## Environment | Component | Version | |-------------------|-------------------------------------------------| | Triton | `3.6.0` (also reproduces on `3.7.0+git886365ca` nightly from `triton-lang/triton` Actions run 25312905392) | | PyTorch | `2.11.0+cu130` | | CUDA (runtime) | `13.0` | | NVIDIA driver | `580.126.09` (B200 host) and `580.105.08` (H200 host) \u2014 both on the 580 driver line; `cuDriverGetVersion` returns `13000` inside the container in both cases | | GPUs tested | NVIDIA B200 (sm_100, Blackwell), NVIDIA H200 NVL (sm_90, Hopper) | | Docker base image | `vllm/vllm-openai:latest` (digest `sha256:04563c302537a91aa49ebdfbceda96111c5712275999b7e8804fa598f0b5641d`) | | Python | 3.12 | ## Reproducer Self-contained script (no vLLM / flash-attention dependency; pure Triton + torch),...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "empty(size, dtype=torch",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "dtype_casting",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "triton-lang/triton"
+    }
+  ],
+  "nan_inf": [
+    {
+      "id": "GNF-0010-ff390b39",
+      "input": "repository: triton-lang/triton\ntitle: Value 'sm_89' is not defined for option 'gpu-name'\ngithub_labels: \nissue_body_excerpt: Hello all, ## Summary I am having issues running the xformers softmax function. Internally, it seems triton fails and the function is falling back to the torch implementation. Is there no support for NVIDIA RTX 4090 right now? ## Environment Details I'm using PyTorch 1.13.1 through Docker and CUDA 12, with an i9 13900k and a 4090. ```bash $ python -m torch.utils.collect_env Collecting environment information... PyTorch version: 1.13.1 Is debug build: False CUDA used to build PyTorch: 11.6 ROCM used to build PyTorch: N/A OS: Ubuntu 18.04.6 LTS (x86_64) GCC version: (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0 Clang version: Could not collect CMake version: version 3.25.0 Libc version: glibc-2.27 Python version: 3.10.8 (main, Nov 4 2022, 13:48:29) [GCC 11.2.0] (64-bit runtime) Python platform: Linux-5.15.0-58-generic-x86_64-with-glibc2.27 Is CUDA available: True CUDA runtime version: 11.6.124 CUDA_MODULE_LOADING set to: LAZY GPU models and configuration: GPU 0: NVIDIA GeForce RTX 4090 Nvidia driver version: 525.78.01 cuDNN version: Probably one of the following: /usr/lib/x86_64-linux-gnu/libcudnn.so.8.4.0 /usr/lib/x86_64-linux-gnu/libcudnn_adv_infer.so.8.4.0 /usr/lib/x86_64-linux-gnu/libcudnn_adv_train.so.8.4.0 /usr/lib/x86_64-linux-gnu/libcudnn_cnn_infer.so.8.4.0 /usr/lib/x86_64-linux-gnu/libcudnn_cnn_train.so.8.4.0 /usr/lib/x86_64-linux-gnu/libcudnn_ops_infer.so.8.4.0 /usr/lib/x86_64...\ncomments_excerpt: *Update: never mind this post, I overlooked that nanoGPT's compilation support requires PyTorch 2.0.0. I've attached notes on how to make nanoGPT work below for anyone hitting this via Google.* Original post: Having a similar issue training [https://github.com/karpathy/nanoGPT](nanoGPT) on an RTX 4090. Slightly different error message, perhaps due a difference in triton version. I compiled the latest main as of today within the latest nvidia docker container, `nvcr.io/nvidia/pytorch:23.01-py3`. ``` python train.py config/train_shakespeare_char.py ... Initializing a new model from scratch WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0 WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0 WARNING: using slow attention. Flash Attention atm needs PyTorch nightly and dropout=0.0 WARNING: using slow attention. Flas...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is NaN, Inf, or another non-finite value.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0013-bd88dbb3",
+      "input": "repository: triton-lang/triton\ntitle: Block pointers `padding_option` bug?\ngithub_labels: \nissue_body_excerpt: Triton version: 2.1.0 (nightly build) GPU used: A6000 ### TLDR: With block pointers, loading a block that spills over a dimension boundary, does not respect the `padding_option` specified. ### Details: Below is a minimal reproducible kernel that sums up column blocks of MxN tensor `X`. Say X is 32x32, column block size is 16. This kernel will output a 2x1 Y tensor which contains the sum of all elements in X[:, 0:16] and X[:, 16:32]. Each kernel program instance handles a column to sum up. The below kernel produces correct results when M is a multiple of `block_size` but incorrect otherwise. Using both `padding_option=\"zero\"` or `padding_option=\"nan\"` results in the same incorrect result. The key line below is `x = tl.load(X_block_ptr, boundary_check=(0, 1), padding_option=\"zero\")` ``` import torch import triton.language as tl import triton @triton.jit def sum_col_block(X, Y, M, N, num_col_blocks: tl.constexpr, block_size: tl.constexpr, col_block_size: tl.constexpr): # one program to sum up a column block pid = tl.program_id(axis=0) X_block_ptr = tl.make_block_ptr(base=X, shape=(M, N), strides=(N, 1), offsets=(0, pid * col_block_size), block_shape=(block_size, col_block_size), order=(1,0)) acc = tl.zeros((1,1), dtype=tl.float32) for _ in range(0, M, block_size): x = tl.load(X_block_ptr, boundary_check=(0, 1), padding_option=\"zero\") s = tl.sum(x, axis=0) s = tl.sum(s, axis=0) ...\ncomments_excerpt: I believe it's not a bug. Try: ` X_block_ptr = tl.advance(X_block_ptr, (block_size, 0))` I am already using that. ``` for _ in range(0, M, block_size): x = tl.load(X_block_ptr, boundary_check=(0, 1), padding_option=\"zero\") s = tl.sum(x, axis=0) s = tl.sum(s, axis=0) acc += s tl.advance(X_block_ptr, (block_size, 0)) ``` To clarify, `tl.advance` doesn't have side effects, you need to assign the return value to block_ptr. That fixed it! Thanks :-)",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "Using both `padding_option=\"zero\"` or `padding_option=\"nan\"` results in the same incorrect result",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0015-04273d95",
+      "input": "repository: pytorch/pytorch\ntitle: `scaled_dot_product_attention` produces NaNs for math backend, but not memory efficient backend when used in mixed precision.\ngithub_labels: module: numerical-stability|module: cuda|triaged|module: sdpa\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug I have found the problem with dot attention when using mixed precision, in my project i had disabled memory efficient cross attention and sometimes math backend behave incorrectly and produces NaNs. This is a reproduction. NOTE: Flash Attention 2 is disabled automatically due usage of a custom mask. ```python import torch device = \"cuda\" # Load checkpoint data = torch.load(\"debug_attention.pt\", map_location=device) q = data['q'] k = data['k'] v = data['v'] mask = data['mask'] with torch.autocast(device_type=\"cuda\", dtype=torch.float16): with torch.backends.cuda.sdp_kernel(enable_mem_efficient=True): y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask = mask.to(device)) if torch.isnan(y).any() or torch.isinf(y).any(): print(\"Invalid tensor for memory efficient!\") else: print(\"Valid tensor for memory efficient!\") with torch.autocast(device_type=\"cuda\", dtype=torch.float16): with torch.backends.cuda.sdp_kernel(enable_mem_efficient=False): y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask = mask.to(device)) if torch.isnan(y).any() or torch.isinf(y).any(): print(\"Invalid tensor for math!\") else: print(\"Valid tensor for math!\") ``` [debug_attention.pt.zip](https://github.com/pytorch/pytorch/files/14154262/debug_attention.pt.zip) ### Versions ``` PyTorch version: 2.1.2+cu121 Is debug build: False CUDA used to build Py...\ncomments_excerpt: I can reproduce this with latest nightly builds and also with the `torch.nn.attention.sdpa_kernel` context manager. However, it works with `bfloat16`, so it might just be a numerical issue. Seeing as bfloat16 works I suspect that you might just be running out of range since float16's max normal value is 65504 ```Python # lets see initial of q print(f\"ABS MAX Q: {q.abs().max()}\") print(f\"ABS MAX K: {k.abs().max()}\") output = torch.matmul(q, k.transpose(-2, -1)) print(f\"Output has NaN: {torch.isnan(output).any()} Output has Inf {torch.isinf(output).any()}\") # lets see what the max dot_prod is q_hp = q.to(torch.float32) k_hp = k.to(torch.float32) output_hp = torch.matmul(q_hp, k_hp.transpose(-2, -1)) print(f\"Max dot_prod = {output_hp.abs().max()}\") ``` Produces: ``` Shell ABS MAX Q: 576.0 ABS MAX K: 382.75 Output has NaN: False Output has Inf True Max dot_prod = 784449.375 ``` The reason...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is NaN, Inf, or another non-finite value.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0019-965637d3",
+      "input": "repository: triton-lang/triton\ntitle: [Bug] gluon warp specialized pipeline load nan from TMA input in certain cases\ngithub_labels: bug\nissue_body_excerpt: ### Describe the bug I'm working on warp specialized kernel. the TMA loaded smem contains nan values under a very specific and unusual condition. If I change mbar init order, the problem may disappear. The following reproduce code take some code from gluon attn fwd example. some notes: 1. the example cannot be further simplified; any change may cause the bug to become unreproducible. 2. the bug pattern can be changed if you change `bug_variant` value from 0 to 1. 3. the bug can be reliably reproduced and shows no randomness. 4. the code is tested on H200/B200 (triton 3.6). 5. the code only works on triton 3.7, 3.6 need to add inits to all aggregate types. ```Python import torch import triton import triton.language as tl from triton.experimental.gluon import language as gl import triton.experimental.gluon as gluon from triton.experimental.gluon.nvidia.hopper import TensorDescriptor from triton.experimental.gluon.language.nvidia.blackwell import ( tma, mbarrier, ) @tl.core._aggregate class BarrierCounter: index: gl.tensor phase: gl.tensor num_barriers: gl.constexpr @gluon.jit def increment(self): if self.num_barriers == 1: return BarrierCounter(gl.to_tensor(0), self.phase ^ 1, self.num_barriers) next_index = self.index + 1 rollover = next_index == self.num_barriers index = gl.where(rollover, 0, next_index) phase = gl.where(rollover, self.phase ^ 1, self.phase) return BarrierCo...\ncomments_excerpt: The error is related to `dw_chnl` which is allocated but never used and also the mbarriers in it are never invalidated. Adding this fixes the reproducer for me: ``` dw_chnl = SharedMemoryChannel.alloc(\"dw\", [1], gl.float32,gl.SwizzledSharedLayout(1, 1, 1, [0]), num_buffers=1) dw_chnl.release() ``` The issue is that the compiler detects that `dw_chnl` isn't used past the initialization, and re-uses the memory for the iq buffer. Then the hardware must flush some write to the mbarrier location, which is now part of the tma load buffer. @pawelszczerbuk could consan detect these missing `mbarrier.inval` calls? @peterbell10 so the best way to avoid this issue is to always release the mbar at the end of the kernel to ensure the compiler doesn\u2019t optimize away the related shared memory? is the `self.mem._keep_alive()` in attn fwd example exists for same reason? The important part is that if th...",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is NaN, Inf, or another non-finite value.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0021-ebaa6477",
+      "input": "repository: jax-ml/jax\ntitle: `jax.numpy.linalg.tensorinv` brings different results with `numpy.linalg.tensorinv`\ngithub_labels: bug\nissue_body_excerpt: ### Description I found that `jax.numpy.linalg.tensorinv` brings different results with `numpy.linalg.tensorinv` in following case. I suppose this may be a bug in `JAX`. ```py import numpy as np import jax.numpy as jnp print(np.linalg.tensorinv(np.full((2, 2), np.nan), 1)) print(jnp.linalg.tensorinv(jnp.full((2, 2), jnp.nan), 1)) ``` Output: ```bash [[nan nan] [nan nan]] [[nan nan] [nan inf]] ``` ### System info (python version, jaxlib version, accelerator, etc.) ``` jax: 0.6.0 jaxlib: 0.6.0 numpy: 2.2.3 python: 3.10.12 (main, Feb 4 2025, 14:57:36) [GCC 11.4.0] device info: NVIDIA GeForce RTX 4090-1, 1 local devices\" process_count: 1 platform: uname_result(system='Linux', node='4db45dc420f8', release='6.11.0-25-generic', version='#25~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Apr 15 17:20:50 UTC 2', machine='x86_64') $ nvidia-smi Wed May 7 16:26:08 2025 +---------------------------------------------------------------------------------------+ | NVIDIA-SMI 535.230.02 Driver Version: 535.230.02 CUDA Version: 12.2 | |-----------------------------------------+----------------------+----------------------+ | GPU Name Persistence-M | Bus-Id Disp.A | Volatile Uncorr. ECC | | Fan Temp Perf Pwr:Usage/Cap | Memory-Usage | GPU-Util Compute M. | | | | MIG M. | |=========================================+======================+======================| | 0 NVIDIA GeForce RTX 4090 Off | 00000000:...\ncomments_excerpt: Thanks! I can't reproduce this difference on my Mac or on colab (GPU and CPU), with or without x64 enabled. Regardless, I probably wouldn't rank this as a particularly high priority issue unless it's a blocker in a real problem that you're working on. If it is, please feel free to provide more details and I can make some suggestions there! > Thanks! I can't reproduce this difference on my Mac or on colab (GPU and CPU), with or without x64 enabled. Regardless, I probably wouldn't rank this as a particularly high priority issue unless it's a blocker in a real problem that you're working on. If it is, please feel free to provide more details and I can make some suggestions there! Thank you for your patient reply. I have confirmed that this issue has been reproduced again on my device. This probably depends on the particular version of LAPACK that you're using on your system. I agree with...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "py import numpy as np import jax.numpy as jnp print(np.linalg.tensorinv(np.full((2, 2), np.nan), 1)) print(jnp.linalg.tensorinv(jnp.full((2, 2), jnp.nan), 1))",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|environment_configuration"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0024-543e6651",
+      "input": "repository: pytorch/pytorch\ntitle: `torch.std_mean` returns `NaN` as mean of an `inf` array.\ngithub_labels: triaged|module: NaNs and Infs|module: python frontend\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug `torch.std_mean` returns `nan` when input is an array containing only `inf`. This behavior is not consistent with `torch.mean`. ```python import numpy as np import torch input = torch.tensor([np.inf, np.inf], dtype=torch.float32) out = torch.std_mean(input, None) print(out[1]) # tensor(nan) actual, inf expected. out = torch.mean(input) print(out) # tensor(inf) \"\"\" torch.std_mean seems to return `inf` if the input array contains also normal number. \"\"\" input = torch.tensor([1.0, np.inf], dtype=torch.float32) out = torch.std_mean(input) print(out[1]) # tensor(inf) ``` ### Versions ``` Collecting environment information... PyTorch version: 2.4.1+cu121 Is debug build: False CUDA used to build PyTorch: 12.1 ROCM used to build PyTorch: N/A OS: AlmaLinux 9.4 (Seafoam Ocelot) (x86_64) GCC version: (GCC) 11.4.1 20231218 (Red Hat 11.4.1-3) Clang version: 16.0.1 (https://github.com/llvm/llvm-project.git cd89023f797900e4492da58b7bed36f702120011) CMake version: version 3.23.2 Libc version: glibc-2.34 Python version: 3.9.18 (main, Aug 23 2024, 00:00:00) [GCC 11.4.1 20231218 (Red Hat 11.4.1-3)] (64-bit runtime) Python platform: Linux-5.14.0-427.37.1.el9_4.x86_64-x86_64-with-glibc2.34 Is CUDA available: True CUDA runtime version: 11.2.67 CUDA_MODULE_LOADING set to: LAZY GPU models and configuration: GPU 0: NVIDIA GeForce RTX 2080 Ti GPU 1: NVIDIA TITAN RTX GPU 2: NVID...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "std_mean` returns `NaN` as mean of an `inf` array",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0028-64f6040c",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] pylibcudf/libcudf minimum reduce with nan seems to misbehave?\ngithub_labels: bug|libcudf\nissue_body_excerpt: **Describe the bug** While I _think_ libcudf min/max ignores NaN (and indeed does not return it), in the example below, the existance of NaNs cause it to report the second lowest value rather than the actual minimum. (Removing the NaNs, causes it to report the correct result.) **Steps/Code to reproduce bug** On my machine, the following code reports the second lowest value as the result for minimum for pylibcudf: ```python import numpy as np import pyarrow as pa import pylibcudf as plc # Prepare array, original was random, but this is sufficient: nparr = np.zeros(10_000) nparr[[100, 200, 300]] = np.nan nparr[44] = -1 # lowest value nparr[705] = -0.5 # second lowest value arr = pa.array(nparr) col = plc.Column.from_arrow(arr) actual = plc.reduce.reduce(col, plc.aggregation.min(), col.type()).to_py() expected = pa.compute.min(arr) print(f\"{actual=} {expected=}\") ``` (Original array was random with some NaNs added, but the above reproduces just the same.) **Environment overview (please complete the following information)** - pylibcudf: 25.08.00a522 - installed via `mamba install -c rapidsai-nightly -c rapidsai -cconda-forge -cnvidia cudf==25.08.*` (but originally found with 25.04 libcudf.) **Environment details** On a DGX box with Tesla V100-SXM2-32GB, Driver Version: 535.161.08 CUDA Version: 12.2. (Initial version was probably with a 12.4 or newer.) <details><summary>Click her...\ncomments_excerpt: Nvm, I suspect misunderstood and it seems like this expected with callers taking care of it when NaNs in the input are possible. In which case, I guess it may still make sense to document the behavior in `libcudf` (I didn't find such docs). I believe this falls under here https://github.com/rapidsai/cudf/issues/18930 Yeah, I guess that would also remove this surprise (it would be nice if min/max guaranteed propagation or ignoring of NaNs, but I understand that it requires additional checks in general).",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "[BUG] pylibcudf/libcudf minimum reduce with nan seems to misbehave? **Describe the bug** While I _think_ libcudf min/max ignore",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0045-d28f7a7d",
+      "input": "repository: cupy/cupy\ntitle: Provide errstate / seterr / geterr\ngithub_labels: cat:feature\nissue_body_excerpt: It is better to have a feature like `numpy.seterr` to detect what computation cause numeric exception. * Check arguments for `nan`s and `inf`s after each kernel launch? * Can we utilize any CUDA-level support?\ncomments_excerpt: Perhaps related #589. Interface would be different, but could be implemented with some common mechanism. Has this been implemented already? Not yet. I think it is unlikely to be implemented in the near future as mechanisms for these error detections are not provided in GPU hardware.",
+      "metadata": {
+        "current_ensemble_prediction": "not_numerical_failure",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "1",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "* Check arguments for `nan`s and `inf`s after each kernel launch?",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "nan_inf",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    }
+  ],
+  "not_numerical_failure": [
+    {
+      "id": "GNF-0012-d3d20064",
+      "input": "repository: numba/numba\ntitle: Support For CPU Atomics\ngithub_labels: feature_request\nissue_body_excerpt: ## Feature request It would be great if there were a way to use atomic operations from within numba. Currently atomic operations are only supported when generating cuda or HSA code. I'm currently experimenting with using numba to write callbacks that are provided to a C++ concurrency library. In this context, atomics are useful in that they can reduce the amount of synchronization required (or to write the locks that are actually being used). You can technically use atomic operations now if you hide them inside a function pointer exported from C++, but the performance impacts of doing so aren't clear to me. At first glance, preventing inlining seems like a high price to pay for every atomic operation. With regards to what would be the most useful, weak memory consistency is by far the most common thing that shows up in the applications I'm looking at right now, but what's needed is application specific in general. Other consistencies could potentially be useful to me for being able to acquire/release existing locks without having to route everything through an externally compiled function, but that's more of a secondary concern at the moment.\ncomments_excerpt: FYI I was just looking at this and you can achieve it reasonably with https://gist.github.com/sklam/40f25167351832fe55b64232785d036d (renamed to `numba.extending.intrinsics`), but it requires a bit of llvm work. Neat example! I hadn't seen that before. To document a use case for this feature: the [HogWild! algorithm](http://papers.nips.cc/paper/4390-hogwild-a-lock-free-approach-to-parallelizing-stochastic-gradient-descent) requires atomic floating-point addition. While that may be achievable in Numba's CUDA support, we need atomic intrinsics (ideally applicable to NumPy arrays, an intrinsic atomic `arr[i] += x` operation) in order to make such implementations that work without a GPU. Just wanted to add to this, I\u2019ve felt a need for this when I wanted to: * generate large histograms in parallel (too large to give each thread a copy) * perform GraphBLAS-like parallel graph computations ...",
+      "metadata": {
+        "current_ensemble_prediction": "not_numerical_failure",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is primarily a feature or design request rather than a numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0025-d23b5aed",
+      "input": "repository: numba/numba\ntitle: Error when calling `nb.generated_jit` from CUDA\ngithub_labels: CUDA|question\nissue_body_excerpt: <!-- Thanks for opening an issue! To help the Numba team handle your information efficiently, please first ensure that there is no other issue present that already describes the issue you have (search at https://github.com/numba/numba/issues?&q=is%3Aissue). --> ## Reporting a bug <!-- Before submitting a bug report please ensure that you can check off these boxes: --> - [x] I have tried using the latest released version of Numba (most recent is visible in the change log (https://github.com/numba/numba/blob/main/CHANGE_LOG). - [X] I have included a self contained code sample to reproduce the problem. i.e. it's possible to run as 'python bug.py'. It seems it is impossible to call a `generated_jit`-decorated function from inside a CUDA kernel. Example below. I am in the process of making a CPU-numba library dual use. Unfortunately, some simple `generated_jit` routines are used in a number of different places in CPU jit-compiled code. Workarounds that iron out the resulting problems without having to duplicate code would be much appreciated. (Or a fix of this issue, of course!) ```py \"\"\" Test CUDA kernel call to @generated_jit function. \"\"\" from typing import Union, Any, TypeVar, Type import numpy as np import numba as nb # type: ignore from numba import cuda # type: ignore from ingolstadt.util import mathutil def test_cuda_generated_jit() -> None: \"\"\" Test CUDA kernel call to @...\ncomments_excerpt: `generated_jit` is deprecated, because `@overload` is a better solution - can you rewrite `nan_of_type` using `@overload` instead (see https://numba.readthedocs.io/en/latest/extending/high-level.html#high-level-extending)? For this to work with CUDA you will need the 0.57RC: https://numba.discourse.group/t/ann-numba-0-57-0rc1-and-llvmlite-0-40-0rc1/1879 Ah - thanks! will give it a try! Will close unless it doesn't work. BTW - a version of `@overload` for device functions would be great! :) > BTW - a version of `@overload` for device functions would be great! :) I'm not sure what you mean - all overloads should be usable as device functions by default. Are you running into a problem using one as a device function? I mean ability to mix specialization by type and ability to use the cuda kernel interface. Not absolutely essential as can one can usually \"snip out\" areas that require speci...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is a support/API question without an explicit numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0029-5f61e128",
+      "input": "repository: rapidsai/cudf\ntitle: [QST] TypeError: Argument 'real' has incorrect type (expected numpy.ndarray, got ndarray)\ngithub_labels: question\nissue_body_excerpt: Problem comes from line 62 inside function `my_func_single`. Code: ``` import sys, os import numpy as np try: import cudf.pandas cudf.pandas.install() except: print('cudf.pandas load failed') from cudf.pandas.module_accelerator import disable_module_accelerator import pandas as pd from random import randint from datetime import datetime, timedelta, date from functools import partial from concurrent.futures import ProcessPoolExecutor as Pool from multiprocessing import set_start_method import talib as tl def data_generation(nRows: int): ################## unimportant, for reproducing purpose ################### # This function generates the dataframe obj, which has 5 columns, and the data are sorted by WorkingDay and Minute ascendingly my_df = pd.DataFrame(data={'WorkingDay': ['2019-01-02', '2018-01-02', '2019-05-02', '2020-01-02', '2021-01-02'], 'name': ['albert', 'alex', 'alice', 'ben', 'bob'], 'Minute': ['09:00:00', '09:20:00', '08:00:00', '07:00:00', '09:30:00'], 'aaa': np. random.rand(5), 'bbb': np. random.rand(5)}) my_df = pd.concat([my_df for i in range(int(nRows/5))], axis=0) my_df['WorkingDay'] = my_df['WorkingDay'].map(lambda x: (date(randint(2010,2020), randint(1,4), randint(1,5))).strftime('%Y-%m-%d')) my_df['Minute'] = np.random.permutation(my_df['Minute'].values) my_df = my_df.sort_values(by=['WorkingDay', 'Minute'], inplace=False).reset_index(drop=True,inplace=...\ncomments_excerpt: This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas. See the feature issue here: https://github.com/rapidsai/cudf/issues/15397 The broad problem is that because numpy has a C API, providing proxied objects like with do with pandas and cudf.pandas is more difficult. As a consequence, although when you call `to_numpy()` on a cudf.pandas Series you get something that behaves like a numpy array, we do not answer \"yes\" to the question `isinstance(numpy_like_thing, np.ndarray)`. I'm going to leave this open for a little while I look into #14537 > This is a consequence of not fully supporting wrapped numpy arrays when using cudf.pandas. See the feature issue here: #15397 > > The broad problem is that because numpy has a C API, providing proxied objects like with do with pandas and cudf.pandas is more difficult. > > As a consequence, although when you cal...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is a support/API question without an explicit numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0031-dff9514d",
+      "input": "repository: numba/numba\ntitle: numba.cuda.detect() feature request\ngithub_labels: feature_request|CUDA|good first issue\nissue_body_excerpt: - [ ] I am using the latest released version of Numba (most recent is visible in the change log (https://github.com/numba/numba/blob/master/CHANGE_LOG). - [ ] I have included below a minimal working reproducer (if you are unsure how to write one see http://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports). I would prefer to have the following info, maybe also in the cudatoolkit, so that users with low end cards can see why 'cuda' is not so fast as expected (single vs double speed, device - host speed) or why the kernel is 'crashing' (watchdog/TDR \"windows feature\") From CUDA-Z utility: Watchdog Enabled : Yes / No Compute Mode : Default or TCC Performance: Host to Device; Device to Host; Host to Host; Single-precision float; Double-precision float; Fron Nsight Monitor: WDDM TDR Delay; WDDM TDR Enabled\ncomments_excerpt: To add this to Numba, we can get some of these attributes from `cuDeviceGetAttribute`: - `CU_DEVICE_ATTRIBUTE_TCC_DRIVER`: `1` if TCC driver is in use. If `0` on Windows, then WDDM is in use and performance will be lower. - `CU_DEVICE_ATTRIBUTE_SINGLE_TO_DOUBLE_PRECISION_PERF_RATIO`: Ratio of single to double precision throughput. A large number (>3) indicates a card with slow double precision. - `CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT`: `1` if there is a time limit for running kernels (i.e., the watchdog is present) We should output these values in the `numba -s` output for diagnostics. can this issue be labelled as a \"good first issue\"? If there are any tricky things here, please let me know. I am working on this @rawwar Sure - go for it! My current update outputs the following ``` In [5]: from numba import cuda In [6]: cuda.detect() Found 1 CUDA devices id 0 b'GeForce GTX 1660 Ti'...",
+      "metadata": {
+        "current_ensemble_prediction": "not_numerical_failure",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is primarily a feature or design request rather than a numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0044-58d8c7b3",
+      "input": "repository: rapidsai/cudf\ntitle: [DOC] please update for Cuda 12xx\ngithub_labels: doc\nissue_body_excerpt: Here https://docs.rapids.ai/install#WSL2 I followed the pip install instructions ``` pip install cudf-cu11 dask-cudf-cu11 --extra-index-url=https://pypi.nvidia.com pip install cuml-cu11 --extra-index-url=https://pypi.nvidia.com pip install cugraph-cu11 --extra-index-url=https://pypi.nvidia.com ``` but I have ``` @LAPTOP-DNCQ5AAC:/mnt/d/cuda/rapids/notebooks-contrib/community_tutorials_and_guides/cugraph$ nvidia-smi Thu Apr 27 10:21:54 2023 +---------------------------------------------------------------------------------------+ | NVIDIA-SMI 530.47 Driver Version: 531.68 CUDA Version: 12.1 | |-----------------------------------------+----------------------+----------------------+ | GPU Name Persistence-M| Bus-Id Disp.A | Volatile Uncorr. ECC | | Fan Temp Perf Pwr:Usage/Cap| Memory-Usage | GPU-Util Compute M. | | | | MIG M. | |=========================================+======================+======================| | 0 NVIDIA GeForce GTX 1650 On | 00000000:01:00.0 Off | N/A | | N/A 41C P8 2W / N/A| 0MiB / 4096MiB | 0% Default | | | | N/A | +-----------------------------------------+----------------------+----------------------+ +---------------------------------------------------------------------------------------+ | Processes: | | GPU GI CI PID Type Process name GPU Memory | | ID ID Usage | |=====================================================================================...\ncomments_excerpt: Hi @nyck33, can you please include an example of the errors you're facing? I'm going to do my best to guess what might be going wrong. Another user recently reported this error: ``` ImportError: libcudart.so.11.0: cannot open shared object file: No such file or directory ``` RAPIDS is currently built on CUDA 11, so you need to install a CUDA Toolkit with that major version. Note that it's fine to use a newer _driver_ but the system must have a CUDA 11 _toolkit_. If this is the error you see, I think there is room for improvement in the docs. Both WSL2 support and pip support are fairly new, so we appreciate your help in reporting this. I'll file a PR to clarify this requirement in the docs here: https://docs.rapids.ai/install#pip-install In the meantime, I think you have a couple options: - Install a `cuda-toolkit` package inside WSL that is major version 11 (I recommend 11.8, the mos...",
+      "metadata": {
+        "current_ensemble_prediction": "crash_compile",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is primarily documentation-related rather than a numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0051-53841ba4",
+      "input": "repository: numba/numba\ntitle: Numba is not detecting the icc_rt libraries when installed with pip\ngithub_labels: wheels|installation\nissue_body_excerpt: Hello, I am trying to take advantage of Intel SVML. However, installing icc_rt by using pip (through PyCharm) does not make numba utilizes it since `numba -s` says SVML is False as below. [This instruction](http://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml) only gives a way to install with conda. Is there any way to do it without conda? ``` System info: -------------------------------------------------------------------------------- __Time Stamp__ 2019-10-15 07:41:22.709866 __Hardware Information__ Machine : x86_64 CPU Name : skylake Number of accessible CPU cores : 12 Listed accessible CPUs cores : 0-11 CFS restrictions : None CPU Features : 64bit adx aes avx avx2 bmi bmi2 clflushopt cmov cx16 f16c fma fsgsbase invpcid lzcnt mmx movbe pclmul popcnt prfchw rdrnd rdseed sahf sgx sse sse2 sse3 sse4.1 sse4.2 ssse3 xsave xsavec xsaveopt xsaves __OS Information__ Platform : Linux-5.0.0-31-generic-x86_64-with-Ubuntu-18.04-bionic Release : 5.0.0-31-generic System Name : Linux Version : #33~18.04.1-Ubuntu SMP Tue Oct 1 10:20:39 UTC 2019 OS specific info : Ubuntu18.04bionic glibc info : glibc 2.25 __Python Information__ Python Compiler : GCC 8.3.0 Python Implementation : CPython Python Version : 3.6.8 Python Locale : en_US UTF-8 __LLVM information__ LLVM version : 8.0.0 __CUDA Information__ Found 1 CUDA devices id 0 b'GeForce GTX 1050 Ti with Max-Q Design...\ncomments_excerpt: Thanks for the report. I don't think there's a way to obtain this via pip, will add as a feature request. The package is available for download here: https://anaconda.org/numba/icc_rt Apologies, I've interpreted this incorrectly! There's obviously `icc_rt` from Intel Corp https://pypi.org/project/icc-rt/ accessible via pip. I cannot reproduce the above: ``` $ conda create -n _tmp_issue4713 python=3.7 Collecting package metadata (current_repodata.json): done Solving environment: done ==> WARNING: A newer version of conda exists. <== current version: 4.7.10 latest version: 4.7.12 Please update conda by running $ conda update -n base -c defaults conda ## Package Plan ## environment location: <anaconda3path>/envs/_tmp_issue4713 added / updated specs: - python=3.7 The following NEW packages will be INSTALLED: _libgcc_mutex pkgs/main/linux-64::_libgcc_mutex-0.1-main ca-certificates pkgs/mai...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "1",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The issue does not show an explicit numerical correctness failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0055-6da9303a",
+      "input": "repository: numba/numba\ntitle: improve cuda gufunc: multiple output arguments\ngithub_labels: feature_request|CUDA\nissue_body_excerpt: failing example ``` python import numpy as np import numba as nb @nb.guvectorize('f8[:], f8[:], f8[:]', '()->(),()', nopython=True, target='cuda') def foo(inp, out1, out2): out1[0] = inp[0] * 2.3 out2[0] = inp[0] + 1 inp = np.arange(10, dtype=np.float64) out1 = np.empty_like(inp) out2 = inp for _ in range(3): foo(inp, out=(out1, out2)) print('out1', out1) print('out2', out2) ```\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report is primarily a feature or design request rather than a numerical failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "hardware_backend|api_semantics"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0061-039345f1",
+      "input": "repository: pytorch/pytorch\ntitle: [inductor] [cpu] `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor\ngithub_labels: oncall: pt2|oncall: cpu inductor\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug **symptom**: `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor. Note that graph break can eliminate errors. I guess some optimization between `Embedding` and `index_copy` is processed incorrectly on CPP backend **codegen backend**: only CPP ```python import torch import torch.nn as nn import torch.nn.functional as F from torch._inductor import config config.fallback_random = True torch.set_grad_enabled(False) torch.manual_seed(0) class Model(torch.nn.Module): def __init__(self): super().__init__() self.embedding = torch.nn.Embedding(num_embeddings=10, embedding_dim=4) def forward(self, x, indices): x_embed = self.embedding(x) # torch._dynamo.graph_break() # graph break can eliminate errors out = torch.index_copy(x_embed, dim=1, index=indices, source=x_embed) return out model = Model() x = torch.randint(0, 10, (4,)) indices = torch.tensor([3, 1, 0, 2]) inputs = [x, indices] def run_test(model, inputs, device, backend): torch.manual_seed(0) model = model.to(device) inputs = [x.to(device) for x in inputs] if backend != \"eager\": model = torch.compile(model, backend=backend) torch.manual_seed(0) output = model(*inputs) return output device = 'cpu' output = run_test(model, inputs, device, 'eager') c_output = run_test(model, inputs, device, 'inductor') print(torch.allclose(output, c_output, rtol=1e-3, atol=1e-3)) print(torch.m...\ncomments_excerpt: This may be caused by the reinplace optimization. Under inductor, index_copy is lowered to index_put, and the reinplace.py further optimizes it into index_put_. However, the reinplace logic does not check whether the source and the destination tensors are the same, leading to an incorrect in-place transformation. As a result, this causes a read-write aliasing issue. If we add a check to skip such cases, the op remains as index_put, which internally performs a clone(), and the result remains consistent. Please feel free to correct me if I'm mistaken. https://github.com/pytorch/pytorch/blob/178515d0ff6833c8e9221482b2a650ab31e00019/torch/_inductor/fx_passes/reinplace.py#L342-L350 Just curious, only the CPP backend uses `reinplace optimization`? Because Triton backend looks good in this case?",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The issue does not show an explicit numerical correctness failure.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "not_numerical_failure",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    }
+  ],
+  "overflow_underflow": [
+    {
+      "id": "GNF-0005-80aeca70",
+      "input": "repository: cupy/cupy\ntitle: Wrong overflow with matmul of uint16 arrays\ngithub_labels: cat:bug|prio:high\nissue_body_excerpt: ### Description The following arrays give an apparently incorrect overflowed result with matmul. ```py >>> import cupy as cp >>> x = cp.asarray([51307], dtype=cp.uint16) >>> y = cp.asarray([[[327]]], dtype=cp.uint16) >>> x array([51307], dtype=uint16) >>> y array([[[327]]], dtype=uint16) >>> x @ y # This is giving a different answer array([[172]], dtype=uint16) >>> x*y array([[[173]]], dtype=uint16) >>> x @ y[0] array([173], dtype=uint16) >>> x * y[0] array([[173]], dtype=uint16) ``` The error only occurs when the second array has 3 dimensions. Presumably cupy uses different code paths for stacked vs. non-stacked linear algebra functions. Note that `51307*327 % 2**16` is indeed `173`. I'm unclear whether this behavior is actually a bug or if this is something that is to be expected from overflowing integers. I identified this with the array API test suite, but it is unrelated to the array API module. The array API doesn't specify overflow behavior, but it would be simpler in the test suite if it could just ignore overflowing. ### To Reproduce ```py # Write the code here ``` ### Installation Conda-Forge (`conda install ...`) ### Environment ``` OS : Linux-5.13.0-40-generic-x86_64-with-glibc2.34 Python Version : 3.10.4 CuPy Version : 10.4.0 CuPy Platform : NVIDIA CUDA NumPy Version : 1.22.3 SciPy Version : 1.8.0 Cython Build Version : 0.29.28 Cython Runtime Version : None CUDA...\ncomments_excerpt: Thanks for reporing. I can replicate the error and am looking further... Seems that cupy's matmul computes with cublas gemm routines when ndim > 2. Cublas gemm routines support only floating-point or complex values, so `x @ y` above is computed in float32 then casted back to an integer. However, float32 in IEEE754 representation has only 24-bit precision, thus numbers equal to or larger than 2^24 = 16777216 lose some bits from LSB and get rounded. ```py >>> np.int32(51307*327).astype('H') 173 >>> np.float32(51307*327).astype('H') 172 ```",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is overflow, underflow, saturation, or out-of-range behavior.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0011-0a961578",
+      "input": "repository: cupy/cupy\ntitle: Indexing appears to overflow on cupy arrays when executing cupy.sum\ngithub_labels: cat:bug|st:awaiting-author\nissue_body_excerpt: ### Description cp.sum(X, axis=1) operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32 ### To Reproduce ``` import cupy as cp import numpy as np X = np.random.random( (20000,50000) ) X_cp = cp.array(X, dtype=cp.float32) S = cp.sum(X_cp, axis=1) print(S[0]) >>> 25025.66 del X_cp cp._default_memory_pool.free_all_blocks() X = np.random.random( (50000,100000) ) X_cp = cp.array( X, dtype=cp.float32) S = cp.sum(X_cp, axis=1) S.shape >>> (50000,) print(S[0]) ``` ### Installation `pip install cupy-cuda12x` ### Environment ``` Linux version 6.5.0-35-generic (buildd@lcy02-amd64-079) (x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #35~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 7 09:00:52 UTC 2 Python 3.10.12 (main, Jun 11 2023, 05:26:28) [GCC 11.4.0] on linux >>> numpy.__version__ '1.26.4' >>> cupy.__version__ '13.4.1' (pyenv) root@b38d165c67b9:/workspace# nvcc --version nvcc: NVIDIA (R) Cuda compiler driver Copyright (c) 2005-2024 NVIDIA Corporation Built on Fri_Jun_14_16:34:21_PDT_2024 Cuda compilation tools, release 12.6, V12.6.20 Build cuda_12.6.r12.6/compiler.34431801_0 A100-SXM with 80 GB VRAM ``` ### Additional Information _No response_\ncomments_excerpt: https://github.com/cupy/cupy/issues/8731 is irrelevant as this only applies to sparse matrices. Please include full example code that reproduces the error, along with the full stack trace. Also fill in the Environment information as requested in the template. I am going to close this, as trying again with a newer GPU (H100-PCle) does not show the error, which was encountered on a previous-generation A100-SXM. Also, I cannot exclude the possibility that I encountered some hardware issue, this was on a cloud-based server, not managed my me.",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "Indexing appears to overflow on cupy arrays when executing cupy",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0047-c6f710e5",
+      "input": "repository: numba/numba\ntitle: Runtime integer calculation overflow\ngithub_labels: bug|bug - numerically incorrect\nissue_body_excerpt: Not sure if this can be classified as a bug but I thought I would post this just incase it isn't known about. Values known at compile time, and are thus computed in Python, use Python's long int and can represent values outside the range of a normal integer so you can get results that don't quite match. ``` from numba import cuda import numpy as np @cuda.jit def test_kernel(a,b,c,test): i = cuda.grid(1) test[0] = a**b%c test[1] = 11**19%1009 a, b, c = 11, 19, 1009 test = cuda.device_array(2, dtype = np.uint32) test_kernel[1, 1](a,b,c,test) print(a**b%c,test.copy_to_host()) >>> 902 [759 902] ```\ncomments_excerpt: @uchytilc thank you for submitting this. Is this CUDA specific, or will CPU based functions exhibit the same behaviour? Suspect it's because the cpython bytecode compiler is constant folding and the run time values are out of int range? ```python from numba import njit @njit def demo(a,b,c): print(a**b % c) print(11**19 % 1009) a, b, c = 11, 19, 1009 demo(a,b,c) import dis print(dis.dis(demo)) ``` @stuartarchibald ya I believe that's the problem. If you lower the exponent to where you get a number that is representable within an int the results match. Note from numba meeting: - source of problem is `a**b` invoking an integer exponential and causing undetected overflow. - there's concern that on GPUs that overflow check can be too expensive.",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "Runtime integer calculation overflow Not sure if this can be classified as a bug but I thought I would post this jus",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0048-07821d1f",
+      "input": "repository: cupy/cupy\ntitle: floating point errors\ngithub_labels: st:awaiting-author|issue-checked\nissue_body_excerpt: Odd discrepancies for simple maths without overflow potential where there shouldn't really be disagreement ```bash nvidia-docker run --rm -it cupy/cupy /bin/bash -c python ``` ```python import numpy as np import cupy as cp b = np.arange(1e3, dtype='float64'); b2=(b**2-b-5)/2.0 a = cp.arange(1e3, dtype='float64'); a2=(a**2-a-5)/2.0 print((a2==cp.array(b2)).mean().item()) 0.937 # should be 1 cp.show_config() ``` ``` CuPy Version : 7.0.0a1 CUDA Root : /usr/local/cuda CUDA Build Version : 9020 CUDA Driver Version : 10010 CUDA Runtime Version : 9020 cuDNN Build Version : 7402 cuDNN Version : 7402 NCCL Build Version : 2402 NCCL Runtime Version : 2402 ```\ncomments_excerpt: In CuPy v7.0.0a1, `**` operator calls `pow` function. https://github.com/cupy/cupy/blob/v7.0.0a1/cupy/core/_routines_math.pyx#L403-L417 Due to the limitation of CUDA, computations results on the device may include error. Error bounds for each function are documented in the following page: https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#standard-functions > pow(x,y) | 2 (full range) We will change `**` to avoid using `pow`, so this behavior may change in the future (next) releases. (see #2204 for details) Didn't realise you wanted a response. #2204 is unrelated. Other libraries such as tensorflow-gpu have put effort into ensuring results match the cpu implementions (e.g. convolving with tensorflow or tensorflow-gpu or numpy produces the same values, even including precision errors)",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "floating point errors Odd discrepancies for simple maths without overflow potential where there shouldn't really be disagreement ```bash nvidia-docker ru",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0049-80ab540f",
+      "input": "repository: cupy/cupy\ntitle: poly1d with int64 arrays -- unexpected output\ngithub_labels: cat:bug|prio:high\nissue_body_excerpt: ### Description Hi there, I've found unexpected behaviour when fitting a polynomial using an int64 array. It seems that a polynomial created with `p = cp.poly1d(cp.polyfit(x, y, N))` requires a float array `x` when calling via `p(x)` -- see code example below. The output of `cp.polyfit` looks the same so `poly1d` seems to be the culprit. (I also note that Numpy has introduced a new `polynomial.Polynomial` for fitting, so this issue may not be high priority). Thanks! ### To Reproduce ```py import pylab as plt import cupy as cp # create x values using arange, default dtype is int64 x = cp.arange(1048576) - 1048576//2 # Create example polynomial to fit x_ = x.astype('float64') y = x_ + 0.5 * x_**2 - 0.05 * x_**3 + 0.001 * x_**4 - 0.00001 * x_**5 # Fit the polynomial p = cp.poly1d(cp.polyfit(x, y, 5)) # Plot polynomials plt.plot(cp.asnumpy(y)) plt.plot(cp.asnumpy(p(x_))) plt.plot(cp.asnumpy(p(x))) print(p(x).dtype) # prints float64 (not int64!) print(p(x_).dtype) # also prints float64 assert np.allclose(p(x_), p(x)) # will raise an error ``` ![image](https://user-images.githubusercontent.com/713251/163835045-d12b136d-6318-48ad-8f20-35bcc11de6c8.png) ### Installation Conda-Forge (`conda install ...`) ### Environment ``` (base) dancpr@blc00:~$ python -c 'import cupy; cupy.show_config()' OS : Linux-4.15.0-120-generic-x86_64-with-glibc2.23 Python Version : 3.9.5 CuPy Version : 9.6.0...\ncomments_excerpt: @telegraphic Thanks for your reporting! This bug looks to be caused by an int64 overflow. @asi1024 my pleasure, glad to hear it's reproducible and not just me! (and thanks for maintaining cupy :pray:)",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "ic Thanks for your reporting! This bug looks to be caused by an int64 overflow",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0056-d1d1b50f",
+      "input": "repository: triton-lang/triton\ntitle: pointer should use int64 as its latent operating data type by default to avoid overflow\ngithub_labels: bug\nissue_body_excerpt: ### Describe the bug Its common to do offsetting on pointers for a block of elements, e.g. loading / storing. However, Triton doesn't use int64 as the latent data format for pointers, which leads to overflow in offsetting those pointers, and resulting in illegal memory access. For example, ```python @triton.autotune( configs=[ triton.Config({ \"BLOCK_SIZE_M\": 128, \"BLOCK_SIZE_N\": 256, }, num_stages=3, num_warps=8) ], key=[\"num_rows\", \"num_cols\"] ) @triton.jit def kernel_1(pointer, stride_m, stride_n, num_rows: int, num_cols: int, BLOCK_SIZE_M: tl.constexpr, BLOCK_SIZE_N: tl.constexpr): pid = tl.program_id(0) num_pid_m = tl.cdiv(num_rows, BLOCK_SIZE_M) pid_m = pid % num_pid_m pid_n = pid // num_pid_m offs_m = pid_m * BLOCK_SIZE_M + tl.arange(0, BLOCK_SIZE_M) offs_n = pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N) values = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32) pointers = pointer + offs_m[:, None] * stride_m + offs_n[None, :] * stride_n mask = (offs_m[:, None] < num_rows) & (offs_n[None, :] < num_cols) tl.store(pointers, values, mask=mask) ``` This kernel assumes stride_m and stride_n to be int32, and there is no upcasting in `pointers = pointer + offs_m[:, None] * stride_m + offs_n[None, :] * stride_n`, resulting in wrong pointer offsetting for illegal memory access. If we manually upcast the `stride_m` and `stride_n` to int64 first, then `pointers = point...\ncomments_excerpt: ```python pointers = pointer + offs_m[:, None] * stride_m + offs_n[None, :] * stride_n ``` The pointer addition does happen in 64-bit, but the overflow happens before that when you multiply the offset by the stride. That means it's your responsibility to upcast the strides to 64-bit if you need the extra range. Closing as not a bug. Then there is another bug. If you manually set the offsetting value to be a integral literal, the resulting pointer is still wrong. For example, let `offs_m[:, None] * stride_m + offs_n[None, :] * stride_n = 2257846272`, equivalent to `pointers = pointer + 2257846272`. But this syntax will result in wrong pointer, which means triton doesn't handle that integral literal correctly, not like python (handled in 64-bit), nor C++ (handled in 32-bit). Works fine for me: ```python In [4]: import triton ...: import triton.language as tl ...: import torch ...: ...: ...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is overflow, underflow, saturation, or out-of-range behavior.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0060-3368e422",
+      "input": "repository: jax-ml/jax\ntitle: integer overflow in `jnp.clip` with unsigned ints\ngithub_labels: bug\nissue_body_excerpt: ### Description Caught in https://github.com/data-apis/array-api-tests/pull/410 : when `clip` receives a `uint64` array and python scalar `max` which is in range of uint64 but overflows int64, it reports an internal overflow: ``` (array-api) ev-br@qgpu3:~$ JAX_ENABLE_X64=true ipython Python 3.11.0 | packaged by conda-forge | (main, Jan 14 2023, 12:27:40) [GCC 11.3.0] Type 'copyright', 'credits' or 'license' for more information IPython 8.32.0 -- An enhanced Interactive Python. Type '?' for help. In [1]: import jax.numpy as jnp In [2]: kw = {'min': 0, 'max': 9223372036854775808} In [3]: jnp.clip(jnp.asarray(0, dtype=jnp.uint64), **kw) WARNING:2026-01-17 20:43:18,604:jax._src.xla_bridge:850: An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu. --------------------------------------------------------------------------- OverflowError Traceback (most recent call last) Cell In[3], line 1 ----> 1 jnp.clip(jnp.asarray(0, dtype=jnp.uint64), **kw) [... skipping hidden 5 frame] File ~/.conda/envs/array-api/lib/python3.11/site-packages/jax/_src/pjit.py:671, in _infer_input_type(fun, dbg_fn, explicit_args) 669 dbg = dbg_fn() 670 arg_path = f\"argument path is {dbg.arg_names[i] if dbg.arg_names is not None else 'unknown'}\" # pytype: disable=name-error --> 671 raise OverflowError( 672 \"An overflow was encountered while parsing an arg...\ncomments_excerpt: Thanks for the report \u2013 this is working as expected. When JAX encounters a Python integer, it is always interpreted as a signed integer of the default width (32 bit or 64 bit, depending on the [X64 flag state](https://docs.jax.dev/en/latest/default_dtypes.html)). At one time we did have value-dependent dtype semantics, such that integers in the range `(int64.max, uint64.max]` would trigger compilation & tracing for uint64 dtypes, but this often led to unexpected JIT cache misses and brittle code (this is especially true when it comes to NumPy's curious choice of implicitly promoting `int64` and `uint64` to `float64` \u2013 it meant that if you passed too large an integer value to otherwise working code, your code might start generating floats instead of ints, which can really cause problems!). To remedy these issues, we removed value-dependent dtype semantics and added the error you're see...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "integer overflow in `jnp",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0072-9fba4417",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] Overflow ints with nulls is being inferred as float column in CSV reader\ngithub_labels: bug|libcudf|Python|cuIO\nissue_body_excerpt: **Describe the bug** A csv files contains values greater than max(int64) and some null values. In this case, cudf CSV reader is inferring the column type to be `float` column. This will lead to loss of data partially. **Steps/Code to reproduce bug** `a.csv`: [a.csv.zip](https://github.com/rapidsai/cudf/files/5777669/a.csv.zip)(Rename this to `a.csv`) ```python >>> import cudf >>> import pandas as pd >>> cudf.read_csv('a.csv')['3'] 0 <NA> 1 1.77585123e+19 2 <NA> 3 3.374168268e+18 4 <NA> ... 365 <NA> 366 <NA> 367 <NA> 368 1.430186644e+19 369 <NA> Name: 3, Length: 370, dtype: float64 >>> pd.read_csv('a.csv')['3'] 0 1 17758512297797920768 2 3 3374168267804635136 4 ... 365 366 367 368 14301866441110444032 369 Name: 3, Length: 370, dtype: object ``` **Expected behavior** If the values overflow `int` and fit into `uint`, they should be inferred as `uint`. If the values overflow `int` & `uint` types, they should be inferred as `string` column. **Environment overview (please complete the following information)** - Environment location: [Bare-metal] - Method of cuDF install: [from source] **Environment details** Please run and paste the output of the `cudf/print_env.sh` script here, to gather any other relevant environment details <details><summary>Click here to see environment details</summary><pre> **git*** commit 402614e6acb25fad9230a6ab78e96e1c4d769230 (HEAD -> 6263) Merge: 1433be...\ncomments_excerpt: cc: @kaatish @vuule > If the values overflow `int` & `uint` types, they should be inferred as `string` column. I don't think we want this behavior. Pandas infers as `object` which are Python integers as opposed to strings, no? > Pandas infers as `object` which are Python integers as opposed to strings, no? Not actually, pandas appears to be storing them as strings: ```python >>> import pandas as pd >>> df = pd.read_csv('a.csv') >>> df['3'] 0 1 17758512297797920768 2 3 3374168267804635136 4 ... 365 366 367 368 14301866441110444032 369 Name: 3, Length: 370, dtype: object >>> df['3'][1] '17758512297797920768' >>> type(df['3'][1]) <class 'str'> ``` TIL... Either way, I would defer to what makes sense from a general C++ perspective instead of forcing Pandas semantics. > In this case, cudf CSV reader is inferring the column type to be float column. This will lead to loss of data partially. ...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The visible numerical symptom is overflow, underflow, saturation, or out-of-range behavior.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "overflow_underflow",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "rapidsai/cudf"
+    }
+  ],
+  "performance_only": [
+    {
+      "id": "GNF-0026-8ee693c5",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] `len` after `fillna` operation uses way more memory than expected\ngithub_labels: bug|dask\nissue_body_excerpt: I have a dataframe that occupies ~700-800 MB when persisted. I fill all the nulls in the Dataframe using `fill_na` and call `len` on the new Dataframe. I notice an explosion in memory usage. Reproducer: ``` # Create a dataframe and write to file import numpy as np import pandas as pd import dask.dataframe pdf = pd.DataFrame() for i in range(80): pdf[str(i)] = pd.Series([12,None]*100000) ddf = dask.dataframe.from_pandas(pdf,1) ddf.to_parquet('temp_data.parquet') # Read the dataframe from file import os import dask import dask_cudf import cudf path = 'temp_data.parquet/' files = [fn for fn in os.listdir(path) if fn.endswith('.parquet')] parts= [dask.delayed(cudf.io.parquet.read_parquet) (path=path+fn) for fn in files] temp = dask_cudf.from_delayed(parts) ``` Now when I do `len(temp)` Nvidia-smi usage shoots to a max state here: ``` +-----------------------------------------------------------------------------+ | NVIDIA-SMI 410.104 Driver Version: 410.104 CUDA Version: 10.0 | |-------------------------------+----------------------+----------------------+ | GPU Name Persistence-M| Bus-Id Disp.A | Volatile Uncorr. ECC | | Fan Temp Perf Pwr:Usage/Cap| Memory-Usage | GPU-Util Compute M. | |===============================+======================+======================| | 0 Tesla T4 Off | 00000000:3B:00.0 Off | 0 | | N/A 47C P0 28W / 70W | 685MiB / 15079MiB | 0% Default | +-----------...\ncomments_excerpt: Does this only happen with dask-cudf, or does it happen if you use just cudf? On Fri, May 31, 2019 at 1:02 AM Ayush Dattagupta <notifications@github.com> wrote: > I have a dataframe that occupies ~700-800 MB when persisted. I fill all > the nulls in the Dataframe using fill_na and call len on the new > Dataframe. I notice an explosion in memory usage. > > Reproducer: > > # Create a dataframe and write to file > import numpy as np > import pandas as pd > import dask.dataframe > > pdf = pd.DataFrame() > for i in range(80): > pdf[str(i)] = pd.Series([12,None]*100000) > ddf = dask.dataframe.from_pandas(pdf,1) > ddf.to_parquet('temp_data.parquet') > > # Read the dataframe from file > import os > import dask > import dask_cudf > import cudf > > path = 'temp_data.parquet/' > files = [fn for fn in os.listdir(path) if fn.endswith('.parquet')] > parts= [dask.delayed(cudf.io.parquet.read_parquet...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0046-21fccfc5",
+      "input": "repository: jax-ml/jax\ntitle: Initial benchmarking of jax on some simple kernels\ngithub_labels: performance\nissue_body_excerpt: I've setup a standard system for comparing various jax JIT backends to hand-written CUDA code. The system is a 3000 particle system, and we're evaluating a fused electrostatic + van Der waals repulsion force. Performance aside, I've also noticed fairly severe numerical precision issues in the 32bit backends. That is, comparing the errors between (jax 64 bit vs custom 32 bit) and errors between (jax 32bit vs custom 32 bit), the errors are about 10-50x larger. We've had to increase the error tolerance from 5e-5 to 5e-3 to make the 32bit tests pass. These are the timings for 64/32 bit respectively on a Titan V running on a 12 core Xeon(R) Gold 5118 CPU @ 2.30GHz with 24 threads with CUDA 10.2, jax versions: ``` jax==0.1.70 jaxlib @ https://storage.googleapis.com/jax-releases/cuda102/jaxlib-0.1.47-cp36-none-linux_x86_64.whl ``` ``` precision <class 'numpy.float64'> (64bit vs 64bit) custom force time: 0.0011749029159545898 custom force jvp time: 0.0010498356819152832 testing jit backend: None jax time: 0.11883214712142945 jax jvp time: 0.26240644216537473 testing jit backend: cpu jax time: 0.16196052312850953 jax jvp time: 0.025484113693237304 testing jit backend: gpu jax time: 0.016477890014648437 jax jvp time: 0.02622458219528198 ``` ``` precision <class 'numpy.float32'> (32bit vs 32bit) custom force time: 0.0011496829986572265 custom force jvp time: 0.0010490036010742188 testi...\ncomments_excerpt: Thanks for setting these up! Looks like we have some work to do :) I was able to run and profile the jax benchmarks with your instructions, and confirmed that the jit'd computation accounts for the slower times (as opposed to Python overheads or something). I'll open an internal issue with the XLA:GPU team and update this thread as I learn more. Thank you for following up and escalating - I'd also be interested in tpu timings too if they're available.",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "5",
+        "current_ensemble_vote_margin": "5",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|api_semantics|environment_configuration"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0057-44d428bb",
+      "input": "repository: pytorch/pytorch\ntitle: torch.compile/triton holding GIL during compilation and CompiledKernel call results in deadlocks during distributed training\ngithub_labels: triaged|oncall: pt2|module: inductor|upstream triton|module: compile-time\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug We are seeing our training processes get deadlocked as follows. There is a NCCL error causing the allreduce in the backward pass to get stuck. When this occurs, typically the GPU locks up until a [ncclCommAbort](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/api/comms.html#ncclcommabort) is called and even simple cuda calls like cudaLaunchKernel, cudaEventQuery etc. get stuck on the host side. As a result, the main thread is stuck as follows: ``` Thread 432919 (idle): \"MainThread\" 0x155555277197 (libc.so.6) pthread_cond_wait (libc.so.6) __gnu_cxx::__nothrow_wait_cv::wait (compatibility-condvar.cc:100) torch::autograd::ReadyQueue::pop (libtorch_cpu.so) torch::autograd::Engine::thread_main (libtorch_cpu.so) torch::autograd::Engine::execute_with_graph_task (libtorch_cpu.so) torch::autograd::python::PythonEngine::execute_with_graph_task (libtorch_python.so) torch::autograd::Engine::execute (libtorch_cpu.so) torch::autograd::python::PythonEngine::execute (libtorch_python.so) THPEngine_run_backward (libtorch_python.so) backward (torch/autograd/__init__.py:200) backward (torch/_tensor.py:503) ``` Simultaneously, triton is stuck due to the above NCCL issue while trying to call a compiled kernel. The bad part here though is that triton is holding GIL (see active+gil in the trace below) and is stuck. As a result, the entire Python process freezes up a...\ncomments_excerpt: @eellison Based on your previous https://github.com/pytorch/pytorch/issues/108586#issuecomment-1711862033, I'm wondering if [this](https://github.com/openai/triton/compare/main...eellison:triton:multi_thread?expand=1) work would resolve the above issue as well? Looks like triton GIL on launch was resolved here: https://github.com/openai/triton/pull/2185, but the issue with torchinductor calling `torch.cuda.synchronize` still exists: https://github.com/pytorch/pytorch/blob/293d3b89d8bf8f966fe06d25ac1089a3739e20e3/torch/_inductor/triton_heuristics.py#L200 eellison's PR would get rid of the GIL for Triton compilation, but it's not clear this gets rid of all the places we get rid of the GIL. (Does torch.cuda.synchronize hold the GIL? Ed: I feel like it shouldn't.) Actually, triton compilation already doesn't hold gil (although it isn't parallelized). > Does torch.cuda.synchronize hold the...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0136-a301f54e",
+      "input": "repository: cupy/cupy\ntitle: Performance Degradation in CuPy cuFFT: Runtime Increases from 6 Minutes to 10 Hours After Doubling Input Array Size\ngithub_labels: issue-checked\nissue_body_excerpt: ### Description I'm working with a computational model in Python that involves multiple FFT/iFFT operations using CuPy 11.6.0 with the cuFFT backend. The model performed well with input arrays of size up to 2^27 elements (double complex), taking about 6.5 minutes to run. However, after increasing the array size to 2^28 elements, the runtime has drastically increased to approximately 10 hours. My setup includes an i9 9900k CPU, 128 GB RAM, ASUS 4090 OC 24 GB GPU, running on Windows 10 (64-bit) with Python 3.7.7, CUDA Toolkit 12.3, NVIDIA driver 536.99. Profiling with Nsight Compute has indicated warnings about kernels being launched with only 1 block and 1 grid. Unfortunately, I haven't found a way to adjust the cuFFT kernel configurations through CuPy. Attempts to use cupyx.optimizing.optimize were fruitless and, further, it cannot access cuFFT kernels. I have a Nsight Compute report available: https://drive.google.com/file/d/19mqFSwBZ3ghPMGrXqAcKlsdguH7AjuCU/view?usp=sharing (link to the compressed file, ~64 MB). Please note that the file is large when uncompressed (~1GB) and may take some time to load in Nsight Compute 2023.3.0. This report is for the input array with 2^27 elements as Nsight Compute crashes with 2^28 elements. The input data and python file to test the code can be retrieved here: Input data with 2^22 elements: https://drive.google.com/file/d/1jG9Uqus8U5QJi...\ncomments_excerpt: > Profiling with Nsight Compute has indicated warnings about kernels being launched with only 1 block and 1 grid. This sounds like an integer overflow in the launching configuration internally. (cc @leofang) Thank you very much for your reply. Your hypothesis seems very likely. Let's wait for leofang's comments. Hi @emcastillo! I've switched to Ubuntu 22.04 LTS and I believe I've pinpointed the issue I'm encountering. On Windows 10, when processing an array that doubled in size from 2^27 to 2^28 elements, the runtime became extremely slow. However, on Ubuntu, the same increase in array size results in an out-of-memory error. Here's the traceback: <pre>(py311) <font color=\"#26A269\"><b>eric@perseus</b></font>:<font color=\"#12488B\"><b>/media/eric/M33/py311</b></font>$ python3 ../core.py [2023-11-13 at 00:05:45] Job started [2023-11-13 at 00:06:13] Loop has started ... Traceback (most rec...",
+      "metadata": {
+        "current_ensemble_prediction": "overflow_underflow",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0137-1f5e2c55",
+      "input": "repository: cupy/cupy\ntitle: `cupyx.scipy.sparse.block_diag` working with cupy sparse matrix on GPU\ngithub_labels: contribution welcome|cat:feature|good first issue\nissue_body_excerpt: ### Description Thanks to Cupy, I'm able to migrate my project from CPU to GPU. However, I rely on `scipy.sparse.diag_block` operation, which is not available in Cupy. I have to do this on CPU with scipy and transfer the data to GPU. We have `linalg.block_diag` but that only takes dense matrix. Is there any plan to implement it for sparse matrix as well? If not, is there a way around or I have to implement it myself? Following is an example of my usage. ideal: ``` matricies = [] for i in range(num): data, row, col = cp.random.rand(size), cp.random.rand(size), cp.random.rand(size) coo_matrix = cupyx.scipy.sparse.coo_matrix(data, (row, col) matricies.append(coo_matrix ) block = cupyx.scipy.sparse.block_diag(matricies) ``` Currently, I have to diag block it with scipy and transfer it to GPU, lossing a lot of performance. ``` matricies = [] for i in range(num): data, row, col = np.random.rand(size), np.random.rand(size), np.random.rand(size) coo_matrix = scipy.sparse.coo_matrix(data, (row, col) matricies.append(coo_matrix ) block = scipy.sparse.block_diag(matricies) block_cp = cupyx.scipy.sparse.csr_matrix(block) ``` Thanks ### Additional Information _No response_\ncomments_excerpt: Hello @kmaehashi @tagerjump , Can I work on this if this still needs implementation? Thank you for following up Currently, I copied over Scipy code and make it work for Cupy. ``` def g_block_diag(mats: cupyx.scipy.sparse.coo_matricies, format=None, dtype=None): \"\"\" Build a block diagonal sparse matrix from provided matrices. \"\"\" row = [] col = [] data = [] r_idx = 0 c_idx = 0 for a in mats: nrows, ncols = a.shape row.append(a.row + r_idx) col.append(a.col + c_idx) data.append(a.data) r_idx += nrows c_idx += ncols row = cp.asarray(np.concatenate(row)) col = cp.asarray(np.concatenate(col)) data = cp.asarray(np.concatenate(data)) return coo_matrix((data, (row, col)), shape=(r_idx, c_idx), dtype=dtype).asformat(format) ``` Not sure if you've already implemented anything better. I\u2019d like to work on this issue. Is anyone working on it? Hello , I have raised a PR for this issue , whom should...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "cupy/cupy"
+    },
+    {
+      "id": "GNF-0148-5dbeb416",
+      "input": "repository: triton-lang/triton\ntitle: Understanding Triton GEMM FP8 performance\ngithub_labels: \nissue_body_excerpt: Hello, we have measured the FP8 GEMM performance using Triton on NVIDIA H100 (500 W, 1980 MHz). We would like to request your help in understanding if the performance is expected. Since H100 FP8 only supports NT GEMM (matrix B is transposed), so we tested the performance with matrix B transposed and not transposed. We also tested with `fp8_fast_accum=True` and `fp8_fast_accum=False`. Results overview: - Comparing to the CUBLAS performance, the performance of Triton GEMM is ~15% lower than the CUBLAS GEMM performance - `fp8_fast_accum = True` has a significant positive impact on the performance. <img width=\"1470\" alt=\"Screenshot 2023-10-18 at 1 34 51 PM\" src=\"https://github.com/openai/triton/assets/17482891/99982c30-5bc5-442f-a173-2c7e8f9bc801\"> ![triton_vs_cublas_fp8_h1002](https://github.com/openai/triton/assets/17482891/f567e9ba-1ee0-4120-8251-3a1094264b68) Our benchmark: [fp8_matmul.py.zip](https://github.com/openai/triton/files/13034506/fp8_matmul.py.zip) Questions: - Are the performance numbers expected? - What does `fp8_fast_accum=True` do? Does it set `CUBLASLT_MATMUL_DESC_FAST_ACCUM=1` and/or do something differently? Thank you very much!\ncomments_excerpt: Thanks for sharing the analysis. The performance seem lower than what I had measured on my H100 as I was able to get over 1.3PF but we haven't enabled perf regression testing on H100 so maybe we did regress. What commit did you use? I realize now that `fp8_fast_accum=False` is not implemented efficiently. It is meant to be equivalent to `CUBLASLT_MATMUL_DESC_FAST_ACCUM` however since the implementation of this knob is not public we don't know if there are equivalent. I'll work on adding fp8 perf tests in the future and I can confirm the perf I'm getting at the time. @ThomasRaoux Thank you for your response. > I was able to get over 1.3PF but we haven't enabled perf regression testing on H100 so maybe we did regress. For the numbers that we shared, we limited the power to 500W. Perhaps, your H100 was running at 700W? For 700W, we can also see 1.3 PF. Triton performs about 10% worse tha...",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "compiler_codegen|hardware_backend|reduction_accumulation|api_semantics"
+      },
+      "repository": "triton-lang/triton"
+    },
+    {
+      "id": "GNF-0152-d8097288",
+      "input": "repository: jax-ml/jax\ntitle: `special.betainc`, `stdtr`, and `stdtrit` are very slow\ngithub_labels: bug\nissue_body_excerpt: ### Description # Executive summary - `jax.scipy.special.betainc` on CPU is 10x slower than `scipy.special.betainc` running on a NumPy array (warm jit and large array, to make dispatch time negligible) - on GPU, it barely matches scipy's performance on CPU (for suitably large arrays) - This also impacts `scipy.special.stdtr` and `scipy.special.stdtrit`. These functions do not exist in `jax.scipy`, but they are implemented in scipy proper by dispatching to `jax.scipy.special.betainc`: https://github.com/scipy/scipy/blob/ad9ffdc83ed819ca0adbfceef5a435338f856c03/scipy/special/_support_alternative_backends.py#L149-L178 # CPU Reproducer ```python import jax import jax.numpy as jnp import numpy as np import scipy.special jax.config.update(\"jax_enable_x64\", True) x = np.random.uniform(0, 1, 500_000) %timeit -r 3 -n 1 scipy.special.betainc(4.5, 0.5, x) # 110 ms \u00b1 613 \u03bcs per loop (mean \u00b1 std. dev. of 3 runs, 1 loop each) betainc = jax.jit(jax.scipy.special.betainc) jax.config.update(\"jax_default_device\", jax.devices(\"cpu\")[0]) jx = jnp.asarray(x) %timeit -r 1 -n 1 betainc(4.5, 0.5, jx).block_until_ready() # JIT warmup # 1.73 s \u00b1 0 ns per loop (mean \u00b1 std. dev. of 1 run, 1 loop each) %timeit -r 3 -n 1 betainc(4.5, 0.5, jx).block_until_ready() # 1.37 s \u00b1 23.4 ms per loop (mean \u00b1 std. dev. of 3 runs, 1 loop each) ``` # GPU reproducer ```python jax.config.update(\"jax_default_device\", jax...\ncomments_excerpt: The implementation of `betainc` is here: https://github.com/jax-ml/jax/blob/579a1573cc82265c2b3245f2ee9ffd33f55fcd63/jax/_src/lax/special.py#L210-L297 Note that it's not a native operation, rather it's defined in terms of lax control flow operators. An easier to reproduce comparison (jax 0.6.1) ```python import jax import jax.numpy as jnp import numpy as np import pandas as pd import scipy.special jax.config.update(\"jax_enable_x64\", True) betainc = jax.jit(jax.scipy.special.betainc) betainc.clear_cache() a = 4.5 b = 0.5 columns = [ \"samples\", \"scipy\", \"jax cpu (cold jit)\", \"jax cpu (warm jit)\", \"jax gpu (cold jit)\", \"jax gpu (warm jit)\", ] rows = [] for n in range(0, 8): x = np.random.uniform(0, 1, 10**n) jx_cpu = jnp.asarray(x, device=jax.devices(\"cpu\")[0]).block_until_ready() jx_gpu = jnp.asarray(x, device=jax.devices(\"gpu\")[0]).block_until_ready() t1 = %timeit -o -q -r 1 -n 1 scipy...",
+      "metadata": {
+        "current_ensemble_prediction": "performance_only",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "0",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0167-13076e98",
+      "input": "repository: triton-lang/triton\ntitle: Binary `max` slow by 2.11\u00d7 on size 1024\ngithub_labels: needs reproducer\nissue_body_excerpt: ### Describe the bug Tile-CBDetect (our Tile-language bug detection tool) detected a performance bottleneck in the `max` binary operator. For input length 1024, Triton is **2.11\u00d7 slower** than PyTorch. This may indicate issues in tile mapping or launch configuration.\ncomments_excerpt: Editing the vector-add tutorial to compute the maximum gives almost identical perf between torch and triton. Closing unless we can get a reproducer. This is the code that we used ```python import time import torch import triton import triton.language as tl DEFAULT_BLOCK = 1024 DEFAULT_WARPS = 4 DEFAULT_STAGES = 2 BINARY_OPS = [\"add\", \"sub\", \"mul\", \"div\", \"max\", \"min\"] BINARY_ID = {name:i for i,name in enumerate(BINARY_OPS)} def _cuda_sync(): if torch.cuda.is_available(): torch.cuda.synchronize() def time_ms(fn, *args, warmup=1, iters=1, **kwargs): try: for _ in range(warmup): _ = fn(*args, **kwargs) _cuda_sync() t0 = time.perf_counter() out = None for _ in range(iters): out = fn(*args, **kwargs) _cuda_sync() t1 = time.perf_counter() return out, (t1 - t0) * 1000.0 / iters, None except Exception: return None, float(\"nan\"), traceback.format_exc(limit=2) @triton.jit def _binary_kernel(X, ...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The dominant reported problem is speed, memory use, scheduling, or throughput rather than numerical correctness.",
+        "is_true_numerical_failure": "no",
+        "primary_failure_label": "performance_only",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "triton-lang/triton"
+    }
+  ],
+  "precision_tolerance": [
+    {
+      "id": "GNF-0030-a4314978",
+      "input": "repository: pytorch/pytorch\ntitle: torch.compile: autograd.Function.apply with aliased inputs drops per-slot gradient contributions\ngithub_labels: high priority|triaged|module: correctness (silent)|oncall: pt2|module: dynamo|module: higher order operators|module: pt2-dispatcher|dynamo-autograd-function|pt2: ubn|bot-triaged\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug When the same Tensor is passed to two (or more) positional tensor arguments of a `torch.autograd.Function.apply(...)`, and the backward returns different values for those positions (e.g. `None` for one slot and a tensor for another), `torch.compile` produces a graph that drops one of the per-slot gradient contributions. In eager, autograd accumulates both slot contributions into a single `.grad` on the shared input. Under `torch.compile`, dynamo collapses the aliased inputs to a single HOP argument and then maps backward returns incorrectly \u2014 only one of the duplicated slots' return values ends up as the gradient for the deduped input. cc @ezyang @gchanan @kadeng @msaroufim @chauhang @penguinwu @voznesenskym @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @amjames @Lucaskabela @jataylo @azahed98 @ydwu4 @bdhirsh @bobrenjc93 @anijain2305 @xmfan \u2014 related to the area you worked on in #180642 / #180670 / #180921, but the mechanism here is input aliasing rather than fwd side-effects, and it survives those fixes on current `main`. ### Minimal repro (~50 LOC, pure PyTorch, no triton, no custom ops) ```python import torch class MyFn(torch.autograd.Function): @staticmethod def forward(ctx, q, k, v, mask_v_grad: bool): ctx.save_for_backward(q, k, v) ctx.mask_v_grad = mask_v_grad return q * (k + v) @staticmethod def back...\ncomments_excerpt: I reproduced the bug on current main. The root cause is in `AutogradFunctionApplyVariable.rewire_bwd_graph_outputs` in `torch/_dynamo/variables/higher_order_ops.py`, when the same tensor is passed to multiple positional slots of `apply()`, the loop over `orig_fwd_args` blindly overwrites `outer_fwd_proxy_to_bwd_node[fwd_proxy]` on each iteration instead of accumulating, so only the last slot's backward contribution survives. Fix: extract `fwd_proxy = fwd_arg.proxy` and accumulate via `bwd_graph.call_function(operator.add, ...)` when the proxy is already mapped to a non-None node, and guard the None assignment with `if fwd_proxy not in outer_fwd_proxy_to_bwd_node` to prevent None from overwriting a real gradient. All 8 permutations of the 3-alias case pass, and the full `AutogradFunctionTests` suite passes with no regressions. Happy to submit a PR for this if that would be helpful. I j...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|reduction_accumulation"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0035-1d6522c2",
+      "input": "repository: pytorch/pytorch\ntitle: Return a view from tensor(requires_grad=False) in autograd function may cause incorrect requires_grad attribute.\ngithub_labels: module: autograd|triaged\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug ```python import torch a = torch.rand(4, requires_grad=True) b = a.view(4) assert b.requires_grad and b._is_view() with torch.no_grad(): c = b.view(4) assert c.requires_grad class View(torch.autograd.Function): @staticmethod def forward(ctx, x): # return x.data.view(x.shape) return x.detach().view(x.shape) @staticmethod def backward(ctx, grad): return grad d = View.apply(a) assert d.requires_grad and d._is_view() with torch.no_grad(): e = d.view(4) assert e.requires_grad # AssertionError ``` The variable `d` in the `forward` method of other `autograd.Function` implementations may behave differently compared to `b`. But I don\u2019t have any method to distinguish between them. ### Versions Versions of relevant libraries: [pip3] numpy==2.3.4 [pip3] nvidia-cublas-cu12==12.6.4.1 [pip3] nvidia-cuda-cupti-cu12==12.6.80 [pip3] nvidia-cuda-nvrtc-cu12==12.6.77 [pip3] nvidia-cuda-runtime-cu12==12.6.77 [pip3] nvidia-cudnn-cu12==9.10.2.21 [pip3] nvidia-cufft-cu12==11.3.0.4 [pip3] nvidia-curand-cu12==10.3.7.77 [pip3] nvidia-cusolver-cu12==11.7.1.2 [pip3] nvidia-cusparse-cu12==12.5.4.2 [pip3] nvidia-cusparselt-cu12==0.7.1 [pip3] nvidia-nccl-cu12==2.27.5 [pip3] nvidia-nvjitlink-cu12==12.6.85 [pip3] nvidia-nvtx-cu12==12.6.77 [pip3] pytorch-triton==3.5.0+git7416ffcb [pip3] torch==2.10.0.dev20251023+cu126 [pip3] torchvision==0.25.0.dev20251023+cu126 cc @ezyang @albanD @gqche...\ncomments_excerpt: You should not use `.data` in general. If you want to detach from the autograd graph, you can use `.detach()` But within a custom Function forward, since autograd is already disabled, you can just do return `x.view(x.shape)` @albanD Using `.detach()` can also reproduce this issue, while `x.view(x.shape)` seems to resolve it. I think the underlying mechanism might be that: if an autograd function returns a view tensor, subsequent operations performed in a `no_grad` context / `autograd.Function.forward` will inherit the `requires_grad` attribute from the original tensor. This can lead to unexpected behavior during gradient propagation. Why would you expect `e` to require gradients here given that it was created in no_grad mode? I agree that it is inconsistent with the non-custom Function case though indeed. The reason is that \"detach()\" is a non-differentiable view. And so the output of...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "compiler_codegen|async_race_ordering|hardware_backend|api_semantics"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0043-75ac4cd1",
+      "input": "repository: numba/numba\ntitle: test failures related to tolerance (corruption / refcounting)\ngithub_labels: needtriage|stale\nissue_body_excerpt: I am testing Numba locally and encountered 6 test case failures while running the test suite. git-hash of commit tested (current `main`): ``` esc@artemis [numba_3.14] [numba:main:\u2605\u2605\u2605] ~/git/numba git show commit 25bc4ef1f6cb6084d0a125317b5605c11466cb53 (HEAD -> main, origin/main, origin/HEAD) Merge: 365f20334d 53772ad642 Author: Emergency Self-Construct <esc@users.noreply.github.com> Date: Thu Nov 6 18:19:04 2025 +0100 Merge pull request #10323 from esc/fix/editable_installs fix editable installs ``` conda environment: ``` esc@artemis [numba_3.14] [numba:main:\u2605\u2605\u2605] ~/git/numba conda list # packages in environment at /Users/esc/miniconda3/envs/numba_3.14: # # Name Version Build Channel blas 1.0 openblas bzip2 1.0.8 h80987f9_6 ca-certificates 2025.11.4 hca03da5_0 expat 2.7.3 h982b769_0 libcxx 20.1.8 hd7fd590_1 libffi 3.4.4 hca03da5_1 libgfortran 5.0.0 11_3_0_hca03da5_28 libgfortran5 11.3.0 h009349e_28 libmpdec 4.0.0 h80987f9_0 libopenblas 0.3.30 hf2bb037_0 libzlib 1.3.1 h5f15de7_0 llvm-openmp 20.1.8 he822017_0 llvmlite 0.46.0b1 py314hc3eb27a_0 numba/label/dev lz4-c 1.9.4 h313beb8_1 ncurses 6.5 hee39554_0 numba 0.63.0b1+70.g53772ad642 pypi_0 pypi numpy 2.3.4 py314hde9b8b7_0 numpy-base 2.3.4 py314hb4b2851_0 openssl 3.0.18 h9b4081a_0 pip 25.2 pyh0d26453_1 python 3.14.0 h1858270_101_cp314 python_abi 3.14 1_cp314 readline 8.3 h0b18652_0 setuptools 80.9.0 py314hca03da5_0 sqlite 3.50....\ncomments_excerpt: For completeness: ``` 1 esc@artemis [numba_3.14] [numba:main:\u2605\u2605\u2605:\u00bb] ~/git/numba numba -s System info: -------------------------------------------------------------------------------- __Time Stamp__ Report started (local time) : 2025-11-06 19:24:10.630370 UTC start time : 2025-11-06 18:24:10.630384 Running time (s) : 0.711303 __Hardware Information__ Machine : arm64 CPU Name : apple-m4 CPU Count : 14 Number of accessible CPUs : ? List of accessible CPUs cores : ? CFS Restrictions (CPUs worth of runtime) : None CPU Features : Memory Total (MB) : 36864 Free Memory (MB) : 1619 __OS Information__ Platform Name : macOS-15.7-arm64-arm-64bit-Mach-O Platform Release : 24.6.0 OS Name : Darwin OS Version : Darwin Kernel Version 24.6.0: Mon Aug 11 21:15:09 PDT 2025; root:xnu-11417.140.69.701.11~1/RELEASE_ARM64_T6041 OS Specific Version : 15.7 arm64 Libc Version : ? __Python Information__ Python C...",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "4",
+        "current_ensemble_vote_margin": "3",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0054-d98d7afd",
+      "input": "repository: rapidsai/cudf\ntitle: [BUG] dask_cudf, groupby mean is numerically instable\ngithub_labels: bug\nissue_body_excerpt: **Describe the bug** dask_cudf groupby mean is numerically instable **Steps/Code to reproduce bug** ```python import numpy as np import cudf from dask_cuda import LocalCUDACluster cluster = LocalCUDACluster() from dask.distributed import Client client = Client(cluster) for i in range(100): np.random.seed(3) size = 100 groups = 20 df = cudf.DataFrame() df['asset'] = np.random.randint(1, groups, size) df['num'] = np.random.rand(size) cdf = dask_cudf.from_cudf(df, npartitions=16) gt = df.groupby('asset').mean() dm = cdf.groupby('asset').mean().compute().reset_index().sort_values('index') print('trail', i, (gt['num']-dm['num']).abs().max()) ``` **Expected behavior** The distributed groupby vs non-distributed groupby mean should be the same, and stable (independent of the trail number). But the above will produce different numbers randomly. **Environment overview (please complete the following information)** DGX-1 machine **Environment details** <details><summary>Click here to see environment details</summary><pre> **git*** Not inside a git repository ***OS Information*** DISTRIB_ID=Ubuntu DISTRIB_RELEASE=18.04 DISTRIB_CODENAME=bionic DISTRIB_DESCRIPTION=\"Ubuntu 18.04.2 LTS\" NAME=\"Ubuntu\" VERSION=\"18.04.2 LTS (Bionic Beaver)\" ID=ubuntu ID_LIKE=debian PRETTY_NAME=\"Ubuntu 18.04.2 LTS\" VERSION_ID=\"18.04\" HOME_URL=\"https://www.ubuntu.com/\" SUPPORT_URL=\"https://help.ubuntu.com/\" BUG_R...\ncomments_excerpt: I believe this is just due to the nature of floating point precision. Closing, but feel free to reopen if you have an updated example that shows issues.",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "2",
+        "current_ensemble_vote_margin": "1",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|async_race_ordering|hardware_backend|reduction_accumulation"
+      },
+      "repository": "rapidsai/cudf"
+    },
+    {
+      "id": "GNF-0065-e81a8790",
+      "input": "repository: numba/numba\ntitle: sum and np.sum() algorithm needs to catch up to improved upstream precision\ngithub_labels: feature_request\nissue_body_excerpt: This is a \"narrative\" type of bug report, aka \"search the code and compare\". No test cases are provided here. Python and NumPy has each changed their `sum()` implementations beyond ordinary linear summation. Specifically: * In https://github.com/python/cpython/issues/100425 (and linked, merged PRs), Python moves to a Neumaier algorithm over the previous naive summation. The slowdown was only 20%, which is probably because all the iterator stuff was taking most of the time... * In the above CPython issue it was mentioned that NumPy does a partial pairwise summation. This provides an improvement of precision in the average case for basically free. (A difference in order was previously noticed in https://github.com/numba/numba/issues/9819#issuecomment-2508969906.) ### Implementation considerations Neumaier is very serial because it has a loop-carried dependency. This can be ameliorated by computing partial sums, which also lends nicely to SIMD. That would introduce some difficulty in numeric reproduction *if* the lane count is dynamically determined. Doing it over the same lane count should always result in the same sequence of operations and be perfectly reproducible. Still, any performant choice (i.e. not 1) would produce results different from upstream. Pairwise is quite amenable to parallelization, from multi-node to multi-core to SIMD. There is again a possible reproducibi...\ncomments_excerpt: ",
+      "metadata": {
+        "current_ensemble_prediction": "not_numerical_failure",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "1",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "sum() algorithm needs to catch up to improved upstream precision This is a \"narrative\" type of bug report, aka \"search the code and compare\"",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|hardware_backend|reduction_accumulation"
+      },
+      "repository": "numba/numba"
+    },
+    {
+      "id": "GNF-0066-103332ec",
+      "input": "repository: pytorch/pytorch\ntitle: bad numerics for variable length attention with cudnn\ngithub_labels: module: cudnn|triaged|module: sdpa\nissue_body_excerpt: ### Summary We are trying to implement a variable length attention API for the next pytorch release (see impl [here](https://github.com/pytorch/pytorch/blob/main/torch/nn/attention/varlen.py). This API calls into FAV2 - we also want to have cudnn support but we are currently seeing bad numerics in the bwd. #### Versions cudnn frontend version: 1.15 cudnn backend version: 9.6 ### Bad numerics The gradients differ a lot from the SDPA results. ```Py ## batch 1 varlen_grad_seq: tensor([[-4.4375e+00, 2.7812e+00, -2.8906e+00, ..., 8.5625e+00, -2.9688e+00, 5.3438e+00], [-3.0160e-05, -1.8358e-05, -1.1444e-04, ..., -8.6427e-06, 6.2466e-05, -1.5450e-04], [-7.2956e-05, -3.9339e-06, -1.4722e-05, ..., -2.7537e-05, 6.2943e-05, -6.1989e-05], ..., [-1.1755e-38, -9.3672e-39, -8.4489e-39, ..., -8.7244e-39, 1.2306e-38, -3.7102e-38], [-1.1755e-38, -9.3672e-39, -8.4489e-39, ..., -8.7244e-39, 1.2306e-38, -3.7102e-38], [ 6.3672e-01, -2.3926e-01, 1.1875e+00, ..., 5.2734e-02, 2.5586e-01, 5.0354e-03]], device='cuda:0', dtype=torch.bfloat16) sdpa_grad_seq: tensor([[-0.4922, 0.6992, -0.9961, ..., -0.7734, 0.4902, -0.7344], [-0.5469, 0.6406, -0.9766, ..., -0.7344, 0.5078, -0.7617], [-0.5703, 0.6211, -1.0312, ..., -0.7695, 0.5312, -0.7969], ..., [-0.5977, 0.6445, -1.1016, ..., -0.7656, 0.5547, -0.8477], [-0.5469, 0.6445, -1.0391, ..., -0.7891, 0.5312, -0.7852], [-0.6016, 0.6797, -1.0625, ..., -0.8281, 0....\ncomments_excerpt: thanks, we're still investigating this after resolving recent segfault issues with cudnn Curious, whether varlen attention would support custom (varlen-packed) attn_mask? Having at least a Triton/CuTE flash implementation in core would be great (maybe a variant of flex_attention). Even if it means compiling at runtime, having a stable baseline implementation for this is important... @vadimkantorov can you open a separate issue for that, so that we can keep this issue focused",
+      "metadata": {
+        "current_ensemble_prediction": "dtype_casting",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    },
+    {
+      "id": "GNF-0093-6cb318e0",
+      "input": "repository: jax-ml/jax\ntitle: ndarray.at.set(mode=\"drop\") gives incorrect value for the last element in the array\ngithub_labels: bug\nissue_body_excerpt: ### Description Given the following test case: ``` from absl.testing import absltest from absl.testing import parameterized import chex import jax from jax import numpy as jnp class ScatterDropTest(chex.TestCase): def __init__(self, *args, **kwargs): jax.print_environment_info() super().__init__(*args, **kwargs) @parameterized.named_parameters( dict( testcase_name=\"indices_are_sorted_unique_indices\", indices_are_sorted=True, unique_indices=True, ), dict( testcase_name=\"indices_are_not_sorted_unique_indices\", indices_are_sorted=False, unique_indices=True, ), dict( testcase_name=\"indices_are_sorted_nonunique_indices\", indices_are_sorted=True, unique_indices=False, ), dict( testcase_name=\"indices_are_not_sorted_nonunique_indices\", indices_are_sorted=False, unique_indices=False, ), ) def test_scatter_drop( self, indices_are_sorted: bool, unique_indices: bool ): positive_values = ( jnp.full((4,), -1) .at[jnp.array([-1, -1, 0, 1, 2, 3, -1, -1])] .set( jnp.arange(8), indices_are_sorted=indices_are_sorted, unique_indices=unique_indices, mode=\"drop\", ) ) chex.assert_trees_all_equal( positive_values, jnp.array([2, 3, 4, 5]) ) if __name__ == \"__main__\": absltest.main() ``` The expected output is `[2, 3, 4, 5]` but instead `[2, 3, 4, 0]` is returned from the scatter. ### System info (python version, jaxlib version, accelerator, etc.) ``` jax: 0.4.29 jaxlib: 0.4.29 numpy: 1.26.3 python: ...\ncomments_excerpt: Hi - I think this is working as expected. In three of the cases, you are setting `indices_are_sorted` and/or `unique_indices` to True, when your indices are neither unique nor sorted. If you lie to the compiler, you get undefined results. In the last case where both flags are set to False, the output is also consistent with the documented behavior of the API: you have multiple duplicate indices. From the [`lax.scatter` documentation](https://jax.readthedocs.io/en/latest/_autosummary/jax.lax.scatter.html#jax-lax-scatter): > If multiple updates are performed to the same index of operand, they may be applied in any order. `[2, 3, 4, 7]` is a valid output here, because you specified that index `-1` may be set to `7`. Ah, I was expecting that negatives indices would be always out-of-bounds and that out-of-bounds indices would not be counted against `indices_are_sorted` and `unique_indices`...",
+      "metadata": {
+        "current_ensemble_prediction": "nan_inf",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|hardware_backend|api_semantics"
+      },
+      "repository": "jax-ml/jax"
+    },
+    {
+      "id": "GNF-0095-e46f2dc5",
+      "input": "repository: pytorch/pytorch\ntitle: torch.jit.script produces incorrect gradients\ngithub_labels: oncall: jit\nissue_body_excerpt: ### \ud83d\udc1b Describe the bug I made a custom layer-norm implementation for Conv1d `(B, C, L)` ordering, and the gradients appear to be wrong under `torch.jit.script`. Here is a reproducible example: ```python import torch import torch.nn as nn def ln_nb(x, gamma): mean = x.mean(dim=1, keepdim=True) # (B, C, L) -> (B, 1, L) var = x.var(dim=1, keepdim=True, unbiased=False) # (B, C, L) -> (B, 1, L) x = (x - mean) / torch.sqrt(var + 1e-5) # (B, C, L) return gamma * x ln_nb_scripted = torch.jit.script(ln_nb) class LN(nn.Module): def __init__(self, num_channels, jit=False): \"\"\" Bias-free layer-norm with (B, C, L) ordering. \"\"\" super(LN, self).__init__() self.gamma = nn.Parameter(torch.ones(1, num_channels, 1)) self.jit = jit def forward(self, x): if self.jit: return ln_nb_scripted(x, self.gamma) return ln_nb(x, self.gamma) # create dummy-input + grad from previous layer B, C, L = 8, 512, 1024 x = torch.randn(B, C, L, requires_grad=True).cuda() prev_grads = torch.randn(B, C, L).cuda() # note: error doesn't appear until 2nd or 3rd JIT-ed function call. for i in range(4): # version 1. (no JIT) ln1 = LN(C, jit=False).cuda() y1 = ln1(x) grad1, = torch.autograd.grad( y1, x, prev_grads ) # version 2. (JIT) ln2 = LN(C, jit=True).cuda() y2 = ln2(x) grad2, = torch.autograd.grad( y2, x, prev_grads ) grad_diff = torch.abs(grad1 - grad2) y_diff = torch.abs(y1 - y2) print(f\"Iteration {i}\") print(f\"Ou...\ncomments_excerpt: Update: forgot to post my result. On my machine I get this: ``` Iteration 0 Output diffs. Mean: 0.0, Max: 0.0 Grad diffs. Mean: 0.0, Max: 0.0 Iteration 1 Output diffs. Mean: 0.0, Max: 0.0 Grad diffs. Mean: 3.0314954990728893e-09, Max: 4.76837158203125e-07 Iteration 2 Output diffs. Mean: 2.2679699895888916e-08, Max: 7.152557373046875e-07 Grad diffs. Mean: 0.7620911598205566, Max: 5.267168998718262 ``` Another quick update. Instead of layer-norm, if I just do: ```python def ln_nb(x, gamma): mean = x.mean(dim=1, keepdim=True) # (B, C, L) -> (B, 1, L) return x - mean ``` Then I get: ``` Iteration 0 Output diffs. Mean: 0.0, Max: 0.0 Grad diffs. Mean: 0.0, Max: 0.0 Iteration 1 Output diffs. Mean: 0.0, Max: 0.0 Grad diffs. Mean: 0.0, Max: 0.0 --------------------------------------------------------------------------- RuntimeError: Function torch::jit::(anonymous namespace)::DifferentiableGra...",
+      "metadata": {
+        "current_ensemble_prediction": "precision_tolerance",
+        "current_ensemble_vote_count": "3",
+        "current_ensemble_vote_margin": "2",
+        "source_split": "original_191"
+      },
+      "output": {
+        "evidence_quote": "The report centers on wrong numerical output, accuracy, tolerance, nondeterminism, or approximate arithmetic.",
+        "is_true_numerical_failure": "yes",
+        "primary_failure_label": "precision_tolerance",
+        "secondary_cause_labels": "memory_mask_bounds|compiler_codegen|async_race_ordering|hardware_backend"
+      },
+      "repository": "pytorch/pytorch"
+    }
+  ]
+}

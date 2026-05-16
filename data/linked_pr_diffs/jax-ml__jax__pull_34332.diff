@@ -1,0 +1,887 @@
+diff --git a/jax/_src/BUILD b/jax/_src/BUILD
+index f822e9d9928c..6920d3c0dc36 100644
+--- a/jax/_src/BUILD
++++ b/jax/_src/BUILD
+@@ -1391,6 +1391,7 @@ py_library_providing_imports_info(
+         ":dtypes",
+         ":error_check",
+         ":export",
++        ":hijax",
+         ":indexing",
+         ":lax",
+         ":literals",
+diff --git a/jax/_src/numpy/hijax.py b/jax/_src/numpy/hijax.py
+new file mode 100644
+index 000000000000..23c725f5e5cb
+--- /dev/null
++++ b/jax/_src/numpy/hijax.py
+@@ -0,0 +1,335 @@
++# Copyright 2026 The JAX Authors.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""NumPy function implementations as hijax primitives."""
++import functools
++import operator
++from typing import Any, Callable
++
++import numpy as np
++
++from jax._src import ad_util
++from jax._src import api
++from jax._src import core
++from jax._src import dtypes
++from jax._src import numpy as jnp
++from jax._src.hijax import VJPHiPrimitive
++from jax._src.lax import control_flow
++from jax._src.lax import lax
++from jax._src.typing import Array, ArrayLike, DTypeLike
++
++
++class SearchSorted(VJPHiPrimitive):
++  """HiJAX primitive for binary search."""
++  valid_methods = ("compare_all", "scan", "scan_unrolled", "sort")
++
++  side: str
++  dimension: int
++  batch_dims: int
++  method: str
++  out_dtype: np.dtype
++
++  def __init__(
++      self,
++      sorted_arr_aval: core.ShapedArray,
++      query_aval: core.ShapedArray,
++      *,
++      side: str,
++      dimension: int,
++      batch_dims: int,
++      method: str,
++      out_dtype: np.dtype):
++    batch_dims = operator.index(batch_dims)
++    if batch_dims < 0 or batch_dims >= sorted_arr_aval.ndim:
++      raise ValueError(
++          f"batch_dims={batch_dims} must be in range [0, {sorted_arr_aval.ndim})"
++      )
++    dimension = operator.index(dimension)
++    if not batch_dims <= dimension < sorted_arr_aval.ndim:
++      raise ValueError(
++          f"dimension={dimension} must be in range [{batch_dims},"
++          f" {sorted_arr_aval.ndim})"
++      )
++    if sorted_arr_aval.dtype != query_aval.dtype:
++      raise ValueError(
++          "dtypes of sorted_arr and query must match; got "
++          f"{sorted_arr_aval.dtype} and {query_aval.dtype}"
++      )
++    if side not in ["left", "right"]:
++      raise ValueError(
++          f"invalid argument side={side!r}, expected 'left' or 'right'"
++      )
++    if method not in self.valid_methods:
++      raise ValueError(
++          f"invalid argument {method=}, expected one of {list(self.valid_methods)}"
++      )
++    if sorted_arr_aval.shape[:batch_dims] != query_aval.shape[:batch_dims]:
++      raise ValueError(
++          "batch dimension sizes must match; got"
++          f" {sorted_arr_aval.shape[:batch_dims]} != {query_aval.shape[:batch_dims]}"
++      )
++    if not dtypes.issubdtype(out_dtype, np.integer):
++      raise ValueError(f"out_dtype should be an integer type; got {out_dtype}")
++    # Attempt this here to catch overflow errors early.
++    out_dtype.type(sorted_arr_aval.shape[dimension])
++    self.in_avals = (sorted_arr_aval, query_aval)
++    self.out_aval = core.typeof(api.eval_shape(
++      functools.partial(_searchsorted_impl,
++        dimension=dimension, batch_dims=batch_dims, side=side,
++        dtype=out_dtype, method=method),
++        sorted_arr_aval, query_aval))
++    self.params = dict(
++      side=side,
++      dimension=dimension,
++      batch_dims=batch_dims,
++      method=method,
++    )
++    super().__init__()
++
++  def expand(self, sorted_arr: ArrayLike, query: ArrayLike) -> Array:  # pyrefly: ignore[bad-override]
++    return _searchsorted_impl(
++      sorted_arr, query,
++      dimension=self.dimension,
++      batch_dims=self.batch_dims,
++      side=self.side,
++      dtype=self.out_aval.dtype,
++      method=self.method)
++
++  def batch(
++      self,
++      axis_data: Any,
++      args: tuple[Array, Array],
++      dims: tuple[int | None, int | None]
++  ) -> tuple[Array, int | None]:
++    del axis_data  # unused
++    sorted_arr, query = args
++    batch_dims = self.batch_dims
++    dimension = self.dimension
++
++    if dims[0] is None and dims[1] is None:
++      # Neither array is batched
++      out_bdim = None
++    elif dims[1] is None:
++      # Only sorted_arr is batched
++      assert dims[0] is not None  # for type checker
++      sorted_arr = jnp.moveaxis(sorted_arr, dims[0], batch_dims)
++      dimension += 1
++      out_bdim = batch_dims
++    elif dims[0] is None:
++      # Only query is batched
++      assert dims[1] is not None  # for type checker
++      query = jnp.moveaxis(query, dims[1], batch_dims)
++      out_bdim = sorted_arr.ndim - 1
++    else:
++      # Both are batched
++      sorted_arr = jnp.moveaxis(sorted_arr, dims[0], 0)
++      query = jnp.moveaxis(query, dims[1], 0)
++      batch_dims += 1
++      dimension += 1
++      out_bdim = 0
++
++    batched_prim = SearchSorted(
++      core.typeof(sorted_arr),
++      core.typeof(query),
++      side=self.side,
++      dimension=dimension,
++      batch_dims=batch_dims,
++      method=self.method,
++      out_dtype=self.out_aval.dtype,
++    )
++    return batched_prim(sorted_arr, query), out_bdim
++
++  def jvp(self, primals: tuple[Array, Array], tangents: Any) -> tuple[Array | np.ndarray, Array | np.ndarray]:
++    del tangents  # unused
++    primal_out = self(*primals)
++    return primal_out, np.empty(primal_out.shape, dtype=dtypes.float0)
++
++  def vjp_fwd(self, nzs_in: Any, *args: Array) -> tuple[Array, None]:
++    return (self(*args), None)
++
++  def vjp_bwd_retval(self, res: Any, g: Any):
++    return (ad_util.zeros_like_aval(self.in_avals[0]),
++            ad_util.zeros_like_aval(self.in_avals[1]))
++
++
++def _searchsorted_impl(sorted_arr: ArrayLike, query: ArrayLike, *, dimension: int,
++                       batch_dims: int, side: str, dtype: np.dtype, method: str):
++  """Main implementation of searchsorted primitive."""
++  sorted_arr = jnp.moveaxis(sorted_arr, dimension, -1)
++  dtype = dtypes._maybe_canonicalize_explicit_dtype(dtype, "searchsorted")
++
++  if method == "scan":
++    impl: Callable[..., Array] = functools.partial(_searchsorted_scan_impl, unrolled=False)
++  elif method == "scan_unrolled":
++    impl = functools.partial(_searchsorted_scan_impl, unrolled=True)
++  elif method == "compare_all":
++    impl = _searchsorted_compare_all_impl
++  elif method == "sort":
++    impl = _searchsorted_sort_impl
++  else:
++    raise ValueError(f"Unsupported method: {method}")
++
++  fun = functools.partial(impl, side=side, dtype=dtype)
++  for _ in range(sorted_arr.ndim - batch_dims - 1):
++    fun = api.vmap(fun, in_axes=(0, None))
++  for _ in range(batch_dims):
++    fun = api.vmap(fun, in_axes=0)
++  return fun(sorted_arr, query)
++
++
++@functools.partial(api.jit, static_argnames=["side", "dtype", "unrolled"])
++def _searchsorted_scan_impl(
++    sorted_arr: Array, query: Array, side: str, dtype: np.dtype, unrolled: bool
++) -> Array:
++  """Scan-based implementation of searchsorted."""
++  assert sorted_arr.ndim == 1
++  assert side in ["left", "right"]
++  (n,) = sorted_arr.shape
++  if sorted_arr.size == 0:
++    return lax.full(query.shape, fill_value=0, dtype=dtype)
++  if query.ndim > 0:
++    return api.vmap(
++        functools.partial(_searchsorted_scan_impl, side=side, dtype=dtype, unrolled=unrolled),
++        in_axes=(None, 0),
++    )(sorted_arr, query)
++
++  op = lax._sort_le_comparator if side == "left" else lax._sort_lt_comparator  # pylint: disable=protected-access
++  unsigned_dtype = np.uint64 if dtypes.iinfo(dtype).bits == 64 else np.uint32
++  def body_fun(state, _):
++    low, high = state
++    mid = low + (high - low) // 2  # use this form to avoid overflow
++    go_left = op(query, sorted_arr[mid])
++    return (lax.select(go_left, low, mid), lax.select(go_left, mid, high)), ()
++  n_levels = int(np.ceil(np.log2(n + 1)))
++  vma = tuple(core.typeof(sorted_arr).vma)
++  init = (core.pvary(unsigned_dtype(0), vma), core.pvary(unsigned_dtype(n), vma))
++  carry, _ = control_flow.scan(body_fun, init, (), length=n_levels,
++                               unroll=n_levels if unrolled else 1)
++  return carry[1].astype(dtype)
++
++
++@functools.partial(api.jit, static_argnames=["side", "dtype"])
++def _searchsorted_sort_impl(
++    sorted_arr: Array, query: Array, side: str, dtype: np.dtype
++) -> Array:
++  """Cosorting-based implementation of searchsorted."""
++  assert sorted_arr.ndim == 1
++  assert side in ["left", "right"]
++  working_dtype = (
++      np.int32
++      if sorted_arr.size + query.size <= np.iinfo(np.int32).max
++      else np.int64
++  )
++
++  def _rank(x):
++    idx = lax.iota(working_dtype, len(x))
++    return lax.full_like(idx, 0).at[lax.sort_key_val(x, idx)[1]].set(idx)
++
++  if side == "left":
++    index = _rank(lax.concatenate([query.ravel(), sorted_arr], 0))[: query.size]
++  else:
++    index = _rank(lax.concatenate([sorted_arr, query.ravel()], 0))[
++        sorted_arr.size :
++    ]
++  return lax.reshape(
++      lax.sub(index, _rank(query.ravel())), np.shape(query)
++  ).astype(dtype)
++
++
++@functools.partial(api.jit, static_argnames=["side", "dtype"])
++def _searchsorted_compare_all_impl(
++    sorted_arr: Array, query: Array, side: str, dtype: np.dtype
++) -> Array:
++  assert sorted_arr.ndim == 1
++  assert side in ["left", "right"]
++  op = lax._sort_lt_comparator if side == "left" else lax._sort_le_comparator  # pylint: disable=protected-access
++  comparisons = api.vmap(op, in_axes=(0, None))(sorted_arr, query)
++  return comparisons.sum(dtype=dtype, axis=0)
++
++
++def searchsorted(
++    sorted_arr: ArrayLike,
++    query: ArrayLike,
++    /,
++    *,
++    side: str = "left",
++    dimension: int = 0,
++    batch_dims: int = 0,
++    method: str = "scan",
++    dtype: DTypeLike = "int32",
++):
++  """Find indices of query values within a sorted array.
++
++  This is a batch-aware implementation of :func:`numpy.searchsorted` built on a
++  HiJAX primitive. It adds the `batch_dims` and `dimension` argument, which make
++  the API closed under batching.
++
++  Args:
++    sorted_arr: N-dimensional array, which is assumed to be sorted in increasing
++      order along ``dimension``.
++    query: N-dimensional array of query values.
++    side: 'left' (default) or 'right'. If 'left', find the index of the first
++      suitable location. If 'right', find the index of the last.
++    dimension: positive integer specifying the dimension of ``sorted_arr`` along
++      which to insert query values. Defaults to the first dimension.
++    batch_dims: integer specifying the number of leading dimensions of
++      ``sorted_arr`` and ``query`` to treat as shared batch dimensions.
++      Defaults to zero.
++    method: string specifying the search method: one of 'scan' (default),
++      'compare_all', or 'sort'. 'scan' uses a scan-based binary search implementation,
++      'compare_all' directly compares all elements in `sorted_arr` to `query`, and
++      'sort' uses a cosorting-based implementation.
++
++  Returns:
++    An array specifying the insertion locations of `query` into `sorted_arr`.
++  """
++  sorted_arr, query = core.standard_insert_pvary(sorted_arr, query)
++  out_dtype = dtypes._maybe_canonicalize_explicit_dtype(np.dtype(dtype), "searchsorted")
++  prim = SearchSorted(
++    core.typeof(sorted_arr),
++    core.typeof(query),
++    side=side,
++    dimension=dimension,
++    batch_dims=batch_dims,
++    method=method,
++    out_dtype=out_dtype,
++  )
++  return prim(sorted_arr, query)
++
++
++# TODO(jakevdp): delete this function when hijax is finalized.
++def searchsorted_via_expand(
++    sorted_arr: ArrayLike,
++    query: ArrayLike,
++    /,
++    *,
++    side: str = "left",
++    dimension: int = 0,
++    batch_dims: int = 0,
++    method: str = "scan",
++    dtype: DTypeLike = "int32",
++):
++  """Compute searchsorted() without binding the hijax primitive."""
++  sorted_arr, query = core.standard_insert_pvary(sorted_arr, query)
++  out_dtype = dtypes._maybe_canonicalize_explicit_dtype(np.dtype(dtype), "searchsorted")
++  prim = SearchSorted(
++    core.typeof(sorted_arr),
++    core.typeof(query),
++    side=side,
++    dimension=dimension,
++    batch_dims=batch_dims,
++    method=method,
++    out_dtype=out_dtype,
++  )
++  return prim.expand(sorted_arr, query)
+diff --git a/jax/_src/numpy/lax_numpy.py b/jax/_src/numpy/lax_numpy.py
+index 995f1b7f03c4..794a447cb8c3 100644
+--- a/jax/_src/numpy/lax_numpy.py
++++ b/jax/_src/numpy/lax_numpy.py
+@@ -50,6 +50,7 @@
+ from jax._src.lib import xla_client as xc
+ from jax._src.numpy.array_constructors import array, asarray
+ from jax._src.numpy import array_creation
++from jax._src.numpy import hijax
+ from jax._src.numpy import indexing
+ from jax._src.numpy import reductions
+ from jax._src.numpy import tensor_contractions
+@@ -9381,46 +9382,6 @@ def corrcoef(x: ArrayLike, y: ArrayLike | None = None, rowvar: bool = True,
+   return c
+ 
+ 
+-@partial(vectorize, excluded={0, 1, 3, 4})
+-def _searchsorted_via_scan(unrolled: bool, sorted_arr: Array, query: Array,
+-                           side: str, dtype: type) -> Array:
+-  op = lax._sort_le_comparator if side == 'left' else lax._sort_lt_comparator
+-  unsigned_dtype = np.uint32 if dtype == np.int32 else np.uint64
+-  def body_fun(state, _):
+-    low, high = state
+-    mid = low.astype(unsigned_dtype) + high.astype(unsigned_dtype)
+-    mid = lax.div(mid, array(2, dtype=unsigned_dtype)).astype(dtype)
+-    go_left = op(query, sorted_arr[mid])
+-    return (where(go_left, low, mid), where(go_left, mid, high)), ()
+-  n_levels = int(np.ceil(np.log2(len(sorted_arr) + 1)))
+-  init = (array(0, dtype=dtype), array(len(sorted_arr), dtype=dtype))
+-  vma = core.typeof(sorted_arr).vma
+-  init = tuple(core.pvary(i, tuple(vma)) for i in init)
+-  carry, _ = control_flow.scan(body_fun, init, (), length=n_levels,
+-                               unroll=n_levels if unrolled else 1)
+-  return carry[1]
+-
+-
+-def _searchsorted_via_sort(sorted_arr: Array, query: Array, side: str, dtype: type) -> Array:
+-  working_dtype = lax_utils.int_dtype_for_dim(sorted_arr.size + query.size,
+-                                              signed=False)
+-  def _rank(x):
+-    idx = lax.iota(working_dtype, x.shape[0])
+-    return array_creation.zeros_like(idx).at[argsort(x)].set(idx)
+-  query_flat = query.ravel()
+-  if side == 'left':
+-    index = _rank(lax.concatenate([query_flat, sorted_arr], 0))[:query.size]
+-  else:
+-    index = _rank(lax.concatenate([sorted_arr, query_flat], 0))[sorted_arr.size:]
+-  return lax.reshape(lax.sub(index, _rank(query_flat)), np.shape(query)).astype(dtype)
+-
+-
+-def _searchsorted_via_compare_all(sorted_arr: Array, query: Array, side: str, dtype: type) -> Array:
+-  op = lax._sort_lt_comparator if side == 'left' else lax._sort_le_comparator
+-  comparisons = api.vmap(op, in_axes=(0, None))(sorted_arr, query)
+-  return comparisons.sum(dtype=dtype, axis=0)
+-
+-
+ @export
+ @api.jit(static_argnames=('side', 'method'))
+ def searchsorted(a: ArrayLike, v: ArrayLike, side: str = 'left',
+@@ -9487,29 +9448,15 @@ def searchsorted(a: ArrayLike, v: ArrayLike, side: str = 'left',
+     a, v = util.ensure_arraylike("searchsorted", a, v)
+   else:
+     a, v, sorter = util.ensure_arraylike("searchsorted", a, v, sorter)
+-  if side not in ['left', 'right']:
+-    raise ValueError(f"{side!r} is an invalid value for keyword 'side'. "
+-                     "Expected one of ['left', 'right'].")
+-  if method not in ['scan', 'scan_unrolled', 'sort', 'compare_all']:
+-    raise ValueError(
+-        f"{method!r} is an invalid value for keyword 'method'. "
+-        "Expected one of ['sort', 'scan', 'scan_unrolled', 'compare_all'].")
+-  if np.ndim(a) != 1:
++  if a.ndim != 1:
+     raise ValueError("a should be 1-dimensional")
+   a, v = util.promote_dtypes(a, v)
+   if sorter is not None:
+     a = a[sorter]
+   dtype = lax_utils.int_dtype_for_dim(a.shape[0], signed=True)
+-  if a.shape[0] == 0:
+-    return array_creation.zeros_like(v, dtype=dtype)
+-  impl = {
+-      'scan': partial(_searchsorted_via_scan, False),
+-      'scan_unrolled': partial(_searchsorted_via_scan, True),
+-      'sort': _searchsorted_via_sort,
+-      'compare_all': _searchsorted_via_compare_all,
+-  }[method]
+-  a, v = core.standard_insert_pvary(a, v)
+-  return impl(a, v, side, dtype)  # type: ignore
++
++  # TODO(jakevdp): fix hijax primitive corner cases and use hijax.searchsorted direcly.
++  return hijax.searchsorted_via_expand(a, v, side=side, method=method, dtype=dtype)
+ 
+ 
+ @export
+diff --git a/tests/BUILD b/tests/BUILD
+index 3443a56064b5..ab331c7262c8 100644
+--- a/tests/BUILD
++++ b/tests/BUILD
+@@ -683,6 +683,15 @@ jax_multiplatform_test(
+     ]),
+ )
+ 
++jax_multiplatform_test(
++    name = "lax_numpy_hijax_test",
++    srcs = ["lax_numpy_hijax_test.py"],
++    deps = py_deps([
++        "absl/testing",
++        "numpy",
++    ]),
++)
++
+ jax_multiplatform_test(
+     name = "lax_numpy_operators_test",
+     srcs = ["lax_numpy_operators_test.py"],
+diff --git a/tests/lax_numpy_hijax_test.py b/tests/lax_numpy_hijax_test.py
+new file mode 100644
+index 000000000000..42d3f8c4506b
+--- /dev/null
++++ b/tests/lax_numpy_hijax_test.py
+@@ -0,0 +1,415 @@
++# Copyright 2026 The JAX Authors.
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#     https://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""Tests for experimental searchsorted primitive."""
++
++import functools
++
++from absl.testing import absltest
++import jax
++import numpy as np
++
++from jax._src import config
++from jax._src.numpy import hijax
++from jax._src import test_util as jtu
++
++config.parse_flags_with_absl()
++
++_SIDES = ("left", "right")
++_DTYPES = ("int32", "float32", "complex64")
++_METHODS = ("compare_all", "scan", "scan_unrolled", "sort")
++_QUERY_SHAPES = ((), (5,), (5, 7))
++_SORTED_ARR_SHAPES = ((10,), (10, 11), (10, 11, 12))
++_BATCH_SHAPES = ((), (3,), (3, 4))
++
++searchsorted_jit = jax.jit(
++    hijax.searchsorted,
++    static_argnames=["side", "dimension", "batch_dims", "method"],
++)
++
++
++def searchsorted_reference(
++    sorted_arr: np.ndarray,
++    query: np.ndarray,
++    *,
++    side: str = "left",
++    method: str | None = None,
++    dimension: int = 0,
++    batch_dims: int = 0,
++    dtype: np.dtype = np.int32,
++) -> np.ndarray:
++  """Reference implementation of the searchsorted primitive in terms of numpy.
++
++  Args:
++    sorted_arr: N-dimensional array, which is assumed to be sorted in increasing
++      order along ``dimension``.
++    query: M-dimensional array of query values.
++    side: {'left', 'right'}. If 'left', find the index of the first suitable
++      location. If 'right', find the index of the last.
++    method: unused.
++    dimension: positive integer specifying the dimension along which to insert
++      query values.
++    batch_dims: integer specifying the number of leading dimensions of
++      `sorted_arr` and `query` to treat as batch dimensions.
++
++  Returns:
++    An array specifying the insertion locations of `query` into `sorted_arr`.
++  """
++  del method  # unused in numpy.searchsorted.
++
++  if batch_dims < 0 or batch_dims >= sorted_arr.ndim:
++    raise ValueError(
++        f"batch_dims={batch_dims} must be in range [0, {sorted_arr.ndim})"
++    )
++
++  if dimension < batch_dims or dimension >= sorted_arr.ndim:
++    raise ValueError(
++        f"dimension={dimension} must be in range [{batch_dims},"
++        f" {sorted_arr.ndim})"
++    )
++
++  if sorted_arr.shape[:batch_dims] != query.shape[:batch_dims]:
++    raise ValueError(
++        "batch dimension sizes must match; got"
++        f" {sorted_arr.shape[:batch_dims]} != {query.shape[:batch_dims]}"
++    )
++
++  # Recursive call to handle common batch dimensions.
++  if batch_dims > 0:
++    return np.array([
++        searchsorted_reference(
++            a, q, side=side, dimension=dimension - 1, batch_dims=batch_dims - 1
++        )
++        for a, q in zip(sorted_arr, query)
++    ])
++
++  # Recursive call to handle sorted array batch dimensions.
++  if sorted_arr.ndim > 1:
++    sorted_arr = np.moveaxis(sorted_arr, dimension, 1)
++    return np.array(
++        [searchsorted_reference(a, query, side=side) for a in sorted_arr]
++    )
++
++  # Base case: batched query handled by numpy.
++  assert sorted_arr.ndim == 1
++  return np.searchsorted(sorted_arr, query, side=side).astype(dtype)
++
++
++class SearchsortedTest(jtu.JaxTestCase):
++
++  @jtu.sample_product(
++      dtype=_DTYPES,
++      out_dtype=['int32', 'uint32']
++  )
++  def test_out_dtype(self, dtype, out_dtype):
++    rand_dtype = jtu.rand_default(self.rng())
++    sorted_arr = np.sort(rand_dtype((100,), dtype))
++    query = rand_dtype((100,), dtype)
++    result = hijax.searchsorted(sorted_arr, query, dtype=out_dtype)
++    self.assertEqual(result.dtype, np.dtype(out_dtype))
++
++  @jtu.sample_product(
++      dtype=_DTYPES,
++      side=_SIDES,
++      method=_METHODS,
++  )
++  def test_1D_against_numpy(self, dtype, side, method):
++    rand_dtype = jtu.rand_default(self.rng())
++    sorted_arr = np.sort(rand_dtype((100,), dtype))
++    query = rand_dtype((100,), dtype)
++    expected = np.searchsorted(sorted_arr, query, side=side)
++
++    with self.subTest(name="non-jit"):
++      actual = hijax.searchsorted(
++          sorted_arr, query, side=side, method=method
++      )
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="jit"):
++      actual = searchsorted_jit(sorted_arr, query, side=side, method=method)
++      np.testing.assert_array_equal(expected, actual)
++
++  @jtu.sample_product(
++      side=_SIDES,
++      method=_METHODS,
++  )
++  def test_2D_single_query_against_numpy(self, side, method):
++    sorted_arr = np.sort(
++        self.rng().uniform(size=(10, 100), low=0, high=10).round(1), axis=1
++    )
++    query = self.rng().uniform(size=(50,), low=-0.5, high=10.5).round(1)
++    expected = np.array(
++        [np.searchsorted(arr, query, side=side) for arr in sorted_arr]
++    )
++
++    with self.subTest(name="non-jit"):
++      actual = hijax.searchsorted(
++          sorted_arr, query, dimension=1, side=side, method=method
++      )
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="jit"):
++      actual = searchsorted_jit(
++          sorted_arr, query, dimension=1, side=side, method=method
++      )
++      np.testing.assert_array_equal(expected, actual)
++
++  @jtu.sample_product(
++      side=_SIDES,
++      method=_METHODS,
++  )
++  def test_2D_batched_query_against_numpy(self, side, method):
++    sorted_arr = np.sort(
++        self.rng().uniform(size=(10, 100), low=0, high=10).round(1), axis=1
++    )
++    query = self.rng().uniform(size=(10, 20, 30), low=-0.5, high=10.5).round(1)
++    expected = np.array(
++        [np.searchsorted(a, q, side=side) for a, q in zip(sorted_arr, query)]
++    )
++
++    with self.subTest(name="non-jit"):
++      actual = hijax.searchsorted(
++          sorted_arr, query, dimension=1, batch_dims=1, side=side, method=method
++      )
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="jit"):
++      actual = searchsorted_jit(
++          sorted_arr, query, dimension=1, batch_dims=1, side=side, method=method
++      )
++      np.testing.assert_array_equal(expected, actual)
++
++  @jtu.sample_product(
++      side=_SIDES,
++      method=_METHODS,
++      query_shape=_QUERY_SHAPES,
++      sorted_arr_shape=_SORTED_ARR_SHAPES,
++      batch_shape=_BATCH_SHAPES,
++  )
++  def test_all_shapes(
++      self, side, method, query_shape, sorted_arr_shape, batch_shape
++  ):
++    rand_dtype = jtu.rand_default(self.rng())
++    batch_dims = len(batch_shape)
++    dimension = batch_dims + int(self.rng().randint(0, len(sorted_arr_shape)))
++    sorted_arr = np.sort(
++        rand_dtype((*batch_shape, *sorted_arr_shape), np.float32),
++        axis=dimension,
++    )
++    query = rand_dtype((*batch_shape, *query_shape), np.float32)
++    kwds = dict(
++        side=side,
++        dimension=dimension,
++        batch_dims=batch_dims,
++        method=method,
++    )
++    expected = searchsorted_reference(sorted_arr, query, **kwds)
++    actual = hijax.searchsorted(sorted_arr, query, **kwds)
++    actual_jit = searchsorted_jit(sorted_arr, query, **kwds)
++
++    with self.subTest(name="non-jit"):
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="jit"):
++      np.testing.assert_array_equal(expected, actual_jit)
++
++  def test_input_validation(self):
++    with self.subTest(name="invalid_side"):
++      sorted_arr = np.arange(10)
++      query = np.arange(10)
++      with self.assertRaisesWithLiteralMatch(
++          ValueError, "invalid argument side='none', expected 'left' or 'right'"
++      ):
++        hijax.searchsorted(sorted_arr, query, side="none")
++
++    with self.subTest(name="invalid_batch_dims"):
++      sorted_arr = np.arange(10)
++      query = np.arange(10)
++      with self.assertRaisesWithLiteralMatch(
++          ValueError, "batch_dims=-1 must be in range [0, 1)"
++      ):
++        hijax.searchsorted(sorted_arr, query, batch_dims=-1)
++
++    with self.subTest(name="invalid_dimension"):
++      sorted_arr = np.arange(10)
++      query = np.arange(10)
++      with self.assertRaisesWithLiteralMatch(
++          ValueError, "dimension=2 must be in range [0, 1)"
++      ):
++        hijax.searchsorted(sorted_arr, query, dimension=2)
++
++    with self.subTest(name="batch_dimension_size_mismatch"):
++      sorted_arr = np.zeros((2, 5))
++      query = np.zeros((3, 6))
++      with self.assertRaisesWithLiteralMatch(
++          ValueError, "batch dimension sizes must match; got (2,) != (3,)"
++      ):
++        hijax.searchsorted(sorted_arr, query, batch_dims=1, dimension=1)
++
++    with self.subTest(name="dtype_mismatch"):
++      sorted_arr = np.zeros(5, dtype="float32")
++      query = np.zeros(5, dtype="int32")
++      with self.assertRaisesWithLiteralMatch(
++          ValueError,
++          "dtypes of sorted_arr and query must match; got float32 and int32",
++      ):
++        hijax.searchsorted(sorted_arr, query)
++
++    with self.subTest(name="invalid_method"):
++      sorted_arr = np.arange(5)
++      query = 2
++      with self.assertRaisesWithLiteralMatch(
++          ValueError,
++          "invalid argument method='none', expected one of ['compare_all',"
++          " 'scan', 'scan_unrolled', 'sort']",
++      ):
++        hijax.searchsorted(sorted_arr, query, method="none")
++
++  @jtu.sample_product(
++      side=_SIDES,
++      method=_METHODS,
++  )
++  def test_vmap(self, side, method):
++    with self.subTest(name="batched sorted_arr"):
++      sorted_arr = np.sort(
++          self.rng().uniform(size=(10, 100), low=0, high=10).round(1), axis=1
++      )
++      query = self.rng().uniform(size=50, low=-0.5, high=10.5).round(1)
++      expected = np.array(
++          [np.searchsorted(a, query, side=side) for a in sorted_arr]
++      )
++      actual = jax.vmap(
++          functools.partial(
++              hijax.searchsorted, side=side, method=method
++          ),
++          in_axes=(0, None),
++          out_axes=0,
++      )(sorted_arr, query)
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="batched query"):
++      sorted_arr = np.sort(self.rng().uniform(size=100, low=0, high=10).round(1))
++      query = self.rng().uniform(size=(10, 50), low=-0.5, high=10.5).round(1)
++      expected = np.array(
++          [np.searchsorted(sorted_arr, q, side=side) for q in query]
++      )
++      actual = jax.vmap(
++          functools.partial(
++              hijax.searchsorted, side=side, method=method
++          ),
++          in_axes=(None, 0),
++          out_axes=0,
++      )(sorted_arr, query)
++      np.testing.assert_array_equal(expected, actual)
++
++    with self.subTest(name="batched sorted_arr and query"):
++      sorted_arr = np.sort(
++          self.rng().uniform(size=(10, 100), low=0, high=10).round(1), axis=1
++      )
++      query = self.rng().uniform(size=(10, 50), low=-0.5, high=10.5).round(1)
++      expected = np.array(
++          [np.searchsorted(a, q, side=side) for a, q in zip(sorted_arr, query)]
++      )
++      actual = jax.vmap(
++          functools.partial(
++              hijax.searchsorted,
++              side=side,
++              method=method,
++          )
++      )(sorted_arr, query)
++      np.testing.assert_array_equal(expected, actual)
++
++  def test_vmap_unbatched(self):
++    """Test batched case where neither input is batched"""
++    x = np.array([2, 1, 3], dtype='int32')
++    y = np.array([2, 3, 4, 5])
++    z = np.array([4, 3])
++    def f(x, y, z):
++      return x * hijax.searchsorted(y, z)
++    result = jax.vmap(f, (0, None, None))(x, y, z)
++    expected = x[:, None] * hijax.searchsorted(y, z)[None, :]
++    self.assertArraysEqual(result, expected)
++
++  def test_nested_vmap(self):
++    x = np.arange(60).reshape(2, 3, 10)
++    y = np.arange(5, 65, 10).reshape(2, 3)
++    out = jax.vmap(jax.vmap(hijax.searchsorted))(x, y)
++    expected = jax.numpy.array([
++      [hijax.searchsorted(x, y) for x, y in zip(xrow, yrow)]
++      for xrow, yrow in zip(x, y)
++    ])
++    self.assertArraysEqual(out, expected)
++
++  @jtu.sample_product(
++      side=_SIDES,
++      method=_METHODS,
++  )
++  def test_autodiff(self, side, method, dtype="float32"):
++    rand_dtype = jtu.rand_default(self.rng())
++    sorted_arr = np.sort(rand_dtype((100,), dtype))
++    query = rand_dtype((100,), dtype)
++    func = functools.partial(
++        hijax.searchsorted, side=side, method=method
++    )
++    primal_expected = func(sorted_arr, query)
++
++    with self.subTest(name="forward mode"):
++      primals = (sorted_arr, query)
++      tangents = (np.ones_like(sorted_arr), np.ones_like(query))
++      primal_out, tangent_out = jax.jvp(func, primals, tangents)
++      np.testing.assert_array_equal(primal_expected, primal_out, strict=True)
++      self.assertEqual(tangent_out.shape, primal_out.shape)
++      self.assertEqual(tangent_out.dtype, jax.dtypes.float0)
++
++    with self.subTest(name="reverse mode"):
++      primal_out, f_vjp = jax.vjp(func, sorted_arr, query)
++      tangent_out = np.ones_like(primal_out)
++      tangents = f_vjp(tangent_out)
++      np.testing.assert_array_equal(primal_expected, primal_out, strict=True)
++      np.testing.assert_array_equal(
++          tangents[0], np.zeros_like(sorted_arr), strict=True
++      )
++      np.testing.assert_array_equal(
++          tangents[1], np.zeros_like(query), strict=True
++      )
++
++  def test_reference_batch_dims_out_of_range(self):
++    sorted_arr = np.arange(10)
++    query = np.arange(10)
++    with self.assertRaisesWithLiteralMatch(
++        ValueError, "batch_dims=2 must be in range [0, 1)"
++    ):
++      searchsorted_reference(sorted_arr, query, batch_dims=2)
++
++  def test_reference_dimension_out_of_range(self):
++    sorted_arr = np.arange(10)
++    query = np.arange(10)
++    with self.assertRaisesWithLiteralMatch(
++        ValueError, "dimension=2 must be in range [0, 1)"
++    ):
++      searchsorted_reference(sorted_arr, query, dimension=2)
++
++  def test_reference_batch_dimension_size_mismatch(self):
++    sorted_arr = np.zeros((2, 5))
++    query = np.zeros((3, 6))
++    with self.assertRaisesWithLiteralMatch(
++        ValueError, "batch dimension sizes must match; got (2,) != (3,)"
++    ):
++      searchsorted_reference(
++          sorted_arr, query, batch_dims=1, dimension=1
++      )
++
++
++if __name__ == "__main__":
++  absltest.main(testLoader=jtu.JaxTestLoader())

@@ -1,0 +1,15 @@
+{
+  "body": "### Description\n\nThe following arrays give an apparently incorrect overflowed result with matmul. \r\n\r\n```py\r\n>>> import cupy as cp\r\n>>> x = cp.asarray([51307], dtype=cp.uint16)\r\n>>> y = cp.asarray([[[327]]], dtype=cp.uint16)\r\n>>> x\r\narray([51307], dtype=uint16)\r\n>>> y\r\narray([[[327]]], dtype=uint16)\r\n>>> x @ y # This is giving a different answer\r\narray([[172]], dtype=uint16)\r\n>>> x*y\r\narray([[[173]]], dtype=uint16)\r\n>>> x @ y[0]\r\narray([173], dtype=uint16)\r\n>>> x * y[0]\r\narray([[173]], dtype=uint16)\r\n```\r\n\r\nThe error only occurs when the second array has 3 dimensions. Presumably cupy uses different code paths for stacked vs. non-stacked linear algebra functions. Note that `51307*327 % 2**16` is indeed `173`.\r\n\r\nI'm unclear whether this behavior is actually a bug or if this is something that is to be expected from overflowing integers. \r\n\r\nI identified this with the array API test suite, but it is unrelated to the array API module. The array API doesn't specify overflow behavior, but it would be simpler in the test suite if it could just ignore overflowing. \n\n### To Reproduce\n\n```py\r\n# Write the code here\r\n```\r\n\n\n### Installation\n\nConda-Forge (`conda install ...`)\n\n### Environment\n\n```\r\nOS                           : Linux-5.13.0-40-generic-x86_64-with-glibc2.34\r\nPython Version               : 3.10.4\r\nCuPy Version                 : 10.4.0\r\nCuPy Platform                : NVIDIA CUDA\r\nNumPy Version                : 1.22.3\r\nSciPy Version                : 1.8.0\r\nCython Build Version         : 0.29.28\r\nCython Runtime Version       : None\r\nCUDA Root                    : /home/aaronmeurer/anaconda3/envs/array-api\r\nnvcc PATH                    : None\r\nCUDA Build Version           : 11020\r\nCUDA Driver Version          : 11060\r\nCUDA Runtime Version         : 11060\r\ncuBLAS Version               : (available)\r\ncuFFT Version                : 10600\r\ncuRAND Version               : 10209\r\ncuSOLVER Version             : (11, 3, 2)\r\ncuSPARSE Version             : (available)\r\nNVRTC Version                : (11, 6)\r\nThrust Version               : 101000\r\nCUB Build Version            : 101000\r\nJitify Build Version         : 70f5331\r\ncuDNN Build Version          : None\r\ncuDNN Version                : None\r\nNCCL Build Version           : None\r\nNCCL Runtime Version         : None\r\ncuTENSOR Version             : None\r\ncuSPARSELt Build Version     : None\r\nDevice 0 Name                : NVIDIA GeForce RTX 2080\r\nDevice 0 Compute Capability  : 75\r\nDevice 0 PCI Bus ID          : 0000:01:00.0\r\n```\r\n\n\n### Additional Information\n\n_No response_",
+  "closed_at": "2022-06-10T04:07:52Z",
+  "comments": 2,
+  "created_at": "2022-05-12T22:28:51Z",
+  "html_url": "https://github.com/cupy/cupy/issues/6715",
+  "labels": [
+    "cat:bug",
+    "prio:high"
+  ],
+  "number": 6715,
+  "state": "closed",
+  "title": "Wrong overflow with matmul of uint16 arrays",
+  "updated_at": "2022-06-10T04:07:52Z"
+}

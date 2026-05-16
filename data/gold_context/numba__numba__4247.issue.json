@@ -1,0 +1,15 @@
+{
+  "body": "I'm currently running numba on WSL (Debian, Windows 10) and having my kernel die whenever I run a loop with np.arctan(). Processor is an FX8350\r\n\r\nWorking:\r\n```\r\nfor i in range(start, len(array)):\r\n    temp = array[i-start+1:i+1]\r\n    temp = (temp - temp.min())/(temp.max() - temp.min())*2-1\r\n    out[i] = np.arctanh(temp[-1]) \r\n```\r\nFailing:\r\n```\r\n@jit(nopython=True)\r\n     \r\n     def jit_loop(start, array):\r\n         for i in range(start, len(array)):\r\n             out = np.zeros(len(array))\r\n             temp = array[i-period+1:i+1]\r\n             temp = (temp - temp.min())/(temp.max() - temp.min())*2-1\r\n             out[i] = np.arctanh(temp[-1]) \r\n                             \r\n         return out\r\n\r\n\r\n```",
+  "closed_at": "2021-12-15T16:05:37Z",
+  "comments": 21,
+  "created_at": "2019-07-01T13:38:18Z",
+  "html_url": "https://github.com/numba/numba/issues/4247",
+  "labels": [
+    "bug",
+    "windows"
+  ],
+  "number": 4247,
+  "state": "closed",
+  "title": "Dead Kernel WSL Debian on np.arctan()",
+  "updated_at": "2021-12-15T16:05:38Z"
+}

@@ -1,0 +1,15 @@
+{
+  "body": "<!--\r\n\r\nThanks for opening an issue! To help the Numba team handle your information\r\nefficiently, please first ensure that there is no other issue present that\r\nalready describes the issue you have\r\n(search at https://github.com/numba/numba/issues?&q=is%3Aissue).\r\n\r\n-->\r\n\r\n## Reporting a bug\r\n\r\n<!--\r\n\r\nBefore submitting a bug report please ensure that you can check off these boxes:\r\n\r\n-->\r\n\r\n- [x] I have tried using the latest released version of Numba (most recent is\r\n visible in the change log (https://github.com/numba/numba/blob/main/CHANGE_LOG).\r\n- [X] I have included a self contained code sample to reproduce the problem.\r\n  i.e. it's possible to run as 'python bug.py'.\r\n\r\nIt seems it is impossible to call a `generated_jit`-decorated function from inside a CUDA kernel. Example below.\r\n\r\nI am in the process of making a CPU-numba library dual use. Unfortunately, some simple `generated_jit` routines are used in a number of different places in CPU jit-compiled code. Workarounds that iron out the resulting problems without having to duplicate code would be much appreciated. (Or a fix of this issue, of course!)\r\n\r\n```py\r\n\"\"\"\r\nTest CUDA kernel call to @generated_jit function.\r\n\"\"\"\r\nfrom typing import Union, Any, TypeVar, Type\r\nimport numpy as np\r\nimport numba as nb  # type: ignore\r\nfrom numba import cuda  # type: ignore\r\nfrom ingolstadt.util import mathutil\r\n\r\n\r\ndef test_cuda_generated_jit() -> None:\r\n    \"\"\"\r\n    Test CUDA kernel call to @generated_jit function.\r\n    \"\"\"\r\n    generated_jit_kernel[1, 1]()  # type: ignore\r\n\r\n\r\nT = TypeVar(\"T\", float, np.floating[Any])\r\n\r\n\r\n@nb.generated_jit  # type: ignore\r\ndef nan_of_type(f: T) -> T:\r\n    ff: Type[T] = f  # type: ignore\r\n    if ff is np.float32:\r\n        return lambda f: np.float32(np.nan)  # type: ignore\r\n    elif ff is np.float64:\r\n        return lambda f: np.float64(np.nan)  # type: ignore\r\n    else:\r\n        raise NotImplementedError(f\"Unsupported type\")\r\n\r\n\r\n@cuda.jit  # type: ignore\r\ndef generated_jit_kernel() -> None:\r\n    f = np.float32(2.0)\r\n    n = nan_of_type(f)\r\n    print(\"Nan\", n)\r\n```",
+  "closed_at": "2023-04-18T18:29:09Z",
+  "comments": 13,
+  "created_at": "2023-04-11T18:40:05Z",
+  "html_url": "https://github.com/numba/numba/issues/8891",
+  "labels": [
+    "CUDA",
+    "question"
+  ],
+  "number": 8891,
+  "state": "closed",
+  "title": "Error when calling `nb.generated_jit` from CUDA",
+  "updated_at": "2023-04-18T18:29:10Z"
+}

@@ -1,0 +1,7 @@
+gold\pred,crash_compile,dtype_casting,nan_inf,overflow_underflow,performance_only,precision_tolerance
+crash_compile,0,5,0,1,0,1
+dtype_casting,0,34,6,3,0,7
+nan_inf,0,9,24,3,0,4
+overflow_underflow,0,5,6,13,0,1
+performance_only,0,6,0,1,0,0
+precision_tolerance,1,13,5,3,0,5

@@ -1,0 +1,16 @@
+{
+  "body": "Exception:\r\n\r\n```\r\nColumns: [_col10, _col5, _col0, _col12, visit_date]\r\nIndex: [], 'from_delayed')\r\nkwargs:    {}\r\nException: \"ValueError('Metadata mismatch found in `from_delayed`.\\\\n\\\\nExpected partition of type `pandas.core.frame.DataFrame` but got `cudf.core.dataframe.DataFrame`')\"\r\n```\r\n\r\nReproducer:\r\n```\r\nimport cudf\r\nimport numpy as np\r\nfrom dask.dataframe import from_delayed\r\nfrom dask.delayed import delayed\r\nimport numpy as np\r\nimport cudf\r\nfrom dask.distributed import Client\r\nfrom dask_cuda import LocalCUDACluster\r\nimport dask_cudf\r\n\r\ndf = cudf.DataFrame()\r\nfor i in range(100):\r\n    df[f'_col{i}'] = np.random.randint(20, size=100)\r\n    \r\ndf.to_orc('test1.orc')\r\ndf.to_orc('test0.orc')\r\n\r\nfiles = [(('a',), 'test0.orc'), (('a',), 'test1.orc')]\r\nprint(files)\r\n\r\n\r\ndef rd(f, cols, meta=None):\r\n    if partitions:\r\n        cols = list(set(cols) - set([x[0] for x in partitions]))\r\n    if type(f).__name__ == 'str':\r\n        f = ((), f)\r\n    df = cudf.read_orc(f[1], columns=cols,  use_index=False)\r\n    if partitions:\r\n        for i, col in enumerate(partitions):\r\n            df[col[0]] = f[0][i]\r\n            df[col[0]] = df[col[0]].astype(col[1])\r\n    if meta:\r\n        return df[list(meta.keys())]\r\n    else:\r\n        return df\r\n\r\n\r\npartitions =[('visit_date', 'str')]\r\ncols = ['_col0', '_col12', '_col10', '_col5']\r\nmeta = dict(rd(files[0], cols, meta=None).dtypes)\r\nfor i in partitions:\r\n    meta[i[0]] = i[1]\r\n    \r\nprint(meta)\r\n\r\ndef main():\r\n    c=Client(LocalCUDACluster())\r\n    dfs=[delayed(rd)(f, cols=cols, meta=meta) for f in files[:2]]\r\n    xx = dask_cudf.from_delayed(dfs, meta=meta)\r\n    print(xx.compute())\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n```\r\n\r\nthis issue is very similar to issue here: https://github.com/dask/dask/issues/8528\r\n\r\nthe difference is from_delayed with meta, throws another exception \"The columns in the computed data do not match the columns in the provided metadata\" even though both dfs have same columns and dtypes.\r\nsince we provide the meta here, we run into different issue.",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2022-01-05T19:52:25Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/9975",
+  "labels": [
+    "bug",
+    "Python",
+    "dask"
+  ],
+  "number": 9975,
+  "state": "open",
+  "title": "[BUG] dask_cudf from_delayed throws exception when meta is included in the from_delayed",
+  "updated_at": "2024-02-23T18:42:24Z"
+}

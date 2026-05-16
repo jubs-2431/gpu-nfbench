@@ -1,0 +1,6 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+GNF-0001-f56f80f3,qwen3.5:cloud,evaluation/llm_baseline_prompts.jsonl,5000,0,0.31,needs_review,unknown,unclear,low,,,HTTP Error 403: Forbidden
+GNF-0002-16e149fe,qwen3.5:cloud,evaluation/llm_baseline_prompts.jsonl,5000,0,0.10,needs_review,unknown,unclear,low,,,HTTP Error 403: Forbidden
+GNF-0003-eaa63fac,qwen3.5:cloud,evaluation/llm_baseline_prompts.jsonl,5000,0,0.10,needs_review,unknown,unclear,low,,,HTTP Error 403: Forbidden
+GNF-0004-e5162a33,qwen3.5:cloud,evaluation/llm_baseline_prompts.jsonl,5000,0,0.10,needs_review,unknown,unclear,low,,,HTTP Error 403: Forbidden
+GNF-0005-80aeca70,qwen3.5:cloud,evaluation/llm_baseline_prompts.jsonl,5000,0,0.10,needs_review,unknown,unclear,low,,,HTTP Error 403: Forbidden

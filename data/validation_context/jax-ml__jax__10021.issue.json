@@ -1,0 +1,17 @@
+{
+  "body": "It's possible that this is a limitation of SLURM rather than JAX, but I think it might be worth starting a discussion about this here to get to the bottom of it. \r\n\r\nI'm trying to launch scripts using JAX with SLURM. Particularly, I want to launch multiple processes that use JAX and have them share a single allocated GPU. The issue I'm running into is that one process will be able to detect the GPU while the rest will not. The remaining processes will default to using CPU after printing the following warning: \r\n```\r\n2022-03-23 20:23:46.386347: W external/org_tensorflow/tensorflow/compiler/xla/service/platform_util.cc:205] unable to create \r\nStreamExecutor for CUDA:0: failed initializing StreamExecutor for CUDA device ordinal 0: INTERNAL: failed call to \r\ncuDevicePrimaryCtxRetain: CUDA_ERROR_INVALID_DEVICE: invalid device ordinal\r\n``` \r\n\r\nIt's worth noting that running `nvidia-smi` from within each process succeeds and shows statistics for the GPU I am attempting to share. \r\n\r\nDoes anyone have an idea why this `CUDA_ERROR_INVALID_DEVICE` error might be arising in my context?\r\n",
+  "closed_at": null,
+  "comments": 12,
+  "created_at": "2022-03-24T00:29:57Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/10021",
+  "labels": [
+    "bug",
+    "P3 (no schedule)",
+    "needs info",
+    "NVIDIA GPU"
+  ],
+  "number": 10021,
+  "state": "open",
+  "title": "Cannot Share GPUs between processes when using JAX with SLURM",
+  "updated_at": "2023-03-24T20:39:51Z"
+}

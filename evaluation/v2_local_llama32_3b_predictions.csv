@@ -1,0 +1,868 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+EGNF1000-0001-826741eb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.19,dtype_casting,unknown,unclear,low,"scales.to(torch.float8_e8m0fnu, round=""up"")","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""module: type promotion"",
+    ""function request""
+  ],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""scales.to(torch.float8_e8m0fnu, round=\""up\"")"",
+  ""confidence"": null
+}",
+EGNF1000-0002-1b0c5bb2,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.13,performance_only,unknown,unclear,low,"Looking at the compiled code, the float versions call a cuBLAS/GEMM matrix multiply ...","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""XLA""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Looking at the compiled code, the float versions call a cuBLAS/GEMM matrix multiply ..."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0010-2e91f962,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.69,dtype_casting,unknown,unclear,low,"RuntimeError Traceback (most recent call last) Cell In[3], line 1 ----> 1 c_ndi.correlate(xp.array([[1, 2, 3], 2 [4, 5, 6]], dtype=xp.int8), 3 xp.ar","{
+    ""primary_failure_label"": ""dtype_casting"",
+    ""secondary_cause_labels"": [""mode='grid-constant'""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""RuntimeError Traceback (most recent call last) Cell In[3], line 1 ----> 1 c_ndi.correlate(xp.array([[1, 2, 3], 2 [4, 5, 6]], dtype=xp.int8), 3 xp.ar"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0012-0d4ce1cb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.41,performance_only,unknown,unclear,low,These last days I tried to implement the paper [Stream-K: Work-centric Parallel Decomposition for Dense Matrix-Matrix Multiplication on the GPU](https://arxiv.org/pdf/2301.03598.pdf) in Triton.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""These last days I tried to implement the paper [Stream-K: Work-centric Parallel Decomposition for Dense Matrix-Matrix Multiplication on the GPU](https://arxiv.org/pdf/2301.03598.pdf) in Triton."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0017-d48c4d74,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.37,nan_inf,unknown,unclear,low,"This example indicates to `jax.jit` that the input should be in column-major format, but JAX appears to still pass the matrix to XLA in row-major format, resulting in an incorrectly transposed output.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""This example indicates to `jax.jit` that the input should be in column-major format, but JAX appears to still pass the matrix to XLA in row-major format, resulting in an incorrectly transposed output."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0031-590758a3,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.35,precision_tolerance,unknown,unclear,low,"Currently for inner, full, and left joins we support an object-oriented API using the [hash_join](https://github.com/rapidsai/cudf/blob/branch-25.08/cpp/include/cudf/join/hash_join.hpp) class.","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Currently for inner, full, and left joins we support an object-oriented API using the [hash_join](https://github.com/rapidsai/cudf/blob/branch-25.08/cpp/include/cudf/join/hash_join.hpp) class."",
+  ""confidence"": 0
+}",
+EGNF1000-0040-0db06f30,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.05,overflow_underflow,unknown,unclear,low,the biggest difference between the output of triton and `torch.matmul` is larger than `5e-2`,"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""the biggest difference between the output of triton and `torch.matmul` is larger than `5e-2`"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0055-b43608f4,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.81,crash_compile,unknown,unclear,low,The above should print `[1.]` but instead prints `[0.].`,"{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The above should print `[1.]` but instead prints `[0.].`"",
+  ""confidence"": 0.9
+}",
+EGNF1000-0058-f1557d82,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.95,nan_inf,unknown,unclear,low,"dist_autograd.backward(context_id, [loss]), opt.step(context_id)","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""dist_autograd.backward(context_id, [loss]), opt.step(context_id)"",
+    ""confidence"": 0.5
+}",
+EGNF1000-0060-80037eb7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.14,nan_inf,unknown,unclear,low,I know that it is difficult to guarantee accuracy to machine precision for all possible combinations of input : ),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""I know that it is difficult to guarantee accuracy to machine precision for all possible combinations of input : )"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0073-b5f1f900,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.39,nan_inf,unknown,unclear,low,"print(get_neff(weights, mu)) # 0.0 print(jax.jit(get_neff)(weights, mu)) # -1.8519084246547628e+20","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""print(get_neff(weights, mu)) # 0.0 print(jax.jit(get_neff)(weights, mu)) # -1.8519084246547628e+20"",
+  ""confidence"": 0.9
+}",
+EGNF1000-0088-e01d1fe8,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.61,dtype_casting,unknown,unclear,low,Nvidia goes even further and [has wgrad kernels accumulate directly to a full precision buffer](https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/examples/advanced_optimizations.html#Gradient-accumulation-fusion),"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""precision_tolerance"", ""performance_only""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Nvidia goes even further and [has wgrad kernels accumulate directly to a full precision buffer](https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/examples/advanced_optimizations.html#Gradient-accumulation-fusion)"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0090-d779697d,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.59,nan_inf,unknown,unclear,low,Is it installed?,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Is it installed?"",
+  ""confidence"": 0.5
+}",
+EGNF1000-0101-3c140f79,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.88,nan_inf,unknown,unclear,low,"Input is a one-element array, valued in range of `-1 <= x < 0.`","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Input is a one-element array, valued in range of `-1 <= x < 0.`"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0102-eaef1724,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.28,nan_inf,unknown,unclear,low,"While running some complex code of ours on gpu I ran into spurious numerical instabilities, which I was able to trace down to the complex eigh returning nan","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""While running some complex code of ours on gpu I ran into spurious numerical instabilities, which I was able to trace down to the complex eigh returning nan"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0116-050cd426,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.77,nan_inf,unknown,unclear,low,z[0][0] = nan,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""z[0][0] = nan"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0128-c4b85693,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.77,needs_review,unknown,unclear,low,"For example, when trying to output the result to the original input, the result is wrong.","{
+    ""primary_failure_label"": ""in-place"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""For example, when trying to output the result to the original input, the result is wrong."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0146-0136a9da,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.87,precision_tolerance,unknown,unclear,low,The differences exceeded the tolerance threshold of 1e-4.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""The differences exceeded the tolerance threshold of 1e-4."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0158-2c5a0cd1,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.10,nan_inf,unknown,unclear,low,The error doesn't occur on an AMD platform with Ryzen7 6850HS.,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""precision_tolerance"", ""dtype_casting""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""The error doesn't occur on an AMD platform with Ryzen7 6850HS."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0169-00dafa93,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.65,nan_inf,unknown,unclear,low,Mismatch between JIT and non-JIT results.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Mismatch between JIT and non-JIT results."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0179-284475c4,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.06,dtype_casting,unknown,unclear,low,"DeepSeek mentions that they keep optimizer states in bf16, this is something that afaik our optimizers don't support.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""module: optimizer"", ""not_numerical_failure""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""DeepSeek mentions that they keep optimizer states in bf16, this is something that afaik our optimizers don't support."",
+  ""confidence"": 0.5
+}",
+EGNF1000-0181-7c505f14,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.93,nan_inf,unknown,unclear,low,[2026-02-26T23:23:42Z] [2026-02-26T23:23:42Z] _______________ test_models[float-jason9693/Qwen2.5-1.5B-apeach] _______________,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""[2026-02-26T23:23:42Z] [2026-02-26T23:23:42Z] _______________ test_models[float-jason9693/Qwen2.5-1.5B-apeach] _______________"",
+  ""confidence"": null
+}",
+EGNF1000-0189-1e07bdac,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.47,nan_inf,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": 0.0
+}",
+EGNF1000-0194-7e5cd1ec,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.33,nan_inf,unknown,unclear,low,".to(tl.float32) followed by tl.abs() produces negative result, see runnable example below. It outputs [-1, -1, -1, -1] whereas it should be 1.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": "".to(tl.float32) followed by tl.abs() produces negative result, see runnable example below. It outputs [-1, -1, -1, -1] whereas it should be 1."",
+    ""confidence"": 0.9
+}",
+EGNF1000-0216-afb94a27,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.83,nan_inf,unknown,unclear,low,"top-1 [3.671912] top-4 [3.7298186 3.671912 3.4914806 3.418947 ] Which is incorrect, since top-1 can't be less than top-1 of top-4.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""top-1 [3.671912] top-4 [3.7298186 3.671912 3.4914806 3.418947 ] Which is incorrect, since top-1 can't be less than top-1 of top-4."",
+    ""confidence"": 0.9
+}",
+EGNF1000-0217-66a7e5e7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.00,needs_review,unknown,unclear,low,DO NOT ASSUME THINGS ARE OKAY IF THE CI IS GREEN.,"{
+  ""primary_failure_label"": ""flaky"",
+  ""secondary_cause_labels"": [""module: fx"", ""rocm-skipped-tests""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""DO NOT ASSUME THINGS ARE OKAY IF THE CI IS GREEN."",
+  ""confidence"": 0.5
+}",
+EGNF1000-0235-d348a4b1,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.00,dtype_casting,unknown,unclear,low,"With this setup, cupy seems to fail basic array-creation operations, due to not seeing the GPU.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""With this setup, cupy seems to fail basic array-creation operations, due to not seeing the GPU."",
+  ""confidence"": 0.5
+}",
+EGNF1000-0244-f9fda636,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.63,needs_review,unknown,unclear,low,"It is preferable to the ARI in the presence of unbalanced cluster sizes, and is slower to calculate.","{
+  ""primary_failure_label"": ""feature request"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""It is preferable to the ARI in the presence of unbalanced cluster sizes, and is slower to calculate."",
+  ""confidence"": null
+}",
+EGNF1000-0253-4e82cb3f,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.60,needs_review,unknown,unclear,low,The computation pattern of generation part - single Q for entire seq len of KV - is very different from computing the context part (which benefits from seq length parallelism over Q and hence flash attention).,"{
+  ""primary_failure_label"": ""memory_bottleneck"",
+  ""secondary_cause_labels"": [""batching"", ""distributed_shared_memory"", ""TMA_optimizations""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The computation pattern of generation part - single Q for entire seq len of KV - is very different from computing the context part (which benefits from seq length parallelism over Q and hence flash attention)."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0256-daac01b9,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,3.19,crash_compile,unknown,unclear,low,"Traceback (most recent call last): File ""<string>"", line 1, in <module> import triton.compiler File ""<private-path>/triton/python/triton/compiler/__init__.py"", line 1, in <module> from .compiler import CompiledKernel, ASTSource, IRSource, compile, make_backend, LazyDict","{
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [""import triton.compiler""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Traceback (most recent call last): File \""<string>\"", line 1, in <module> import triton.compiler File \""<private-path>/triton/python/triton/compiler/__init__.py\"", line 1, in <module> from .compiler import CompiledKernel, ASTSource, IRSource, compile, make_backend, LazyDict"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0275-651188b3,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.80,crash_compile,unknown,unclear,low,"File ""/home/bc-user/.local/lib/python3.10/site-packages/triton/compiler/compiler.py"", line 48 in ttir_compute_capability_rewrite File ""/home/bc-user/.local/lib/python3.10/site-packages/triton/compiler/compiler.py"", line 54 in optimize_ttir","{
+    ""primary_failure_label"": ""crash_compile"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""File \""/home/bc-user/.local/lib/python3.10/site-packages/triton/compiler/compiler.py\"", line 48 in ttir_compute_capability_rewrite File \""/home/bc-user/.local/lib/python3.10/site-packages/triton/compiler/compiler.py\"", line 54 in optimize_ttir"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0284-edad17f7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.45,performance_only,unknown,unclear,low,None,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": null,
+  ""confidence"": 0.5
+}",
+EGNF1000-0295-dd1d05fb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,5.21,needs_review,unknown,unclear,low,,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""Traceback (most recent call last): File \""06-fused-attention.py\"", line 359, in <module> bench_flash_attention.run(save_path='.', print_data=True) File \""/work_1a/nyn/pkgs/triton/python/triton/testing.py\"", line 308, in run self._run(bench, save_path, show_plots, print_data) File \""/work_1a/nyn/pkgs/triton/python/triton/testing.py\"", line 263, in _run ret = self.fn(**x_args, **{bench.line_arg: y}, **bench.args) File \""06-fused-attention.py\"", line 343, in bench_flash_attention ms = triton.testing.do_bench(fn, percentiles=None, warmup=warmup, rep=rep) File \""/work_1a/nyn/pkgs/triton/python/triton/testing",
+EGNF1000-0311-b121247c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.99,nan_inf,unknown,unclear,low,['Loss on the first step is exactly the same on 0.4.33 and 0.4.30'],"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": [
+    ""Loss on the first step is exactly the same on 0.4.33 and 0.4.30""
+  ],
+  ""confidence"": 0.9
+}",
+EGNF1000-0315-0fb0588d,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.88,not_numerical_failure,unknown,unclear,low,https://docs.nvidia.com/cuda/cusolver/index.html?highlight=eigendecomposition#cusolverdnxgeev,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""https://docs.nvidia.com/cuda/cusolver/index.html?highlight=eigendecomposition#cusolverdnxgeev"",
+  ""confidence"": 0.5
+}",
+EGNF1000-0327-d7df502c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.03,nan_inf,unknown,unclear,low,We encountered an illegal memory access issue with `torch.compile` and customized torch library operator.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""module: custom-operators""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""We encountered an illegal memory access issue with `torch.compile` and customized torch library operator."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0347-2ae764ca,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.45,nan_inf,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": 0
+}",
+EGNF1000-0357-c7ea1dab,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.90,nan_inf,unknown,unclear,low,Input has Inf -> Output has NaN (Numerical collapse),"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""Input has Inf -> Output has NaN (Numerical collapse)"",
+  ""confidence"": 0.9
+}",
+EGNF1000-0359-612f303f,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.96,needs_review,unknown,unclear,low,weird OOM error (presumably due to incorrect return code overflowing),"{
+    ""primary_failure_label"": ""rocFFT"",
+    ""secondary_cause_labels"": [""oom"", ""incorrect return code""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""weird OOM error (presumably due to incorrect return code overflowing)"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0365-83b29bbf,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.71,performance_only,unknown,unclear,low,it seems like something is wrong or not yet fully optimized perhaps..?,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""not_optimized""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""it seems like something is wrong or not yet fully optimized perhaps..?"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0368-154dcf61,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.50,not_numerical_failure,unknown,unclear,low,"TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'equal'>, '__call__', array([ 1., 2., nan]), None): 'ndarray', 'NoneType'","{
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""TypeError: operand type(s) all returned NotImplemented from __array_ufunc__(<ufunc 'equal'>, '__call__', array([ 1., 2., nan]), None): 'ndarray', 'NoneType'"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0372-14a7ddc5,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.53,dtype_casting,unknown,unclear,low,"File ""<string>"", line 2: <source missing, REPL/exec in use?> [1] During: lowering ""_tupZ_102 = arg(1, name=_tupZ_102)"" at <string> (2)","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""File \""<string>\"", line 2: <source missing, REPL/exec in use?> [1] During: lowering \""_tupZ_102 = arg(1, name=_tupZ_102)\"" at <string> (2)"",
+  ""confidence"": 0.5
+}",
+EGNF1000-0396-b45be3e1,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.41,overflow_underflow,unknown,unclear,low,torch.compile with the Inductor backend produces different overflow behavior from eager execution for torch.cosh on large float32 inputs near the overflow boundary.,"{
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""torch.compile with the Inductor backend produces different overflow behavior from eager execution for torch.cosh on large float32 inputs near the overflow boundary."",
+    ""confidence"": 0.9
+}",
+EGNF1000-0400-e2904819,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.05,nan_inf,unknown,unclear,low,The CDF $F(x)$ of a Gaussian should approach 0 for $x 	o -ty$,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""The CDF $F(x)$ of a Gaussian should approach 0 for $x \to -\fty$"",
+  ""confidence"": 1.0
+}",
+EGNF1000-0425-901b0426,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.84,nan_inf,unknown,unclear,low,"2023-04-06 07:44:28,103 - distributed.worker - WARNING - Compute Failed Key: _func_fit-3206ec4a-b487-401e-967b-b04da23bd360 Function: _func_fit args: (PCAMG(), [<c...","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""2023-04-06 07:44:28,103 - distributed.worker - WARNING - Compute Failed Key: _func_fit-3206ec4a-b487-401e-967b-b04da23bd360 Function: _func_fit args: (PCAMG(), [<c..."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0431-6a7ff4c4,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.02,nan_inf,unknown,unclear,low,"When using length of query != length of KV, the result from pallas attention kernel is different from dot_product_attention.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""When using length of query != length of KV, the result from pallas attention kernel is different from dot_product_attention."",
+    ""confidence"": 0.5
+}",
+EGNF1000-0443-0ed570aa,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.67,nan_inf,unknown,unclear,low,-1.46...,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""-1.46..."",
+  ""confidence"": 0.5
+}",
+EGNF1000-0449-5f332cca,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.21,overflow_underflow,unknown,unclear,low,OverflowError: Python int 18446744073709551616 too large to convert to int32,"{
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""OverflowError: Python int 18446744073709551616 too large to convert to int32"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0462-38d9b33b,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.54,nan_inf,unknown,unclear,low,"On the other hand I am not sure what the Pytorch behavior is intended to be in the implementation for alpha=0 and alpha=inf, but I think it would be nice to have it consistent.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [
+    ""precision_tolerance""
+  ],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""On the other hand I am not sure what the Pytorch behavior is intended to be in the implementation for alpha=0 and alpha=inf, but I think it would be nice to have it consistent."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0478-615f071c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.96,nan_inf,unknown,unclear,low,print(grad(f)(1.)) # NaN if pre_filter == False # 0.5 if pre_filter == True,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""print(grad(f)(1.)) # NaN if pre_filter == False # 0.5 if pre_filter == True"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0479-4e142639,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.62,nan_inf,unknown,unclear,low,"It does not happen for fp32 (here, the sorted case is about 50 percent slower than randomly shuffled indices). Setting `indices_are_sorted` to `False` or `True` does not change this behavior.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""It does not happen for fp32 (here, the sorted case is about 50 percent slower than randomly shuffled indices). Setting `indices_are_sorted` to `False` or `True` does not change this behavior."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0494-e22b8e78,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.57,nan_inf,unknown,unclear,low,"The result should be `0.0 + 2 + 6 + 10 = 18.0` But the program prints `eager=tensor([15.]), compiled=tensor([25.])`","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The result should be `0.0 + 2 + 6 + 10 = 18.0` But the program prints `eager=tensor([15.]), compiled=tensor([25.])`"",
+    ""confidence"": 1.0
+}",
+EGNF1000-0495-95b05b24,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.86,nan_inf,unknown,unclear,low,"When using `torch.nn.attention.varlen.varlen_attn`, padding the input tensor so that its total length is greater than the total number of tokens defined by `cu_seqlens[-1]` causes `NaN` gradients during the backward pass.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""When using `torch.nn.attention.varlen.varlen_attn`, padding the input tensor so that its total length is greater than the total number of tokens defined by `cu_seqlens[-1]` causes `NaN` gradients during the backward pass."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0503-7bb264d7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.98,nan_inf,unknown,unclear,low,libcudf.transform.nans_to_nulls(col.fillna(np.nan)),"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""libcudf.transform.nans_to_nulls(col.fillna(np.nan))"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0526-ee68cb34,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.51,nan_inf,unknown,unclear,low,,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": """",
+    ""confidence"": 0.5
+}",
+EGNF1000-0528-96d14d6a,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.57,nan_inf,unknown,unclear,low,"Falsifying example: test_spectral_clustering_output_shape_type_and_label_count( n_samples=1769, n_features=16, n_clusters=8, n_neighbors=11, affinity='nearest_neighbors', dtype=dtype('<f4'), )","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Falsifying example: test_spectral_clustering_output_shape_type_and_label_count( n_samples=1769, n_features=16, n_clusters=8, n_neighbors=11, affinity='nearest_neighbors', dtype=dtype('<f4'), )"",
+  ""confidence"": 0.5
+}",
+EGNF1000-0532-d15a5b6f,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.44,nan_inf,unknown,unclear,low,"torch.arange(0,92*92, step=4 , device='cuda', dtype=torch.float32).reshape(46,46) ","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""torch.arange(0,92*92, step=4 , device='cuda', dtype=torch.float32).reshape(46,46) "",
+  ""confidence"": 0.9
+}",
+EGNF1000-0548-67af3390,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.43,overflow_underflow,unknown,unclear,low,This can prevent users from accidentally relying on garbage results.,"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""This can prevent users from accidentally relying on garbage results."",
+  ""confidence"": 1.0
+}",
+EGNF1000-0557-4b35eb28,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.74,nan_inf,unknown,unclear,low,"The computation inside f is essentially what happens inside the dynamic program of the CTC loss and similar losses that calculates a shortest distance over the log semiring. There, -jnp.inf is really ""log(0)"", and we can see that (0 + 0 * exp(x))'s gradient w.r.t. x should indeed be 0.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""The computation inside f is essentially what happens inside the dynamic program of the CTC loss and similar losses that calculates a shortest distance over the log semiring. There, -jnp.inf is really \""log(0)\"", and we can see that (0 + 0 * exp(x))'s gradient w.r.t. x should indeed be 0."",
+    ""confidence"": 1
+}",
+EGNF1000-0572-ceefe3be,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.59,precision_tolerance,unknown,unclear,low,None,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [
+    ""module: docs"",
+    ""module: autograd""
+  ],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": null,
+  ""confidence"": null
+}",
+EGNF1000-0576-a3c2107d,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.16,nan_inf,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": null
+}",
+EGNF1000-0580-cd4f1e6c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.88,nan_inf,unknown,unclear,low,"TypeError: memoryview: a bytes-like object is required, not 'DatetimeIndex'","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""TypeError: memoryview: a bytes-like object is required, not 'DatetimeIndex'"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0583-81a60fd3,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.62,not_numerical_failure,unknown,unclear,low,bool dtype should return True,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""bool dtype should return True"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0610-36189f44,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.94,precision_tolerance,unknown,unclear,low,The behavior of `kernel_1` is inconsistent with the other two kernels.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The behavior of `kernel_1` is inconsistent with the other two kernels."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0611-69dad14f,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.52,dtype_casting,unknown,unclear,low,"jax._src.dtypes.TypePromotionError: Input dtypes ('float32', 'int32') have no available implicit dtype promotion path when jax_numpy_dtype_promotion = 'strict'","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""precision_tolerance""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""jax._src.dtypes.TypePromotionError: Input dtypes ('float32', 'int32') have no available implicit dtype promotion path when jax_numpy_dtype_promotion = 'strict'"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0638-7fc1ce5b,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.46,dtype_casting,unknown,unclear,low,This is the same issue as https://github.com/rapidsai/dask-cuda/issues/1408 . Cross-posting here as it's more related to cuDF instead of `dask-cuda`.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""This is the same issue as https://github.com/rapidsai/dask-cuda/issues/1408 . Cross-posting here as it's more related to cuDF instead of `dask-cuda`."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0641-995b5764,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.47,nan_inf,unknown,unclear,low,Got CUSOLVER error 3 at /home/dante/rapids/cuml10-mst/mst-1015/cpp/src_prims/linalg/svd.h:67 CUSOLVER_STATUS_INVALID_VALUE,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""Got CUSOLVER error 3 at /home/dante/rapids/cuml10-mst/mst-1015/cpp/src_prims/linalg/svd.h:67 CUSOLVER_STATUS_INVALID_VALUE"",
+  ""confidence"": 0.9
+}",
+EGNF1000-0642-51729698,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.71,overflow_underflow,unknown,unclear,low,**Steps/Code to reproduce bug** Call DBScan `computeBatchCount` with `Index_` type `int` and `n_rows := 2000000`. The returned number of batches is 1863 but it should be 1864 to avoid integer overflow when addressing the dense adjacency matrix.,"{
+    ""primary_failure_label"": ""overflow_underflow"",
+    ""secondary_cause_labels"": [""precision_tolerance"", ""dtype_casting""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""**Steps/Code to reproduce bug** Call DBScan `computeBatchCount` with `Index_` type `int` and `n_rows := 2000000`. The returned number of batches is 1863 but it should be 1864 to avoid integer overflow when addressing the dense adjacency matrix."",
+    ""confidence"": 1.0
+}",
+EGNF1000-0659-2b0b7ca2,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.29,precision_tolerance,unknown,unclear,low,"Since Triton is slightly slower than flash_attn (see [benchmark](https://github.com/google/jax/pull/17328#issuecomment-1705010065)), it is something worth trying","{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""needs_review""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Since Triton is slightly slower than flash_attn (see [benchmark](https://github.com/google/jax/pull/17328#issuecomment-1705010065)), it is something worth trying"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0661-05e2738b,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.86,precision_tolerance,unknown,unclear,low,"if calling ` PC = tl.dot(A, tl.trans(PB))` will get (M, PN) matrixs and `PC[:, 1:]` will be all zeros, and `PC[:, :1]` will be the correct answer, as dump PC without mask.","{
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""if calling ` PC = tl.dot(A, tl.trans(PB))` will get (M, PN) matrixs and `PC[:, 1:]` will be all zeros, and `PC[:, :1]` will be the correct answer, as dump PC without mask."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0693-1d22f405,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.55,not_numerical_failure,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": 0.5
+}",
+EGNF1000-0694-f9c5c00b,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.23,needs_review,unknown,unclear,low,std::bad_alloc: out_of_memory: CUDA error at: /home/v/miniforge3/envs/rapids/include/rmm/mr/device/cuda_memory_resource.hpp,"{
+  ""primary_failure_label"": ""out_of_memory"",
+  ""secondary_cause_labels"": [""memory_allocation"", ""dataset_size""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""std::bad_alloc: out_of_memory: CUDA error at: /home/v/miniforge3/envs/rapids/include/rmm/mr/device/cuda_memory_resource.hpp"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0696-4e3f3455,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.64,nan_inf,unknown,unclear,low,"Since `float8_e8m0fnu` is the semantically correct type for E8M0 exponent-only scales (and is what AITER's quantization functions now return), this creates an unnecessary compatibility barrier.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Since `float8_e8m0fnu` is the semantically correct type for E8M0 exponent-only scales (and is what AITER's quantization functions now return), this creates an unnecessary compatibility barrier."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0703-d431088c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.87,dtype_casting,unknown,unclear,low,"The mental model generally seems to be that float literals are parsed as float64, but are cast down on assignment.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The mental model generally seems to be that float literals are parsed as float64, but are cast down on assignment."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0707-000d7be3,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.39,performance_only,unknown,unclear,low,"Upgrading from Triton 3.5.1 to 3.6.0, we see a performance regression on kernels that do a TMA descriptor load followed by a reduction.","{
+    ""primary_failure_label"": ""performance_only"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Upgrading from Triton 3.5.1 to 3.6.0, we see a performance regression on kernels that do a TMA descriptor load followed by a reduction."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0712-96c1f80d,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.69,dtype_casting,unknown,unclear,low,"print(x, x_f16) # 2.718 -15790.0","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""print(x, x_f16) # 2.718 -15790.0"",
+  ""confidence"": 0
+}",
+EGNF1000-0730-b95f262c,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.79,needs_review,unknown,unclear,low,"The comments in code for a corresponding PyTorch API function (`set_sizes_and_strides`) says, that this function does not check if the requested sizes/strides are in bounds for the storage that is allocated and this is the responsibility of the caller.","{
+    ""primary_failure_label"": ""heap-buffer-overflow"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""The comments in code for a corresponding PyTorch API function (`set_sizes_and_strides`) says, that this function does not check if the requested sizes/strides are in bounds for the storage that is allocated and this is the responsibility of the caller."",
+    ""confidence"": 0.9
+}",
+EGNF1000-0733-20725288,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.61,dtype_casting,unknown,unclear,low,"However, the output tensors are different.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""However, the output tensors are different."",
+  ""confidence"": 0.5
+}",
+EGNF1000-0740-6d63996e,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.95,nan_inf,unknown,unclear,low,"TypeError: cannot broadcast series of shape (5,) to array of shape (5,)","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""TypeError: cannot broadcast series of shape (5,) to array of shape (5,)"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0745-439889fa,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.00,dtype_casting,unknown,unclear,low,This function is a bit more expensive than other dtype checking functions in cudf and has a drastic performance difference when normalizing string-specified types vs dtype objects.,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""performance_only""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""This function is a bit more expensive than other dtype checking functions in cudf and has a drastic performance difference when normalizing string-specified types vs dtype objects."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0766-412d6486,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,4.86,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""not_numerical_failure""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The `dtype` in the result of a merge is inconsistent with the equivalent pandas merge for the same inputs: cuDF: >>> df1=cudf.DataFrame(\""{\\\""a\\\"":[1,2,3,4]}\\\"") >>> df2=cudf.DataFrame(columns=[\\\""a\\\""]) >>> r=df2.merge(df1,how=\""outer\"") >>> df1[\\\""a\\].dtype dtype('int64') >>> r[\\\""a\\].dtype dtype('float64') pandas: >>> pdf1=pd.DataFrame(\\{\\\""a\\\"":[1,2,3,4]\\}) >>> pdf2=pd.DataFrame(columns=[\\\""a\\\""]) >>> pr=pdf2.merge(pdf1,how=\""outer\"") >>> pdf1[\\\""a\\].dtype dtype('int64') >>> pr[\\\""a",
+EGNF1000-0785-c3c64db1,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.68,nan_inf,unknown,unclear,low,the kernel restarts without any error message,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""the kernel restarts without any error message"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0790-a5d860eb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.82,precision_tolerance,unknown,unclear,low,This creates a gap between hardware capability and software support.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""This creates a gap between hardware capability and software support."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0792-a8ae7518,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.78,nan_inf,unknown,unclear,low,"The full error message is very low, and is attached here.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""The full error message is very low, and is attached here."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0820-a8cfa8ac,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.42,nan_inf,unknown,unclear,low,Unsupported dtype complex,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Unsupported dtype complex"",
+    ""confidence"": 0.5
+}",
+EGNF1000-0824-20239375,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.66,performance_only,unknown,unclear,low,conv3d with dilation and bias has a severe performance degradation in half precision.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""conv3d with dilation and bias has a severe performance degradation in half precision."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0826-5245e289,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.08,nan_inf,unknown,unclear,low,The error might be due to a combination of inductor autotuning process and a triton kernel that is sensitive to the block size.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""performance_only""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""The error might be due to a combination of inductor autotuning process and a triton kernel that is sensitive to the block size."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0831-e007e021,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.57,needs_review,unknown,unclear,low,Torch 2.11 non-compiled 11.4 Torch 2.11 compiled **14.6** Torch 2.10 non-compiled 11.3 Torch 2.10 compiled **14.5**,"{
+  ""primary_failure_label"": ""vram_usage"",
+  ""secondary_cause_labels"": [""torch.compile"", ""dtype_casting""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""Torch 2.11 non-compiled 11.4 Torch 2.11 compiled **14.6** Torch 2.10 non-compiled 11.3 Torch 2.10 compiled **14.5**"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0852-8a1e9435,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.49,nan_inf,unknown,unclear,low,Looks like keys are being collapsed before the agg,"{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Looks like keys are being collapsed before the agg"",
+    ""confidence"": 0.5
+}",
+EGNF1000-0854-ad9dbd32,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.48,precision_tolerance,unknown,unclear,low,Does the TSNE algorithm implemented in cmml has a maximal perplexity?,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Does the TSNE algorithm implemented in cmml has a maximal perplexity?"",
+  ""confidence"": 0.5
+}",
+EGNF1000-0868-f1a0a577,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.00,dtype_casting,unknown,unclear,low,TypeError: _outside_call_translation_rule() missing 1 required keyword-only argument: 'has_token',"{
+    ""primary_failure_label"": ""dtype_casting"",
+    ""secondary_cause_labels"": [""precision_tolerance"", ""not_numerical_failure""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""TypeError: _outside_call_translation_rule() missing 1 required keyword-only argument: 'has_token'"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0881-9506bf6a,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.41,not_numerical_failure,unknown,unclear,low,"Using ""holomorphic=True"" and 1.0+0.0j as input works, but I would rather avoid this, since the function does not necessarily have to be holomorphic for the gradient to be well defined.","{
+    ""primary_failure_label"": ""not_numerical_failure"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""Using \""holomorphic=True\"" and 1.0+0.0j as input works, but I would rather avoid this, since the function does not necessarily have to be holomorphic for the gradient to be well defined."",
+    ""confidence"": 0.8
+}",
+EGNF1000-0897-b0e1bbed,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.22,needs_review,unknown,unclear,low,cuML uses different solvers (CD and QN) than scikit-learn - The duality gap computation may not be feasible or meaningful with cuML's solver implementations,"{
+  ""primary_failure_label"": ""missing_attribute"",
+  ""secondary_cause_labels"": [""scikit-learn"", ""cuml-accel""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""cuML uses different solvers (CD and QN) than scikit-learn - The duality gap computation may not be feasible or meaningful with cuML's solver implementations"",
+  ""confidence"": 0.8
+}",
+EGNF1000-0903-c608ae65,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,3.21,performance_only,unknown,unclear,low,"The [migration guide](https://docs.cupy.dev/en/stable/upgrade.html#id9) suggests `RawModule` as an alternative, but, as someone who just copied code on the internet and only concerned myself with the actual kernel code, it'd help me to know whether it's a drop-in replacement, or if there are differences I should be aware of and account for (e.g. via arguments to `RawModule`).","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""not_numerical_failure""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The [migration guide](https://docs.cupy.dev/en/stable/upgrade.html#id9) suggests `RawModule` as an alternative, but, as someone who just copied code on the internet and only concerned myself with the actual kernel code, it'd help me to know whether it's a drop-in replacement, or if there are differences I should be aware of and account for (e.g. via arguments to `RawModule`)."",
+  ""confidence"": 0
+}",
+EGNF1000-0905-a5c799ec,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.06,crash_compile,unknown,unclear,low,cp.async does not support non-trivial block dimension b = tl.load(b_ptrs),"{
+  ""primary_failure_label"": ""crash_compile"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""cp.async does not support non-trivial block dimension b = tl.load(b_ptrs)"",
+  ""confidence"": 0.9
+}",
+EGNF1000-0929-8bd22f63,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.27,precision_tolerance,unknown,unclear,low,addmm should return the same values (all ones) for both calls.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""module: correctness"", ""module: structured kernels""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""addmm should return the same values (all ones) for both calls."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0943-3f934021,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.49,needs_review,unknown,unclear,low,Mismatched elements: 1 / 1 (100%) Max absolute difference among violations: 3.686663e+32 Max relative difference among violations: 1.,"{
+  ""primary_failure_label"": ""inconsistency"",
+  ""secondary_cause_labels"": [""nan_inf"", ""overflow_underflow""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""Mismatched elements: 1 / 1 (100%) Max absolute difference among violations: 3.686663e+32 Max relative difference among violations: 1."",
+  ""confidence"": 0.9
+}",
+EGNF1000-0949-b0380285,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.43,nan_inf,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": null
+}",
+EGNF1000-0959-ad0a2275,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.48,precision_tolerance,unknown,unclear,low,I often try to use the flash attention method to fuse the FNN (Feed-Forward Network) part in Llama into a single operator to reduce GPU memory usage and accelerate the computation,"{
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""not_numerical_failure""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""I often try to use the flash attention method to fuse the FNN (Feed-Forward Network) part in Llama into a single operator to reduce GPU memory usage and accelerate the computation"",
+    ""confidence"": 0.8
+}",
+EGNF1000-0969-37b75eeb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.54,nan_inf,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": 0.0
+}",
+EGNF1000-0970-1bfb7777,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.94,not_numerical_failure,unknown,unclear,low,The primitive_batcher of type call_tf_p is not implemented.,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""precision_tolerance""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""The primitive_batcher of type call_tf_p is not implemented."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0982-32ec0e04,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.35,needs_review,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""needs_review"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": null
+}",
+EGNF1000-0988-55277ee7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.16,precision_tolerance,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": null
+}",
+EGNF1000-0999-abb35ce7,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.11,not_numerical_failure,unknown,unclear,low,None,"{
+  ""primary_failure_label"": ""not_numerical_failure"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": null,
+  ""confidence"": null
+}",
+GNF-0009-f786b33b,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.54,dtype_casting,unknown,unclear,low,"pysig, args = self._compiler.fold_argument_types(args, kws) if self._can_compile: self.compile_device(tuple(args))","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""precision_tolerance"", ""needs_review""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""pysig, args = self._compiler.fold_argument_types(args, kws) if self._can_compile: self.compile_device(tuple(args))"",
+  ""confidence"": 0.8
+}",
+GNF-0011-0a961578,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.43,nan_inf,unknown,unclear,low,"operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32"",
+  ""confidence"": 0.5
+}",
+GNF-0038-ba034dce,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.15,nan_inf,unknown,unclear,low,"I think 8-bit, 32-bit mixed precision is not well supported yet.","{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""precision_tolerance"", ""dtype_casting""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""I think 8-bit, 32-bit mixed precision is not well supported yet."",
+  ""confidence"": 0.9
+}",
+GNF-0051-53841ba4,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.64,needs_review,unknown,unclear,low,"Thanks for the report. I don't think there's a way to obtain this via pip, will add as a feature request.","{
+  ""primary_failure_label"": ""wheels|installation"",
+  ""secondary_cause_labels"": [""performance_only"", ""needs_review""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Thanks for the report. I don't think there's a way to obtain this via pip, will add as a feature request."",
+  ""confidence"": 0.5
+}",
+GNF-0053-9d7e3d51,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.06,nan_inf,unknown,unclear,low,This should be undefined behavior. Also see this discussion on numpy https://github.com/numpy/numpy/issues/21364.,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": true,
+  ""evidence_quote"": ""This should be undefined behavior. Also see this discussion on numpy https://github.com/numpy/numpy/issues/21364."",
+  ""confidence"": 0.9
+}",
+GNF-0071-ca4885e3,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,3.68,nan_inf,unknown,unclear,low,"test_broadcast (numba.cuda.tests.cudadrv.test_cuda_array_slicing.CudaArraySetting) ... Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File ""/home/nfs/gmarkall/numbadev/numba/numba/cuda/cudadrv/driver.py"", line 293 in safe_cuda_api_call...","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""performance_only"", ""needs_review""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""test_broadcast (numba.cuda.tests.cudadrv.test_cuda_array_slicing.CudaArraySetting) ... Fatal Python error: Segmentation fault Current thread 0x00007fb059d49700 (most recent call first): File \""/home/nfs/gmarkall/numbadev/numba/numba/cuda/cudadrv/driver.py\"", line 293 in safe_cuda_api_call..."",
+    ""confidence"": 0.8
+}",
+GNF-0078-20f6032e,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.69,dtype_casting,unknown,unclear,low,A list of available NumPy functions is here: https://numba.readthedocs.io/en/stable/reference/numpysupported.html#bit-twiddling-functions,"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [""precision_tolerance""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""A list of available NumPy functions is here: https://numba.readthedocs.io/en/stable/reference/numpysupported.html#bit-twiddling-functions"",
+  ""confidence"": 0.5
+}",
+GNF-0087-b5fe68e9,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.53,precision_tolerance,unknown,unclear,low,"subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence.","{
+    ""primary_failure_label"": ""precision_tolerance"",
+    ""secondary_cause_labels"": [""dtype_casting"", ""module: correctness (silent)"", ""module: numerical-stability""],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""subnormal fp16 inputs in backward GEMMs are flushed to zero, which can silently corrupt gradients and cause training divergence."",
+    ""confidence"": 0.9
+}",
+GNF-0103-f835a9bf,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.25,dtype_casting,unknown,unclear,low,We don't support the PPC architecture ourselves and most likely don't have the engineer bandwidth to maintain such a build.,"{
+    ""primary_failure_label"": ""dtype_casting"",
+    ""secondary_cause_labels"": [""precision_tolerance"", ""not_numerical_failure""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""We don't support the PPC architecture ourselves and most likely don't have the engineer bandwidth to maintain such a build."",
+    ""confidence"": 0.5
+}",
+GNF-0106-69df058d,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.08,nan_inf,unknown,unclear,low,"The inputs are all zeros with `float64` dtype, and the mask is a simple boolean mask.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [],
+    ""is_true_numerical_failure"": true,
+    ""evidence_quote"": ""The inputs are all zeros with `float64` dtype, and the mask is a simple boolean mask."",
+    ""confidence"": 0.9
+}",
+GNF-0107-36abe955,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.40,dtype_casting,unknown,unclear,low,temp = array[i-period+1:i+1] should be temp = array[i-start+1:i+1],"{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""temp = array[i-period+1:i+1] should be temp = array[i-start+1:i+1]"",
+  ""confidence"": 0.8
+}",
+GNF-0116-96b537db,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.00,dtype_casting,unknown,unclear,low,"np.testing functions don't seem to check for dtype matching, so this is easy to miss.","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""np.testing functions don't seem to check for dtype matching, so this is easy to miss."",
+  ""confidence"": 0.5
+}",
+GNF-0146-2fe36ae1,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.34,nan_inf,unknown,unclear,low,It appears to be related to recent change https://github.com/rapidsai/cudf/pull/19561,"{
+  ""primary_failure_label"": ""nan_inf"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""It appears to be related to recent change https://github.com/rapidsai/cudf/pull/19561"",
+  ""confidence"": 0.5
+}",
+GNF-0148-5dbeb416,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.33,performance_only,unknown,unclear,low,Triton performs about 10% worse than CUBLAS GEMM performance,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""precision_tolerance"", ""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Triton performs about 10% worse than CUBLAS GEMM performance"",
+  ""confidence"": 0.5
+}",
+GNF-0149-305f23bb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,3.01,needs_review,unknown,unclear,low,> [@young-geng](https://github.com/young-geng) do you know what is the cudnn version here? cudnn 9.12 is the first version to support CUDA 13.,"{
+  ""primary_failure_label"": ""NVIDIA GPU issue"",
+  ""secondary_cause_labels"": [""cudnn"", ""cuda13""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""> [@young-geng](https://github.com/young-geng) do you know what is the cudnn version here? cudnn 9.12 is the first version to support CUDA 13."",
+  ""confidence"": 0.8
+}",
+GNF-0159-f17202a4,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,1.52,performance_only,unknown,unclear,low,,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": """",
+  ""confidence"": null
+}",
+GNF-0164-cdeaf26a,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.39,precision_tolerance,unknown,unclear,low,I'm guessing this is using the new triton 3.0 branch? Not sure how to tell which triton hash is being used there.,"{
+  ""primary_failure_label"": ""precision_tolerance"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""I'm guessing this is using the new triton 3.0 branch? Not sure how to tell which triton hash is being used there."",
+  ""confidence"": 0.5
+}",
+GNF-0180-3e16cf7e,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.49,needs_review,unknown,unclear,low,Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion.,"{
+  ""primary_failure_label"": ""unsupported_conversion"",
+  ""secondary_cause_labels"": [""rounding_mode_required"", ""fp_downcast""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Unsupported conversion from f64 to f16 LLVM ERROR: Unsupported rounding mode for conversion."",
+  ""confidence"": 0.8
+}",
+GNF-0185-120804a6,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.54,overflow_underflow,unknown,unclear,low,std::bad_alloc: out_of_memory: CUDA error (failed to allocate 18446744073692371776 bytes),"{
+  ""primary_failure_label"": ""overflow_underflow"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""performance_only""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""std::bad_alloc: out_of_memory: CUDA error (failed to allocate 18446744073692371776 bytes)"",
+  ""confidence"": 0.8
+}",

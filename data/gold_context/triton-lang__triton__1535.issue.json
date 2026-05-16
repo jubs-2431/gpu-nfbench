@@ -1,0 +1,12 @@
+{
+  "body": "Fast math options can have large performance impact for use case like activation fusion, e.g. sigmoid/swish. However, Triton doesn't support it right now, though LLVM has corresponding options. We'd like to propose adding such options in Triton, NVCC equivalent command line arguemnts are `--use_fast_math --ftz=false`.",
+  "closed_at": null,
+  "comments": 5,
+  "created_at": "2023-04-17T06:14:07Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/1535",
+  "labels": [],
+  "number": 1535,
+  "state": "open",
+  "title": "Fast Math Support",
+  "updated_at": "2026-01-06T13:40:39Z"
+}

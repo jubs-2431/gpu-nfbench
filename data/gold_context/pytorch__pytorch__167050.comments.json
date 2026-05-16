@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "CONTRIBUTOR",
+    "body": "Note: native matmul is still experimental",
+    "created_at": "2025-11-11T18:16:31Z",
+    "html_url": "https://github.com/pytorch/pytorch/issues/167050#issuecomment-3518196764",
+    "id": 3518196764,
+    "issue_url": "https://api.github.com/repos/pytorch/pytorch/issues/167050",
+    "node_id": "IC_kwDOA-j9z87Rs2wc",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/3518196764/reactions"
+    },
+    "updated_at": "2025-11-11T18:16:31Z",
+    "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/3518196764",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/11477974?v=4",
+      "events_url": "https://api.github.com/users/eellison/events{/privacy}",
+      "followers_url": "https://api.github.com/users/eellison/followers",
+      "following_url": "https://api.github.com/users/eellison/following{/other_user}",
+      "gists_url": "https://api.github.com/users/eellison/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/eellison",
+      "id": 11477974,
+      "login": "eellison",
+      "node_id": "MDQ6VXNlcjExNDc3OTc0",
+      "organizations_url": "https://api.github.com/users/eellison/orgs",
+      "received_events_url": "https://api.github.com/users/eellison/received_events",
+      "repos_url": "https://api.github.com/users/eellison/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/eellison/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/eellison/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/eellison",
+      "user_view_type": "public"
+    }
+  }
+]

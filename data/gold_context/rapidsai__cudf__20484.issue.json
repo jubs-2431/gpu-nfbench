@@ -1,0 +1,15 @@
+{
+  "body": "**Is your feature request related to a problem? Please describe.**\n\nhttps://github.com/rapidsai/cudf/pull/20161 is adding the rapdismpf runtime for executing cudf-polars queries. At the moment, it uses the default CUDA stream by default (see https://github.com/rapidsai/cudf/pull/20161/files#diff-9ad9c0b226771cfb2970dc29c34c5a9f2a384339d8c0258110ab141d33209ff7R277, and others).\n\n- `local_shuffle_node`: https://github.com/rapidsai/cudf/pull/20161/files#diff-5b52d151dfa8bede82a81fcf2d51f20ec6428f3bb748986a7e17eec1564b99b2R216\n\n**Describe the solution you'd like**\n\nTo get the best performance, we'd like to change the default to use the pool from rapidsmpf.\n\nWe have a few issues to sort out\n\n1. Potential segfaults from incorrect CUDA stream usage (failing to synchronize / join streams correctly, just plain forgetting to pass through the `stream` to some pylibcudf call, ...)\n2. Potential OOM errors, thanks to us using the GPU more efficiently / too aggressively\n",
+  "closed_at": "2025-11-11T14:00:20Z",
+  "comments": 1,
+  "created_at": "2025-11-04T16:08:32Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/20484",
+  "labels": [
+    "feature request",
+    "cudf-polars"
+  ],
+  "number": 20484,
+  "state": "closed",
+  "title": "[FEA]: Change default cudf-polars stream pool policy to `pool`",
+  "updated_at": "2025-11-11T14:00:21Z"
+}

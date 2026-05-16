@@ -1,0 +1,1721 @@
+[
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/cupy__cupy__5328.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__5328.issue.json",
+    "number": "5328",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/5328"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/cupy__cupy__8260.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__8260.issue.json",
+    "number": "8260",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8260"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/cupy__cupy__9558.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9558.issue.json",
+    "number": "9558",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9558"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/cupy__cupy__821.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__821.issue.json",
+    "number": "821",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/821"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/cupy__cupy__6535.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__6535.issue.json",
+    "number": "6535",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6535"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/cupy__cupy__8193.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__8193.issue.json",
+    "number": "8193",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8193"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/cupy__cupy__9491.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9491.issue.json",
+    "number": "9491",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9491"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/cupy__cupy__9907.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9907.issue.json",
+    "number": "9907",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9907"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/cupy__cupy__851.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__851.issue.json",
+    "number": "851",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/851"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/cupy__cupy__7118.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__7118.issue.json",
+    "number": "7118",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/7118"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/cupy__cupy__8391.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__8391.issue.json",
+    "number": "8391",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8391"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/cupy__cupy__8807.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__8807.issue.json",
+    "number": "8807",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8807"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/cupy__cupy__9823.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9823.issue.json",
+    "number": "9823",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9823"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/cupy__cupy__1427.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__1427.issue.json",
+    "number": "1427",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/1427"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/cupy__cupy__3696.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__3696.issue.json",
+    "number": "3696",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/3696"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/cupy__cupy__6229.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__6229.issue.json",
+    "number": "6229",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6229"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/cupy__cupy__8697.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__8697.issue.json",
+    "number": "8697",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/8697"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/cupy__cupy__9777.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9777.issue.json",
+    "number": "9777",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9777"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/cupy__cupy__2248.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__2248.issue.json",
+    "number": "2248",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2248"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/cupy__cupy__4352.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__4352.issue.json",
+    "number": "4352",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/4352"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/cupy__cupy__5424.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__5424.issue.json",
+    "number": "5424",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/5424"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/cupy__cupy__6715.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__6715.issue.json",
+    "number": "6715",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6715"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/cupy__cupy__9187.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9187.issue.json",
+    "number": "9187",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9187"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/cupy__cupy__2066.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__2066.issue.json",
+    "number": "2066",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2066"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/cupy__cupy__2742.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__2742.issue.json",
+    "number": "2742",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/2742"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/cupy__cupy__4093.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__4093.issue.json",
+    "number": "4093",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/4093"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/cupy__cupy__7058.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__7058.issue.json",
+    "number": "7058",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/7058"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/cupy__cupy__7978.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__7978.issue.json",
+    "number": "7978",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/7978"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/cupy__cupy__6661.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__6661.issue.json",
+    "number": "6661",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/6661"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/cupy__cupy__7933.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__7933.issue.json",
+    "number": "7933",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/7933"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/cupy__cupy__9015.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9015.issue.json",
+    "number": "9015",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9015"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/cupy__cupy__9272.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9272.issue.json",
+    "number": "9272",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9272"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/cupy__cupy__9785.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/cupy__cupy__9785.issue.json",
+    "number": "9785",
+    "repository": "cupy/cupy",
+    "url": "https://github.com/cupy/cupy/issues/9785"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/jax-ml__jax__17912.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__17912.issue.json",
+    "number": "17912",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/17912"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/jax-ml__jax__18672.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__18672.issue.json",
+    "number": "18672",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/18672"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/jax-ml__jax__23833.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__23833.issue.json",
+    "number": "23833",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/23833"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/jax-ml__jax__32411.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__32411.issue.json",
+    "number": "32411",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/32411"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/jax-ml__jax__9591.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__9591.issue.json",
+    "number": "9591",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/9591"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/jax-ml__jax__20568.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__20568.issue.json",
+    "number": "20568",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/20568"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/jax-ml__jax__24680.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__24680.issue.json",
+    "number": "24680",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/24680"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/jax-ml__jax__32430.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__32430.issue.json",
+    "number": "32430",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/32430"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/jax-ml__jax__37001.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__37001.issue.json",
+    "number": "37001",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/37001"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/jax-ml__jax__10255.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__10255.issue.json",
+    "number": "10255",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/10255"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/jax-ml__jax__20430.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__20430.issue.json",
+    "number": "20430",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/20430"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/jax-ml__jax__23625.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__23625.issue.json",
+    "number": "23625",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/23625"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/jax-ml__jax__28637.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__28637.issue.json",
+    "number": "28637",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/28637"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/jax-ml__jax__37422.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__37422.issue.json",
+    "number": "37422",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/37422"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/jax-ml__jax__4493.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__4493.issue.json",
+    "number": "4493",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/4493"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/jax-ml__jax__21708.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__21708.issue.json",
+    "number": "21708",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/21708"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/jax-ml__jax__26689.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__26689.issue.json",
+    "number": "26689",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/26689"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/jax-ml__jax__30188.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__30188.issue.json",
+    "number": "30188",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/30188"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/jax-ml__jax__37389.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__37389.issue.json",
+    "number": "37389",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/37389"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/jax-ml__jax__30874.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__30874.issue.json",
+    "number": "30874",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/30874"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/jax-ml__jax__34455.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__34455.issue.json",
+    "number": "34455",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/34455"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/jax-ml__jax__36766.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__36766.issue.json",
+    "number": "36766",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/36766"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/jax-ml__jax__28547.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__28547.issue.json",
+    "number": "28547",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/28547"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/jax-ml__jax__3411.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__3411.issue.json",
+    "number": "3411",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/3411"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/jax-ml__jax__16698.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__16698.issue.json",
+    "number": "16698",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/16698"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/jax-ml__jax__23179.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__23179.issue.json",
+    "number": "23179",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/23179"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/jax-ml__jax__32136.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__32136.issue.json",
+    "number": "32136",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/32136"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/jax-ml__jax__36886.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/jax-ml__jax__36886.issue.json",
+    "number": "36886",
+    "repository": "jax-ml/jax",
+    "url": "https://github.com/jax-ml/jax/issues/36886"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/numba__numba__4713.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__4713.issue.json",
+    "number": "4713",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4713"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/numba__numba__4954.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__4954.issue.json",
+    "number": "4954",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4954"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/numba__numba__6839.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__6839.issue.json",
+    "number": "6839",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/6839"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/numba__numba__9109.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__9109.issue.json",
+    "number": "9109",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/9109"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/numba__numba__9814.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__9814.issue.json",
+    "number": "9814",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/9814"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/numba__numba__2011.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__2011.issue.json",
+    "number": "2011",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2011"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/numba__numba__5158.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__5158.issue.json",
+    "number": "5158",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/5158"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/numba__numba__7324.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__7324.issue.json",
+    "number": "7324",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/7324"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/numba__numba__8464.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__8464.issue.json",
+    "number": "8464",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/8464"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/numba__numba__10403.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__10403.issue.json",
+    "number": "10403",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10403"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/numba__numba__4333.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__4333.issue.json",
+    "number": "4333",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4333"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/numba__numba__5820.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__5820.issue.json",
+    "number": "5820",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/5820"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/numba__numba__8700.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__8700.issue.json",
+    "number": "8700",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/8700"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/numba__numba__8891.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__8891.issue.json",
+    "number": "8891",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/8891"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/numba__numba__10325.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__10325.issue.json",
+    "number": "10325",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10325"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/numba__numba__2451.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__2451.issue.json",
+    "number": "2451",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2451"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/numba__numba__4247.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__4247.issue.json",
+    "number": "4247",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4247"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/numba__numba__5998.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__5998.issue.json",
+    "number": "5998",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/5998"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/numba__numba__7095.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__7095.issue.json",
+    "number": "7095",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/7095"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/numba__numba__10353.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__10353.issue.json",
+    "number": "10353",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10353"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/numba__numba__7062.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__7062.issue.json",
+    "number": "7062",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/7062"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/numba__numba__9229.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__9229.issue.json",
+    "number": "9229",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/9229"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/numba__numba__2988.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__2988.issue.json",
+    "number": "2988",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/2988"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/numba__numba__10116.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__10116.issue.json",
+    "number": "10116",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10116"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/numba__numba__3203.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__3203.issue.json",
+    "number": "3203",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/3203"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/numba__numba__4449.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__4449.issue.json",
+    "number": "4449",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/4449"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/numba__numba__5640.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__5640.issue.json",
+    "number": "5640",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/5640"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/numba__numba__8528.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__8528.issue.json",
+    "number": "8528",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/8528"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/numba__numba__10412.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/numba__numba__10412.issue.json",
+    "number": "10412",
+    "repository": "numba/numba",
+    "url": "https://github.com/numba/numba/issues/10412"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/pytorch__pytorch__109074.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__109074.issue.json",
+    "number": "109074",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/109074"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/pytorch__pytorch__123983.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__123983.issue.json",
+    "number": "123983",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/123983"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/pytorch__pytorch__143288.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__143288.issue.json",
+    "number": "143288",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/143288"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/pytorch__pytorch__166131.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__166131.issue.json",
+    "number": "166131",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/166131"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/pytorch__pytorch__182554.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__182554.issue.json",
+    "number": "182554",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/182554"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/pytorch__pytorch__100085.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__100085.issue.json",
+    "number": "100085",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/100085"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/pytorch__pytorch__134385.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__134385.issue.json",
+    "number": "134385",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/134385"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/pytorch__pytorch__167082.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__167082.issue.json",
+    "number": "167082",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/167082"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/pytorch__pytorch__179711.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__179711.issue.json",
+    "number": "179711",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/179711"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/pytorch__pytorch__182928.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__182928.issue.json",
+    "number": "182928",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/182928"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/pytorch__pytorch__121226.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__121226.issue.json",
+    "number": "121226",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/121226"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/pytorch__pytorch__138570.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__138570.issue.json",
+    "number": "138570",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/138570"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/pytorch__pytorch__158212.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__158212.issue.json",
+    "number": "158212",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/158212"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/pytorch__pytorch__173638.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__173638.issue.json",
+    "number": "173638",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/173638"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/pytorch__pytorch__181146.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__181146.issue.json",
+    "number": "181146",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/181146"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/pytorch__pytorch__104322.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__104322.issue.json",
+    "number": "104322",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/104322"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/pytorch__pytorch__108670.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__108670.issue.json",
+    "number": "108670",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/108670"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/pytorch__pytorch__142388.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__142388.issue.json",
+    "number": "142388",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/142388"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/pytorch__pytorch__174371.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__174371.issue.json",
+    "number": "174371",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/174371"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/pytorch__pytorch__180126.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__180126.issue.json",
+    "number": "180126",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/180126"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/pytorch__pytorch__117844.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__117844.issue.json",
+    "number": "117844",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/117844"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/pytorch__pytorch__148345.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__148345.issue.json",
+    "number": "148345",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/148345"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/pytorch__pytorch__167050.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__167050.issue.json",
+    "number": "167050",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/167050"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/pytorch__pytorch__176784.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__176784.issue.json",
+    "number": "176784",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/176784"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/pytorch__pytorch__182952.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__182952.issue.json",
+    "number": "182952",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/182952"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/pytorch__pytorch__168397.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__168397.issue.json",
+    "number": "168397",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/168397"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/pytorch__pytorch__119131.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__119131.issue.json",
+    "number": "119131",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/119131"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/pytorch__pytorch__156786.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__156786.issue.json",
+    "number": "156786",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/156786"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/pytorch__pytorch__169146.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__169146.issue.json",
+    "number": "169146",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/169146"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/pytorch__pytorch__175156.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__175156.issue.json",
+    "number": "175156",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/175156"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/pytorch__pytorch__180807.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/pytorch__pytorch__180807.issue.json",
+    "number": "180807",
+    "repository": "pytorch/pytorch",
+    "url": "https://github.com/pytorch/pytorch/issues/180807"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/rapidsai__cudf__2543.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__2543.issue.json",
+    "number": "2543",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/2543"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/rapidsai__cudf__3797.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__3797.issue.json",
+    "number": "3797",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3797"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/rapidsai__cudf__13233.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__13233.issue.json",
+    "number": "13233",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/13233"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/rapidsai__cudf__16029.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__16029.issue.json",
+    "number": "16029",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/16029"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/rapidsai__cudf__19710.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__19710.issue.json",
+    "number": "19710",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/19710"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/rapidsai__cudf__3961.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__3961.issue.json",
+    "number": "3961",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3961"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/rapidsai__cudf__11189.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__11189.issue.json",
+    "number": "11189",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/11189"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/rapidsai__cudf__13409.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__13409.issue.json",
+    "number": "13409",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/13409"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/rapidsai__cudf__18033.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__18033.issue.json",
+    "number": "18033",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/18033"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/rapidsai__cudf__22360.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__22360.issue.json",
+    "number": "22360",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/22360"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/rapidsai__cudf__3554.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__3554.issue.json",
+    "number": "3554",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/3554"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/rapidsai__cudf__6587.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__6587.issue.json",
+    "number": "6587",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/6587"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/rapidsai__cudf__10591.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__10591.issue.json",
+    "number": "10591",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/10591"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/rapidsai__cudf__19375.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__19375.issue.json",
+    "number": "19375",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/19375"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/rapidsai__cudf__22435.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__22435.issue.json",
+    "number": "22435",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/22435"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/rapidsai__cudf__28.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__28.issue.json",
+    "number": "28",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/28"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/rapidsai__cudf__8230.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__8230.issue.json",
+    "number": "8230",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/8230"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/rapidsai__cudf__12716.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__12716.issue.json",
+    "number": "12716",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/12716"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/rapidsai__cudf__15750.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__15750.issue.json",
+    "number": "15750",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/15750"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/rapidsai__cudf__21687.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__21687.issue.json",
+    "number": "21687",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/21687"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/rapidsai__cudf__7088.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__7088.issue.json",
+    "number": "7088",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/7088"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/rapidsai__cudf__16578.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__16578.issue.json",
+    "number": "16578",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/16578"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/rapidsai__cudf__20265.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__20265.issue.json",
+    "number": "20265",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/20265"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/rapidsai__cudf__21095.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__21095.issue.json",
+    "number": "21095",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/21095"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/rapidsai__cudf__22157.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__22157.issue.json",
+    "number": "22157",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/22157"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/rapidsai__cudf__2283.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__2283.issue.json",
+    "number": "2283",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/2283"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/rapidsai__cudf__13748.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__13748.issue.json",
+    "number": "13748",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/13748"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/rapidsai__cudf__16004.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__16004.issue.json",
+    "number": "16004",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/16004"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/rapidsai__cudf__18356.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__18356.issue.json",
+    "number": "18356",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/18356"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/rapidsai__cudf__20484.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__20484.issue.json",
+    "number": "20484",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/20484"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/rapidsai__cudf__406.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__406.issue.json",
+    "number": "406",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/406"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/rapidsai__cudf__6227.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__6227.issue.json",
+    "number": "6227",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/6227"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/rapidsai__cudf__9975.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__9975.issue.json",
+    "number": "9975",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/9975"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/rapidsai__cudf__17448.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__17448.issue.json",
+    "number": "17448",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/17448"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/rapidsai__cudf__20408.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/rapidsai__cudf__20408.issue.json",
+    "number": "20408",
+    "repository": "rapidsai/cudf",
+    "url": "https://github.com/rapidsai/cudf/issues/20408"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/triton-lang__triton__506.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__506.issue.json",
+    "number": "506",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/506"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/triton-lang__triton__1670.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__1670.issue.json",
+    "number": "1670",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1670"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/triton-lang__triton__2156.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2156.issue.json",
+    "number": "2156",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2156"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/triton-lang__triton__2218.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2218.issue.json",
+    "number": "2218",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2218"
+  },
+  {
+    "candidate_primary_failure": "crash_compile",
+    "comments_json": "data/gold_context/triton-lang__triton__2398.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2398.issue.json",
+    "number": "2398",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2398"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/triton-lang__triton__187.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__187.issue.json",
+    "number": "187",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/187"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/triton-lang__triton__2356.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2356.issue.json",
+    "number": "2356",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2356"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/triton-lang__triton__4664.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__4664.issue.json",
+    "number": "4664",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/4664"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/triton-lang__triton__7942.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__7942.issue.json",
+    "number": "7942",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/7942"
+  },
+  {
+    "candidate_primary_failure": "dtype_casting",
+    "comments_json": "data/gold_context/triton-lang__triton__10229.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__10229.issue.json",
+    "number": "10229",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/10229"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/triton-lang__triton__189.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__189.issue.json",
+    "number": "189",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/189"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/triton-lang__triton__2138.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2138.issue.json",
+    "number": "2138",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2138"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/triton-lang__triton__4310.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__4310.issue.json",
+    "number": "4310",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/4310"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/triton-lang__triton__7786.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__7786.issue.json",
+    "number": "7786",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/7786"
+  },
+  {
+    "candidate_primary_failure": "nan_inf",
+    "comments_json": "data/gold_context/triton-lang__triton__10106.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__10106.issue.json",
+    "number": "10106",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/10106"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/triton-lang__triton__211.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__211.issue.json",
+    "number": "211",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/211"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/triton-lang__triton__1121.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__1121.issue.json",
+    "number": "1121",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1121"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/triton-lang__triton__1302.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__1302.issue.json",
+    "number": "1302",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1302"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/triton-lang__triton__6054.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__6054.issue.json",
+    "number": "6054",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/6054"
+  },
+  {
+    "candidate_primary_failure": "needs_review",
+    "comments_json": "data/gold_context/triton-lang__triton__9375.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__9375.issue.json",
+    "number": "9375",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/9375"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/triton-lang__triton__475.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__475.issue.json",
+    "number": "475",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/475"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/triton-lang__triton__2688.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2688.issue.json",
+    "number": "2688",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2688"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/triton-lang__triton__4172.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__4172.issue.json",
+    "number": "4172",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/4172"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/triton-lang__triton__6748.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__6748.issue.json",
+    "number": "6748",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/6748"
+  },
+  {
+    "candidate_primary_failure": "overflow_underflow",
+    "comments_json": "data/gold_context/triton-lang__triton__9809.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__9809.issue.json",
+    "number": "9809",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/9809"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/triton-lang__triton__1535.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__1535.issue.json",
+    "number": "1535",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/1535"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/triton-lang__triton__2301.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2301.issue.json",
+    "number": "2301",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2301"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/triton-lang__triton__2513.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2513.issue.json",
+    "number": "2513",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2513"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/triton-lang__triton__8591.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__8591.issue.json",
+    "number": "8591",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/8591"
+  },
+  {
+    "candidate_primary_failure": "performance_only",
+    "comments_json": "data/gold_context/triton-lang__triton__8890.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__8890.issue.json",
+    "number": "8890",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/8890"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/triton-lang__triton__781.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__781.issue.json",
+    "number": "781",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/781"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/triton-lang__triton__2176.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__2176.issue.json",
+    "number": "2176",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/2176"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/triton-lang__triton__5065.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__5065.issue.json",
+    "number": "5065",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/5065"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/triton-lang__triton__7354.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__7354.issue.json",
+    "number": "7354",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/7354"
+  },
+  {
+    "candidate_primary_failure": "precision_tolerance",
+    "comments_json": "data/gold_context/triton-lang__triton__10176.comments.json",
+    "fetch_error": "",
+    "issue_json": "data/gold_context/triton-lang__triton__10176.issue.json",
+    "number": "10176",
+    "repository": "triton-lang/triton",
+    "url": "https://github.com/triton-lang/triton/issues/10176"
+  }
+]

@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use GPU-NFBench, please cite the archived artifact and manuscript."
+title: "GPU-NFBench: A Human-Labeled Benchmark and LLM-Assisted Triage System for GPU Numerical Failures"
+type: dataset
+authors:
+  - family-names: Shah
+    given-names: Aryan
+    affiliation: Independent Researcher
+repository-code: "https://github.com/jubs-2431/gpu-nfbench"
+url: "https://github.com/jubs-2431/gpu-nfbench"
+abstract: "GPU-NFBench is a human-labeled benchmark, model suite, and artifact packet for triaging GPU numerical failure reports from public GitHub issues."
+keywords:
+  - GPU bugs
+  - numerical bugs
+  - software reliability
+  - issue mining
+  - LLM-assisted triage
+license: MIT
+date-released: "2026-05-16"
+version: "v1.0-conference"

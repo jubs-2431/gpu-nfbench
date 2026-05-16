@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "CONTRIBUTOR",
+    "body": "This should be undefined behavior. Also see this discussion on numpy https://github.com/numpy/numpy/issues/21364.\r\nIdeally we would warn/error when this happens, but that would likely slow down the cast.",
+    "created_at": "2024-03-06T15:36:38Z",
+    "html_url": "https://github.com/pytorch/pytorch/issues/121226#issuecomment-1981155049",
+    "id": 1981155049,
+    "issue_url": "https://api.github.com/repos/pytorch/pytorch/issues/121226",
+    "node_id": "IC_kwDOA-j9z852Fgbp",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/1981155049/reactions"
+    },
+    "updated_at": "2024-03-06T15:36:38Z",
+    "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/1981155049",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/13428986?v=4",
+      "events_url": "https://api.github.com/users/soulitzer/events{/privacy}",
+      "followers_url": "https://api.github.com/users/soulitzer/followers",
+      "following_url": "https://api.github.com/users/soulitzer/following{/other_user}",
+      "gists_url": "https://api.github.com/users/soulitzer/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/soulitzer",
+      "id": 13428986,
+      "login": "soulitzer",
+      "node_id": "MDQ6VXNlcjEzNDI4OTg2",
+      "organizations_url": "https://api.github.com/users/soulitzer/orgs",
+      "received_events_url": "https://api.github.com/users/soulitzer/received_events",
+      "repos_url": "https://api.github.com/users/soulitzer/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/soulitzer/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/soulitzer/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/soulitzer",
+      "user_view_type": "public"
+    }
+  }
+]

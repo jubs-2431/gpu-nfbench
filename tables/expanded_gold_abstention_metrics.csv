@@ -1,0 +1,5 @@
+mode,answered_rows,total_rows,coverage,accuracy,macro_f1
+ensemble_vote_at_least_2,1191,1191,1.000,0.768,0.753
+ensemble_vote_at_least_3,1110,1191,0.932,0.792,0.778
+ensemble_vote_at_least_4,885,1191,0.743,0.859,0.834
+ensemble_vote_at_least_5,428,1191,0.359,0.953,0.811

@@ -1,0 +1,14 @@
+{
+  "body": "### Description\n\nHello,\n\nI noticed that [<code>cupy.interp</code>](https://docs.cupy.dev/en/stable/reference/generated/cupy.interp.html) behaves differently from [<code>numpy.interp</code>](https://numpy.org/doc/stable/reference/generated/numpy.interp.html#numpy.interp) when `inf` values are present (see the example below). I was wondering whether this difference is intentional, or if it might be an inconsistency.\n\nThanks in advance!\n\n### To Reproduce\n\n```py\nimport cupy as cp # Version 14.0.1\nimport numpy as np # Version 2.4.2\n\nx0, x, y = [1, 2, 2.5, 3, 4], [1, 2, 3, 4], [1, 2, np.inf, 4]\nx0_cp, x_cp, y_cp = cp.asarray(x0), cp.asarray(x), cp.asarray(y)\nx0_np, x_np, y_np = np.asarray(x0), np.asarray(x), np.asarray(y)\n\nprint(cp.interp(x0_cp, x_cp, y_cp)) # [ 1., nan, inf, inf, 4.]\nprint(np.interp(x0_np, x_np, y_np)) # [ 1., 2., inf, inf, 4.]\n```\n\n\n### Installation\n\nConda-Forge (`conda install ...`)\n\n### Environment\n\n```\nOS                           : Linux-6.8.0-106-generic-x86_64-with-glibc2.35\nPython Version               : 3.13.12\nCuPy Version                 : 14.0.1\nCuPy Platform                : NVIDIA CUDA\nNumPy Version                : 2.4.2\nSciPy Version                : 1.16.3\nCython Build Version         : 3.1.8\nCython Runtime Version       : 3.2.4\nNVCC PATH                    : None\nCUDA Build Version           : 13010\nCUDA Driver Version          : 13000\nCUDA Runtime Version         : 13010 (linked to CuPy) / 13000 (locally installed)\ncuBLAS Version               : 130100\ncuFFT Version                : 12000\ncuRAND Version               : 10400\ncuSOLVER Version             : (12, 0, 4)\ncuSPARSE Version             : 12603\nNVRTC Version                : (13, 0)\nThrust Version               : 300104\nCUB Build Version            : 300102\nJitify Build Version         : <unknown>\nNCCL Build Version           : 22903\nNCCL Runtime Version         : 22809\nNCCL Path                    : None\ncuTENSOR Version             : None\ncuTENSOR Path                : None\ncuSPARSELt Build Version     : None\nDevice 0 Name                : NVIDIA GeForce RTX 4060 Laptop GPU\nDevice 0 Compute Capability  : 89\nDevice 0 PCI Bus ID          : 0000:01:00.0\n```\n\n\n### Additional Information\n\nN / A",
+  "closed_at": "2026-04-17T10:04:51Z",
+  "comments": 0,
+  "created_at": "2026-03-23T01:34:33Z",
+  "html_url": "https://github.com/cupy/cupy/issues/9823",
+  "labels": [
+    "cat:bug"
+  ],
+  "number": 9823,
+  "state": "closed",
+  "title": "Inconsistency between CuPy and NumPy's 1D linear interpolation",
+  "updated_at": "2026-04-17T10:04:51Z"
+}

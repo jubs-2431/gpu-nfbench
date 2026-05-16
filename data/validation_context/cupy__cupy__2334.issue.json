@@ -1,0 +1,16 @@
+{
+  "body": "https://jenkins.preferred.jp/job/chainer/job/cupy_pr/210/TEST=cupy-py3,label=mn1-p100/console\r\n```\r\n15:02:17 tests/cupy_tests/math_tests/test_matmul.py::TestMatmulLarge_param_0::test_cupy_matmul\r\n15:02:17   /work/cupy/tests/cupy_tests/math_tests/test_matmul.py:136: RuntimeWarning: overflow encountered in matmul\r\n15:02:17     return xp.matmul(x1, x2)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_matmul.py::TestMatmulLarge_param_0::test_operator_matmul\r\n15:02:17   /work/cupy/tests/cupy_tests/math_tests/test_matmul.py:123: RuntimeWarning: overflow encountered in matmul\r\n15:02:17     return operator.matmul(x1, x2)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_misc.py::TestMisc::test_nan_to_num_inf\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/numeric.py:2510: RuntimeWarning: overflow encountered in absolute\r\n15:02:17     return less_equal(abs(x-y), atol + rtol * abs(y))\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_misc.py::TestMisc::test_nan_to_num_inf_nan\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/numeric.py:2510: RuntimeWarning: overflow encountered in absolute\r\n15:02:17     return less_equal(abs(x-y), atol + rtol * abs(y))\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_sumprod.py::TestSumprod::test_sum_all2\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/_methods.py:36: RuntimeWarning: overflow encountered in reduce\r\n15:02:17     return umr_sum(a, axis, dtype, out, keepdims, initial)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_sumprod.py::TestSumprod::test_sum_all_transposed2\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/_methods.py:36: RuntimeWarning: overflow encountered in reduce\r\n15:02:17     return umr_sum(a, axis, dtype, out, keepdims, initial)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_sumprod.py::TestSumprod::test_sum_axes2\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/_methods.py:36: RuntimeWarning: overflow encountered in reduce\r\n15:02:17     return umr_sum(a, axis, dtype, out, keepdims, initial)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_sumprod.py::TestSumprod::test_sum_axes4\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/_methods.py:36: RuntimeWarning: overflow encountered in reduce\r\n15:02:17     return umr_sum(a, axis, dtype, out, keepdims, initial)\r\n15:02:17 \r\n15:02:17 tests/cupy_tests/math_tests/test_sumprod.py::TestSumprod::test_sum_axis_transposed2\r\n15:02:17   /opt/pyenv/versions/3.7.1/lib/python3.7/site-packages/numpy/core/_methods.py:36: RuntimeWarning: overflow encountered in reduce\r\n15:02:17     return umr_sum(a, axis, dtype, out, keepdims, initial)\r\n```",
+  "closed_at": "2025-04-20T12:56:27Z",
+  "comments": 1,
+  "created_at": "2019-07-25T04:58:54Z",
+  "html_url": "https://github.com/cupy/cupy/issues/2334",
+  "labels": [
+    "cat:test",
+    "prio:high",
+    "pr-ongoing"
+  ],
+  "number": 2334,
+  "state": "closed",
+  "title": "Overflow warning in CI",
+  "updated_at": "2025-04-20T12:56:28Z"
+}

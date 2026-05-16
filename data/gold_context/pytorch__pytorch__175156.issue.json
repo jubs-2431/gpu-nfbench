@@ -1,0 +1,19 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\nTo reproduce:\n```python\nimport torch\nimport torch._dynamo\ntorch._inductor.config.fallback_random = True\n\ndef fn():\n    torch.manual_seed(0)\n    out = torch.randint(0, 100, (4,1), dtype=torch.int64)  # Shape and integer range are not important.\n    other = torch.randint(0, 100, (2,1), dtype=torch.int64) # No inconsistency if remove this line, although the value won't be returned.\n    return out\n    \ncfunc = torch.compile(fn, backend='inductor')\ntorch.manual_seed(0)\nout1 = fn()\ntorch.manual_seed(0)\nout2 = cfunc()\n\nprint(f'{out1=}')\n'''\nout1=tensor([[44],\n        [39],\n        [33],\n        [60]])\n'''\nprint(f'{out2=}')\n'''\nout2=tensor([[33],\n        [60],\n        [63],\n        [79]])\n'''\n\ntorch.testing.assert_close(out1, out2, equal_nan=True)\n```\n\nProblem:\nRNG state is inconsistent between eager execution and torch.compile(backend='inductor') execution, even after explicitly resetting the seed with torch.manual_seed(0) before each run.\nThe issue occurs when two randint calls are called inside the compiled function:the output of the first randint already differs between eager and compiled mode, even though the second randint result is not returned.\n\nAfter a few debugging, I notice that the following version does NOT trigger the inconsistency:\n\n```python\ndef fn():\n    torch.manual_seed(0)\n    out = torch.randint(0, 100, (4,1), dtype=torch.int64)\n    torch.manual_seed(0)  # Extra seed reset before second randint\n    other = torch.randint(0, 100, (2,1), dtype=torch.int64)\n    return out\n```\n\nThe only difference is an extra torch.manual_seed(0) before the second randint.\nThis behavior is bit counterintuitive: We already set the seed before the first `randint`, and the second `randint` does not modify the returned value.\nHowever, without setting the second `randint`'s rng seed still causes the first randint output to mismatch between eager and compiled mode.\n\nNote that this inconsistency only occurs for `inductor` backend, but does not occur for `eager/aot_eager`backend.\n\n\n### Error logs\n\n_No response_\n\n### Versions\n\n[pip3] torch==2.11.0.dev20260209+cpu\n[pip3] triton==3.6.0\n[conda] torch 2.11.0.dev20260209+cpu pypi_0 pypi\n[conda] triton 3.6.0 pypi_0 pypi\n\ncc @ezyang @gchanan @kadeng @msaroufim @pbelevich @chauhang @penguinwu @voznesenskym @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @ipiszy @muchulee8 @amjames @aakhundov @coconutruben @jataylo",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2026-02-17T16:02:49Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/175156",
+  "labels": [
+    "high priority",
+    "triaged",
+    "module: random",
+    "oncall: pt2",
+    "module: inductor",
+    "PT2-Bug-Bash"
+  ],
+  "number": 175156,
+  "state": "open",
+  "title": "[inductor] Multiple randint calls cause inconsistent RNG results between eager and compiled mode after fixing the rng seed",
+  "updated_at": "2026-03-19T02:00:54Z"
+}

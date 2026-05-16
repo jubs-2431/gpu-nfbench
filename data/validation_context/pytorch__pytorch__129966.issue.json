@@ -1,0 +1,17 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\r\n\r\n```python\r\nimport torch\r\n\r\ndef fn(x):\r\n    return torch.view_copy(x, torch.int8)\r\n\r\nx = torch.zeros((2, ), dtype=torch.int32, device='cuda') + 0x00010203\r\n\r\nassert torch.allclose(fn(x), torch.compile(fn)(x))\r\n```\r\n\r\nWe get:\r\n```python\r\ntensor([3, 3], device='cuda:0', dtype=torch.int8)                      # compiled\r\ntensor([3, 2, 1, 0, 3, 2, 1, 0], device='cuda:0', dtype=torch.int8)    # eager\r\n```\r\n\r\nLooking at the generated code \r\n```python\r\n@triton.jit                                                                                                                                                                                                          \r\ndef triton_(in_ptr0, out_ptr0, xnumel, XBLOCK : tl.constexpr):                                                                                                                                                       \r\n    xnumel = 2                                                                                                                                                                                                       \r\n    xoffset = tl.program_id(0) * XBLOCK                                                                                                                                                                              \r\n    xindex = xoffset + tl.arange(0, XBLOCK)[:]                                                                                                                                                                       \r\n    xmask = xindex < xnumel                                                                                                                                                                                          \r\n    x0 = xindex                                                                                                                                                                                                      \r\n    tmp0 = tl.load(in_ptr0 + (x0), xmask)                                                                                                                                                                            \r\n    tmp1 = tmp0.to(tl.int8)                                                                                                                                                                                          \r\n    tl.store(out_ptr0 + (x0), tmp1, xmask)    \r\n```\r\nwe see that we use `.to` in triton, which does a semantic cast, not a bitwise cast. It's not easy to generate the correct kernel in triton without using a few ad-hoc tricks AFAIK. We should just fallback in this case.\r\n\r\n### Versions\r\n\r\nmaster\r\n\r\ncc @bdhirsh @ezyang @chauhang @penguinwu @voznesenskym @EikanWang @jgong5 @Guobing-Chen @XiaobingSuper @zhuhaozhe @blzheng @wenzhe-nrv @jiayisunx @ipiszy @chenyang78 @kadeng @muchulee8 @amjames @aakhundov @anijain2305",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2024-07-02T16:34:44Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/129966",
+  "labels": [
+    "triaged",
+    "module: functionalization",
+    "oncall: pt2",
+    "module: inductor"
+  ],
+  "number": 129966,
+  "state": "open",
+  "title": "torch.view_copy(x, dtype) diverges from eager when the destiny dtype has less bytes than the origin",
+  "updated_at": "2025-07-10T23:55:18Z"
+}

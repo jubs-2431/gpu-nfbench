@@ -1,0 +1,15 @@
+{
+  "body": "Not sure if this can be classified as a bug but I thought I would post this just incase it isn't known about. Values known at compile time, and are thus computed in Python, use Python's long int and can represent values outside the range of a normal integer so you can get results that don't quite match.\r\n\r\n```\r\nfrom numba import cuda\r\nimport numpy as np\r\n\r\n@cuda.jit\r\ndef test_kernel(a,b,c,test):\r\n\ti = cuda.grid(1)\r\n\r\n\ttest[0] = a**b%c\r\n\ttest[1] = 11**19%1009\r\n\r\na, b, c = 11, 19, 1009\r\ntest = cuda.device_array(2, dtype = np.uint32)\r\n\r\ntest_kernel[1, 1](a,b,c,test)\r\n\r\nprint(a**b%c,test.copy_to_host())\r\n>>> 902 [759 902]\r\n```",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2021-05-27T00:17:41Z",
+  "html_url": "https://github.com/numba/numba/issues/7062",
+  "labels": [
+    "bug",
+    "bug - numerically incorrect"
+  ],
+  "number": 7062,
+  "state": "open",
+  "title": "Runtime integer calculation overflow",
+  "updated_at": "2021-06-01T15:56:31Z"
+}

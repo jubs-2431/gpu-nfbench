@@ -1,0 +1,14 @@
+{
+  "body": "### Description\n\nI am pushing this [issue](https://github.com/PlasmaControl/DESC/issues/1599) upstream; my guess is it will end up being an XLA issue. I will eventually provide a more minimal example than [this example](https://github.com/PlasmaControl/DESC/issues/1599#issuecomment-2677089400) that should end up just being a batched matrix multiply, but it may be worthwhile to make this issue now in case this is a known memory issue.\n\nBasically, a simple `vmap_chunked` operator that copies the batching in chunks logic in `jax.lax.map` is used to batch a function that performs a matrix multiplication.\n\nWhen the ``chunk_size`` is large, this matrix multiplication is performed incorrectly. The results are both wrong and not deterministic. In [this example](https://github.com/PlasmaControl/DESC/issues/1599#issuecomment-2677089400), the issue occurs when `chunk_size=1000`. The issue vanishes when `chunk_size=100`. Perhaps noteworthy is that the program completes faster than should be possible when the issue occurs. For `chunk_size=1000`, the program completes in 10 seconds and for `chunk_size=100` the program takes 15 minutes.\n\nIf this only occurs on machines when memory limits are being approached, it would be much better if JAX or maybe XLA can ensure that the program fails rather than completing silently.\n\n### System info (python version, jaxlib version, accelerator, etc.)\n\n```\nWARNING:2025-02-23 15:25:23,569:jax._src.xla_bridge:969: An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.\njax:    0.4.38\njaxlib: 0.4.38\nnumpy:  1.26.4\npython: 3.12.0 | packaged by Anaconda, Inc. | (main, Oct  2 2023, 17:29:18) [GCC 11.2.0]\ndevice info: cpu-1, 1 local devices\"\nprocess_count: 1\nplatform: uname_result(system='Linux', node='fedora', release='6.12.15-200.fc41.x86_64', version='#1 SMP PREEMPT_DYNAMIC Tue Feb 18 15:24:05 UTC 2025', machine='x86_64')\n```",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2025-02-23T20:34:33Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/26689",
+  "labels": [
+    "bug"
+  ],
+  "number": 26689,
+  "state": "open",
+  "title": "Matrix multiply incorrect for large tensors",
+  "updated_at": "2025-07-30T16:14:16Z"
+}

@@ -1,0 +1,16 @@
+{
+  "body": "Currently math.isnan is supported for checking for `NaN`s, but there's no way to check for `NaT`s easily short of viewing as an int64 and comparing to the minimum value (-9223372036854775808). Simple reproducer:\r\n```python\r\nimport numpy as np\r\nfrom numba import cuda\r\n\r\ntest_in = cuda.to_device(np.array([1,None,3], dtype='datetime64[ms]'))\r\ntest_out = cuda.to_device(np.array([1,2,3]))\r\n\r\n@cuda.jit\r\ndef test_datetime_nat(in_array, out_array):\r\n    i = cuda.grid(1)\r\n    if i < in_array.size:\r\n        if np.isnat(in_array[i]):\r\n            out_array[i] = 100\r\n\r\ntest_datetime_nat.forall(test_in.size)(test_in, test_out)\r\n```",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2019-07-17T15:04:29Z",
+  "html_url": "https://github.com/numba/numba/issues/4333",
+  "labels": [
+    "feature_request",
+    "CUDA",
+    "good first issue"
+  ],
+  "number": 4333,
+  "state": "open",
+  "title": "Support numpy.isnan and numpy.isnat in cuda.jit kernels",
+  "updated_at": "2020-06-03T15:23:47Z"
+}

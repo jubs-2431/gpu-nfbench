@@ -1,0 +1,16 @@
+{
+  "body": "- [ ] I am using the latest released version of Numba (most recent is visible in\r\n the change log (https://github.com/numba/numba/blob/master/CHANGE_LOG).\r\n- [ ] I have included below a minimal working reproducer (if you are unsure how\r\n to write one see http://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports).\r\n\r\nI would prefer to have the following info, maybe also in the cudatoolkit, so that users with low end cards can see why 'cuda' is not so fast as expected (single vs double speed, device - host speed) or why the kernel is 'crashing' (watchdog/TDR \"windows feature\")\r\n\r\nFrom CUDA-Z utility:\r\nWatchdog Enabled : Yes / No\r\nCompute Mode : Default or TCC\r\nPerformance: Host to Device; Device to Host; Host to Host; Single-precision float; Double-precision float;\r\n\r\nFron Nsight Monitor: WDDM TDR Delay; WDDM TDR Enabled\r\n\r\n\r\n",
+  "closed_at": "2021-03-26T17:32:23Z",
+  "comments": 6,
+  "created_at": "2018-08-08T12:08:47Z",
+  "html_url": "https://github.com/numba/numba/issues/3203",
+  "labels": [
+    "feature_request",
+    "CUDA",
+    "good first issue"
+  ],
+  "number": 3203,
+  "state": "closed",
+  "title": "numba.cuda.detect() feature request",
+  "updated_at": "2021-03-26T17:32:24Z"
+}

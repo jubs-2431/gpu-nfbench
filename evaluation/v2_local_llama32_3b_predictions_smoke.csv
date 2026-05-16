@@ -1,0 +1,39 @@
+blind_id,model,prompt_file,max_chars,temperature,elapsed_seconds,primary_failure_label,secondary_cause_labels_pipe_separated,is_true_numerical_failure,confidence,evidence_quote,raw_response,error
+EGNF1000-0001-826741eb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,4.76,dtype_casting,unknown,unclear,low,"scales.to(torch.float8_e8m0fnu, round=""up"")","{
+  ""primary_failure_label"": ""dtype_casting"",
+  ""secondary_cause_labels"": [
+    ""module: type promotion"",
+    ""function request""
+  ],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""scales.to(torch.float8_e8m0fnu, round=\""up\"")"",
+  ""confidence"": null
+}",
+EGNF1000-0002-1b0c5bb2,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.10,performance_only,unknown,unclear,low,"Looking at the compiled code, the float versions call a cuBLAS/GEMM matrix multiply ...","{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""dtype_casting"", ""XLA""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""Looking at the compiled code, the float versions call a cuBLAS/GEMM matrix multiply ..."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0010-2e91f962,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.66,dtype_casting,unknown,unclear,low,"RuntimeError Traceback (most recent call last) Cell In[3], line 1 ----> 1 c_ndi.correlate(xp.array([[1, 2, 3], 2 [4, 5, 6]], dtype=xp.int8), 3 xp.ar","{
+    ""primary_failure_label"": ""dtype_casting"",
+    ""secondary_cause_labels"": [""mode='grid-constant'""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""RuntimeError Traceback (most recent call last) Cell In[3], line 1 ----> 1 c_ndi.correlate(xp.array([[1, 2, 3], 2 [4, 5, 6]], dtype=xp.int8), 3 xp.ar"",
+    ""confidence"": 0.9
+}",
+EGNF1000-0012-0d4ce1cb,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.44,performance_only,unknown,unclear,low,These last days I tried to implement the paper [Stream-K: Work-centric Parallel Decomposition for Dense Matrix-Matrix Multiplication on the GPU](https://arxiv.org/pdf/2301.03598.pdf) in Triton.,"{
+  ""primary_failure_label"": ""performance_only"",
+  ""secondary_cause_labels"": [""dtype_casting""],
+  ""is_true_numerical_failure"": false,
+  ""evidence_quote"": ""These last days I tried to implement the paper [Stream-K: Work-centric Parallel Decomposition for Dense Matrix-Matrix Multiplication on the GPU](https://arxiv.org/pdf/2301.03598.pdf) in Triton."",
+  ""confidence"": 0.8
+}",
+EGNF1000-0017-d48c4d74,llama3.2:3b,evaluation/v2_heldout_llm_baseline_prompts.jsonl,5000,0,2.35,nan_inf,unknown,unclear,low,"This example indicates to `jax.jit` that the input should be in column-major format, but JAX appears to still pass the matrix to XLA in row-major format, resulting in an incorrectly transposed output.","{
+    ""primary_failure_label"": ""nan_inf"",
+    ""secondary_cause_labels"": [""dtype_casting""],
+    ""is_true_numerical_failure"": false,
+    ""evidence_quote"": ""This example indicates to `jax.jit` that the input should be in column-major format, but JAX appears to still pass the matrix to XLA in row-major format, resulting in an incorrectly transposed output."",
+    ""confidence"": 0.8
+}",

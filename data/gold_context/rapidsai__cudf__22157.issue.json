@@ -1,0 +1,14 @@
+{
+  "body": "The `libcudf` implementation of decimal division is really fixed-point division, and does not behave intuitively compared with the accepted conventions in (say) the SQL world.\n\nFor example, dividing `DECIMAL64(200,-2)` by `DECIMAL64(300,-2)` (which is equivalent to `2.00 / 3.00`) gives a result of `DECIMAL64(0,0)` due to the implementation of `fixed_point<>::operator/()` which simply divides the internal integer values and sets the output scale to the input scale difference.\n\nThis is not useful in a an SQL context, where the intuitive result would be something like `DECIMAL64(66,-2)` (i.e. `0.66`).\n\nWhile the intuitively-correct behavior *is* achievable using standard `libcudf` operators, for example by pre-scaling the numerator to account for the denominator scale, the required operator graph translation is therefore not 1:1.\n\nThis has been reported before in this repo, most recently in cuDF issue #17448.\n\nFor the Velox (and Presto) GPU projects, it was decided to write custom kernels to perform decimal division, in order to achieve the desired behavior in a single operator, although the use of that custom operator is of course limited to \"function mode\" (i.e. as an alternative to `cudf::binary_operation(X, Y, cudf::binary_operator::DIV)`) and cannot be used by cudf AST mode. These kernels are in Velox PR 16750.\n\nAdditional custom kernels were implemented to support Presto GPU aggregations (most obviously `AVG`) which require a division of a sum value with specific handling of any overflow. These are currently contained in Velox PR 16751.\n\nFor various reasons, it is not ideal that custom CUDA kernels exist in the Velox source code repo, and so while they will be tolerated for the initial implementation of GPU Decimal, the long-term expectation is that they be moved to the cuDF repo, perhaps as the start of end-product-specific code. While specific to Velox/Presto at first, it is likely that other SQL (and probably non-SQL) implementations will require the same behavior, so ideally the implementation should be general enough, or able to be generalized later as additional applications arise.\n",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2026-04-15T19:16:24Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/22157",
+  "labels": [
+    "feature request"
+  ],
+  "number": 22157,
+  "state": "open",
+  "title": "[FEA] libcudf implementation of \"intuitive\" decimal division",
+  "updated_at": "2026-04-15T23:55:11Z"
+}

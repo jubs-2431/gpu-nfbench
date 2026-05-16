@@ -1,0 +1,12 @@
+mode,answered_rows,total_rows,coverage,accuracy,macro_f1
+full_coverage_vote,191,191,1.000,0.518,0.329
+vote_agreement_at_least_2,191,191,1.000,0.518,0.329
+vote_agreement_at_least_3,188,191,0.984,0.511,0.266
+vote_agreement_at_least_4,160,191,0.838,0.544,0.266
+vote_agreement_at_least_5,108,191,0.565,0.565,0.266
+vote_agreement_at_least_6,51,191,0.267,0.706,0.408
+vote_agreement_at_least_7,23,191,0.120,0.870,0.558
+vote_agreement_at_least_8,3,191,0.016,1.000,1.000
+candidate_and_tfidf_svm_agree,55,191,0.288,0.891,0.560
+candidate_tfidf_svm_and_rag_llm_agree,28,191,0.147,0.964,0.737
+candidate_tfidf_svm_and_zero_llm_agree,16,191,0.084,1.000,1.000

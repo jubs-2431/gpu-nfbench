@@ -1,0 +1,15 @@
+{
+  "body": "I'm reading in a set of Latitude and Longitude coordinates, captured by mobile devices in Ireland for an analysis project. In order to match them to location data for machine learning, I need to convert them into the local coordinate systems.\r\n\r\nThe data is in a CSV file, I am using Pandas to import the file, due to the outstanding negative numbers issue, but I tried reading directly and get similar results. Small errors are being introduced in the process:\r\n\r\nSo if I read the file using read_csv, I get small adjustments in the lat column. (Ignore the lon column, for now, as it contains all negative numbers.)\r\n\r\n![image](https://user-images.githubusercontent.com/8914493/49086806-51962c80-f24d-11e8-8010-e365e197cd74.png)\r\n\r\nIf I then read the file via Pandas, it reads correctly without altering the values:\r\n\r\n![image](https://user-images.githubusercontent.com/8914493/49086854-6ffc2800-f24d-11e8-914e-ea0fa2af9b04.png)\r\n\r\nBut if I then copy the columns to a GPU data frame, it introduces small errors:\r\n\r\n![image](https://user-images.githubusercontent.com/8914493/49086900-928e4100-f24d-11e8-99c4-965065c8a80a.png)\r\n\r\nI've attached the CSV file, it isn't confidential.\r\n\r\n[irish.zip](https://github.com/rapidsai/cudf/files/2620287/irish.zip)",
+  "closed_at": "2019-08-12T23:40:24Z",
+  "comments": 11,
+  "created_at": "2018-11-27T14:09:24Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/406",
+  "labels": [
+    "feature request",
+    "Python"
+  ],
+  "number": 406,
+  "state": "closed",
+  "title": "cuDF printing mismatches formatting precision of Pandas DF printing",
+  "updated_at": "2019-08-12T23:40:24Z"
+}

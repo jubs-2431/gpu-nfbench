@@ -1,0 +1,11 @@
+{
+  "primary_labels": [
+    "crash_compile",
+    "dtype_casting",
+    "nan_inf",
+    "not_numerical_failure",
+    "overflow_underflow",
+    "performance_only",
+    "precision_tolerance"
+  ]
+}

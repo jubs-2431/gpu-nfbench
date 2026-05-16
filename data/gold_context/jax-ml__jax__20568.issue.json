@@ -1,0 +1,15 @@
+{
+  "body": "### Description\r\n\r\n#20008 persists. Opening a new issue, as I can't re-open the old one.\r\n\r\nThe same goes for the matmul code in the [design doc](https://github.com/google/jax/blob/85cb16936c39e9b25326c21cfed19a28fc9ca643/docs/pallas/design.md), after fixing the  typos to be\r\n\r\n```PYTHON\r\n@partial(jax.jit, static_argnames=[\"block_shape\", \"activation\"])\r\ndef matmul(x, y, *, block_shape, activation):\r\n    block_m, block_n, block_k = block_shape\r\n    fused_matmul = pl.pallas_call(partial(matmul_kernel, block_k=block_k, activation=activation), grid=(2, 2),\r\n                                  out_shape=jax.ShapeDtypeStruct((x.shape[0], y.shape[1],), jnp.float32),\r\n                                  in_specs=[pl.BlockSpec(lambda i, j: (i, 0), (block_m, x.shape[1])),\r\n                                            pl.BlockSpec(lambda i, j: (0, j), (y.shape[0], block_n))],\r\n                                  out_specs=pl.BlockSpec(lambda i, j: (i, j), (block_m, block_n)))\r\n    return fused_matmul(x, y)\r\n  ```\r\n     \r\nSimilarly, reducing the matrix size (as mentioned in the original post) to 128x128 masks the issue, but shouldn't be necessary on a DGX-H100.\r\n\r\n### System info (python version, jaxlib version, accelerator, etc.)\r\n\r\nReproduced on two systems (DGX-H100, local PC), with and without docker, with 0.4.25 and 0.4.23. Attaching one set of versions below:\r\n\r\n```\r\njax                           0.4.23\r\njax-triton                    0.1.4\r\njaxlib                        0.4.23+cuda12.cudnn89\r\nnvidia-cublas-cu12            12.3.4.1\r\nnvidia-cuda-cupti-cu12        12.3.101\r\nnvidia-cuda-nvcc-cu12         12.3.107\r\nnvidia-cuda-nvrtc-cu12        12.3.107\r\nnvidia-cuda-runtime-cu12      12.3.101\r\nnvidia-cudnn-cu12             8.9.7.29\r\nnvidia-cufft-cu12             11.0.12.1\r\nnvidia-cusolver-cu12          11.5.4.101\r\nnvidia-cusparse-cu12          12.2.0.103\r\nnvidia-ml-py                  12.535.133\r\nnvidia-nccl-cu12              2.19.3\r\nnvidia-nvjitlink-cu12         12.3.101\r\n```",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2024-04-03T18:04:19Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/20568",
+  "labels": [
+    "bug",
+    "pallas"
+  ],
+  "number": 20568,
+  "state": "open",
+  "title": "Pallas Tutorial outputs RESOURCE_EXHAUSTED (Reopen)",
+  "updated_at": "2024-04-13T19:38:28Z"
+}

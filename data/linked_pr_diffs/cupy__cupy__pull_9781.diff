@@ -1,0 +1,16 @@
+diff --git a/cupy/_environment.py b/cupy/_environment.py
+index 5937acb898b..3f02be9e06e 100644
+--- a/cupy/_environment.py
++++ b/cupy/_environment.py
+@@ -118,9 +118,8 @@ def get_cub_path():
+ 
+ def _get_conda_cuda_path():
+     """This works since CUDA 12.0+."""
+-    conda_prefix = os.environ.get('CONDA_PREFIX')
+-    if conda_prefix is None:
+-        return None
++    conda_prefix = os.environ.get('CONDA_PREFIX', sys.prefix)
++
+     if _PLATFORM_LINUX:
+         plat = platform.machine()
+         if plat == 'aarch64':

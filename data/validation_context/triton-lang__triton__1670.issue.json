@@ -1,0 +1,14 @@
+{
+  "body": "Hey,\r\n\r\nWhen trying to run this kernel here: https://github.com/ELS-RD/kernl/blob/3271fa9f9f56a2568e1e8b2ca566743ca0e3b373/src/kernl/implementations/attention_skinny.py#LL369C24-L369C24 on latest main, I find that compilation crashes when working on the `_fwd_part_2`.  Downgrading to the triton==2.0.0 or triton==2.0.0.post1 fixes this issue.",
+  "closed_at": "2023-07-07T19:22:44Z",
+  "comments": 15,
+  "created_at": "2023-05-15T16:09:48Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/1670",
+  "labels": [
+    "bug"
+  ],
+  "number": 1670,
+  "state": "closed",
+  "title": "Functional Regression in Latest Main",
+  "updated_at": "2023-07-07T19:22:45Z"
+}

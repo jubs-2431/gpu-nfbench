@@ -1,0 +1,14 @@
+{
+  "body": "Dear pylibcudf Team,\n\nI'm writing to share my findings from my ongoing study on pipelining Parquet reading as setup details in #18278. I'm really excited about the new feature that enables the use of streams in pylibcudf. I've conducted tests with this new feature and it successfully creates a pipeline similar to that in libcudf in most of my test cases. Thanks for this feature!\n\nHowever, when I perform small-granularity and short-running reads where each `read_parquet` operation has a runtime of less than 10 ms, I've noticed that the pipeline is gone, `read_parquet` operations from different threads/streams seem to interfere with each other.\n\nI investigated this issue using nsys and discovered two unnecessary synchronization points: one from CUDA synchronization and another from the GIL thread synchronization. I've tried a few workarounds, but I haven't been able to eliminate these problems and overheads.\n\n# GIL thread sync\n\n![Image](https://github.com/user-attachments/assets/76c54d07-2dd2-4fe3-a5fd-e98c0bd2ed46)\n\n![Image](https://github.com/user-attachments/assets/f28fb05c-3c6e-44d9-ab51-4206c914b7b2)\n\nIn this thread, there is a gap time between two `read_parquet` calls, due to a `pthread_cond_timedwait` from GIL.\n\n# CUDA sync\n\n![Image](https://github.com/user-attachments/assets/848df7de-ee48-47da-9778-76eeafa044b0)\n![Image](https://github.com/user-attachments/assets/f4d2ac05-bae5-4416-8465-8ad714936186)\n\nAt the same time, another thread also has an gap time, but due to `cudaStreamSynchronize`, which is called inside of the cpython.\n\nAs you see, these two factors happening at the same time breaks the building of a pipeline and the performance, as I could do in libcudf. ",
+  "closed_at": "2025-04-01T22:05:22Z",
+  "comments": 10,
+  "created_at": "2025-03-23T22:07:24Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/18356",
+  "labels": [
+    "question"
+  ],
+  "number": 18356,
+  "state": "closed",
+  "title": "[QST] [Performance in pylibcudf with stream] Unexpected GIL ThreadSync and CUDASync in pylibcudf Parquet Reading",
+  "updated_at": "2025-04-10T15:17:41Z"
+}

@@ -1,0 +1,14 @@
+{
+  "body": "This is a \"narrative\" type of bug report, aka \"search the code and compare\". No test cases are provided here.\n\nPython and NumPy has each changed their `sum()` implementations beyond ordinary linear summation. Specifically:\n\n* In https://github.com/python/cpython/issues/100425 (and linked, merged PRs), Python moves to a Neumaier algorithm over the previous naive summation. The slowdown was only 20%, which is probably because all the iterator stuff was taking most of the time...\n* In the above CPython issue it was mentioned that NumPy does a partial pairwise summation. This provides an improvement of precision in the average case for basically free. (A difference in order was previously noticed in https://github.com/numba/numba/issues/9819#issuecomment-2508969906.)\n\n### Implementation considerations\n\nNeumaier is very serial because it has a loop-carried dependency. This can be ameliorated by computing partial sums, which also lends nicely to SIMD. That would introduce some difficulty in numeric reproduction *if* the lane count is dynamically determined. Doing it over the same lane count should always result in the same sequence of operations and be perfectly reproducible. Still, any performant choice (i.e. not 1) would produce results different from upstream.\n\nPairwise is quite amenable to parallelization, from multi-node to multi-core to SIMD. There is again a possible reproducibility issue if the order of operations is determined at runtime.\n\nI do not want to think about the CUDA backend.\n\n### Discussion\n\nFor summation methods there are a lot of small decisions that can affect reproducibility. But, like, is that even a goal? The upstream has no qualms about changing how it sums. I don't think numba should care either. So long as the big-O error bounds for the average and worst cases are on the same order as the upstream, it should be happy about it. Reassociation should be permitted so long as it maintains the bounds (e.g. in pairwise, in SIMD reductions).\n\nOh also. There's not just \"the upstream\" because np upstream also uses different orders for different backends. https://arxiv.org/html/2411.00442v1 has some pretty pictures.\n\n... And for what is worth, if Neumaier is chosen to implement the builtin `sum()`, I'd still like a way to get something faster like pairwise.",
+  "closed_at": null,
+  "comments": 0,
+  "created_at": "2026-01-24T14:46:10Z",
+  "html_url": "https://github.com/numba/numba/issues/10412",
+  "labels": [
+    "feature_request"
+  ],
+  "number": 10412,
+  "state": "open",
+  "title": "sum and np.sum() algorithm needs to catch up to improved upstream precision",
+  "updated_at": "2026-01-24T19:57:04Z"
+}

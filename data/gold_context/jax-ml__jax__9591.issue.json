@@ -1,0 +1,17 @@
+{
+  "body": "Attempting to perform a somewhat large FFT results in a coredump rather than an OOM RuntimeError.\r\n\r\nOn my 32 GB v100 GPU, the following code illustrates the problem:\r\n\r\n```python\r\nimport jax\r\nimport jaxlib\r\nfrom jax import jit, vmap\r\nimport jax.numpy as jnp\r\nimport numpy as onp\r\n\r\njax.config.update('jax_enable_x64', True)  # allows use of float64\r\n\r\nprint(f'{jax.devices()[0].device_kind = }')\r\nprint(f'{jax.__version__ = }, {jaxlib.__version__ = }')\r\n\r\ns = jnp.ones(2**31 // onp.float64(0).itemsize) # make a 2 GB array\r\nt = jnp.ones(s.shape[0]+1) # make a 2 GB + 8 B array\r\n\r\n# Works fine\r\ntry:\r\n    print(f'Attempting {s.shape = }, {s.nbytes = }, {s.dtype = }')\r\n    jnp.fft.fft(s).block_until_ready()\r\n    print('FFT on 2GB array succeeded')\r\nexcept RuntimeError as e:\r\n    print('2 GB Failed.')\r\n\r\n# coredumps:\r\ntry:\r\n    print(f'Attempting {t.shape = }, {t.nbytes = }, {t.dtype = }')\r\n    jnp.fft.fft(t).block_until_ready()\r\n    print('FFT on 2 GB + 8 B array succeeded')\r\nexcept RuntimeError as e:\r\n    print('FFT on 2 GB + 8 B array failed')\r\n\r\nprint('Finished all tests')  # never reached\r\n```\r\nThis results in the following output for me:\r\n```\r\njax.devices()[0].device_kind = 'Tesla V100-DGXS-32GB'\r\njax.__version__ = '0.3.0', jaxlib.__version__ = '0.3.0'\r\nAttempting s.shape = (268435456,), s.nbytes = 2147483648, s.dtype = dtype('float64')\r\nFFT on 2GB array succeeded\r\nAttempting t.shape = (268435457,), t.nbytes = 2147483656, t.dtype = dtype('float64')\r\n2022-02-16 07:43:08.806443: F external/org_tensorflow/tensorflow/stream_executor/cuda/cuda_fft.cc:439] failed to initialize batched cufft plan with customized allocator: Failed to make cuFFT batched plan.\r\nAborted (core dumped)\r\n```\r\n\r\nAlso: even if this is fixed to result in a RuntimeError rather than a coredump, is there some way around this relatively small size limitation?  I am using `jnp.fft.rfft2` to perform large image convolutions and I often bump up against this.\r\n\r\nThanks in advance!",
+  "closed_at": null,
+  "comments": 5,
+  "created_at": "2022-02-16T06:50:30Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/9591",
+  "labels": [
+    "bug",
+    "XLA",
+    "P1 (soon)",
+    "NVIDIA GPU"
+  ],
+  "number": 9591,
+  "state": "open",
+  "title": "Attempt to perform FFT requiring batched cufft plan of size > 4 GB causes coredump",
+  "updated_at": "2022-08-24T19:14:43Z"
+}

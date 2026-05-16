@@ -1,0 +1,12 @@
+{
+  "body": "> Compute a double-precision floating-point remainder in the same way as the remainder() function. Argument quo returns part of quotient upon division of x by y. Value quo has the same sign as \r\n>  and may not be the exact quotient but agrees with the exact quotient in the low order 3 bits.\r\n\r\n[__nv_remquof](https://docs.nvidia.com/cuda/libdevice-users-guide/__nv_remquof.html)\r\n[__nv_remquo](https://docs.nvidia.com/cuda/libdevice-users-guide/__nv_remquo.html)\r\n\r\nim unsure how to add it because none of the other functions seem to have multiple outputs\r\n\r\n```python\r\n@impl.extern\r\ndef remquo(arg0, arg1, arg2, _builder=None):\r\n    return extern.elementwise(\"libdevice\", LIBDEVICE_PATH, [arg0, arg1, arg2, ],\r\n                              {(core.dtype(\"fp32\"), core.dtype(\"fp32\"), core.dtype(\"int32\"),): (\"__nv_remquof\", core.dtype(\"fp32\")),\r\n                               (core.dtype(\"fp64\"), core.dtype(\"fp64\"), core.dtype(\"int64\"),): (\"__nv_remquo\", core.dtype(\"fp64\")),\r\n                               }, _builder)\r\n```\r\nresults in\r\n```\r\nValueError: input arg type does not match.Expect one of dict_keys([(triton.language.fp32, triton.language.fp32, triton.language.int32), (triton.language.fp64, triton.language.fp64, triton.language.int64)]), got (triton.language.fp32, triton.language.fp32, triton.language.fp32)\r\n```",
+  "closed_at": null,
+  "comments": 3,
+  "created_at": "2023-08-24T22:27:36Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/2176",
+  "labels": [],
+  "number": 2176,
+  "state": "open",
+  "title": "add libdevice.remquo",
+  "updated_at": "2023-09-30T12:58:33Z"
+}

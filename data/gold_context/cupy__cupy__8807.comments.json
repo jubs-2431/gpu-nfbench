@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "NONE",
+    "body": "`cupy.mod` is just a variable alias for calling the `cupy.remainder` function. We would need to change the remainder function for the inclusion of inf. ",
+    "created_at": "2024-12-16T14:47:47Z",
+    "html_url": "https://github.com/cupy/cupy/issues/8807#issuecomment-2545823971",
+    "id": 2545823971,
+    "issue_url": "https://api.github.com/repos/cupy/cupy/issues/8807",
+    "node_id": "IC_kwDOBFKgkM6XvjDj",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/cupy/cupy/issues/comments/2545823971/reactions"
+    },
+    "updated_at": "2024-12-16T14:47:47Z",
+    "url": "https://api.github.com/repos/cupy/cupy/issues/comments/2545823971",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/125898823?v=4",
+      "events_url": "https://api.github.com/users/naxatra2/events{/privacy}",
+      "followers_url": "https://api.github.com/users/naxatra2/followers",
+      "following_url": "https://api.github.com/users/naxatra2/following{/other_user}",
+      "gists_url": "https://api.github.com/users/naxatra2/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/naxatra2",
+      "id": 125898823,
+      "login": "naxatra2",
+      "node_id": "U_kgDOB4EQRw",
+      "organizations_url": "https://api.github.com/users/naxatra2/orgs",
+      "received_events_url": "https://api.github.com/users/naxatra2/received_events",
+      "repos_url": "https://api.github.com/users/naxatra2/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/naxatra2/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/naxatra2/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/naxatra2",
+      "user_view_type": "public"
+    }
+  }
+]

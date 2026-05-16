@@ -1,0 +1,8 @@
+gold_primary_failure,issues,share
+dtype_casting,73,38.2%
+overflow_underflow,37,19.4%
+nan_inf,37,19.4%
+not_numerical_failure,22,11.5%
+precision_tolerance,13,6.8%
+performance_only,5,2.6%
+crash_compile,4,2.1%

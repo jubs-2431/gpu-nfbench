@@ -1,0 +1,14 @@
+{
+  "body": "### Description\n\n`jax.nn.dot_product_attention` triggers a `FloatingPointError` when `jax.debug_infs(True)` is enabled.\n\nThe inputs are all zeros with `float64` dtype, and the mask is a simple boolean mask. The expected attention output should be finite, but JAX reports an invalid `inf` value in `convert_element_type`.\n\nMinimal reproducible example:\n\n```\nimport sys\n\ntry:\n    import jax\n    import jax.numpy as jnp\n    import numpy as np\nexcept ImportError as e:\n    print(f\"missing dep: {e}\")\n    sys.exit(2)\n\ndef main() -> int:\n    T, S, K, N, H = 5, 7, 3, 6, 11\n    mask = np.r_[:S] <= S // 2\n\n    try:\n        jax.config.update(\"jax_enable_x64\", True)\n        with jax.debug_infs(True):\n            out = jax.nn.dot_product_attention(\n                np.zeros((T, N, H), dtype=np.float64),\n                np.zeros((S, K, H), dtype=np.float64),\n                np.zeros((S, K, H), dtype=np.float64),\n                mask=mask,\n            )\n            out.block_until_ready()\n        print(\"NOT REPRODUCED: no FloatingPointError with debug_infs=True\")\n        return 1\n    except FloatingPointError as e:\n        print(f\"BUG REPRODUCED: FloatingPointError triggered: {e}\")\n        return 0\n    except Exception as e:\n        print(f\"NOT REPRODUCED: different exception {type(e).__name__}: {e}\")\n        return 1\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n```\n\n### System info (python version, jaxlib version, accelerator, etc.)\n\n```\nWARNING:2026-05-07 00:33:38,915:jax._src.xla_bridge:794: An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.\njax:    0.6.2\njaxlib: 0.6.2\nnumpy:  2.2.6\npython: 3.10.20 (main, Mar 11 2026, 17:46:40) [GCC 14.3.0]\ndevice info: cpu-1, 1 local devices\nprocess_count: 1\nplatform: uname_result(system='Linux', node='MSI', release='5.15.167.4-microsoft-standard-WSL2', version='#1 SMP Tue Nov 5 00:21:55 UTC 2024', machine='x86_64')\n\nnvidia-smi:\nNVIDIA-SMI 545.23.06\nDriver Version: 545.92\nCUDA Version: 12.3\nGPU: NVIDIA GeForce RTX 3080, 8192 MiB\n\nNote: Reproduced on CPU fallback because CUDA-enabled jaxlib is not installed.\n```",
+  "closed_at": "2026-05-07T19:45:56Z",
+  "comments": 1,
+  "created_at": "2026-05-06T14:35:00Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/37422",
+  "labels": [
+    "bug"
+  ],
+  "number": 37422,
+  "state": "closed",
+  "title": "dot_product_attention triggers FloatingPointError in convert_element_type with float64 mask and debug_infs=True",
+  "updated_at": "2026-05-07T19:45:56Z"
+}

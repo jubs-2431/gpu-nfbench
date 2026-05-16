@@ -1,0 +1,15 @@
+{
+  "body": "The FP32 produces incorrect results, while FP16 works correctly.\n### Describe the bug\n\n```\nimport torch\nimport triton\nimport triton.language as tl\n\n@triton.jit\ndef kernel(q_ptr, k_ptr, v_ptr, o_ptr,\n           M: tl.constexpr,\n           N: tl.constexpr,\n           K: tl.constexpr,\n           ):\n    rm = tl.arange(0, M)   # (M,)\n    rk = tl.arange(0, K)   # (K,)\n    cn = tl.arange(0, N)   # (N,)\n\n    q_ptrs = q_ptr + rm[:, None] * K + rk[None, :]\n    q = tl.load(q_ptrs)    # (M, K)\n\n    k_ptrs = k_ptr + rk[:, None] + cn[None, :] * K\n    k = tl.load(k_ptrs)    # (K, N)\n\n    v_ptrs = v_ptr + cn[:, None] * K + rk[None, :]\n    v = tl.load(v_ptrs)    # (N, K)\n\n    p = tl.dot(q, k, out_dtype=tl.float32)   # (M, N)\n    p = p.to(q_ptr.type.element_ty)\n    acc = tl.dot(p, v, out_dtype=tl.float32) # (M, K)\n\n    o_ptrs = o_ptr + rm[:, None] * K + rk[None, :]\n    tl.store(o_ptrs, acc.to(o_ptr.type.element_ty))\n\n\ndef triton_gemm(q, k, v):\n    M, K = q.shape\n    N, _ = k.shape\n    out = torch.empty((M, K), device=q.device, dtype=q.dtype)\n    print_ptr_offsets(M, N, K)\n    kernel[(1,)](q, k, v, out, M, N, K)\n    return out\n\n\nif __name__ == \"__main__\":\n    dtype = torch.float32 # dtype=torch.float16 is correct\n    torch.manual_seed(0)\n    M, K, N = 32, 64, 32\n\n    q = torch.randn((M, K), dtype=dtype, device=\"cuda\")\n    k = torch.randn((N, K), dtype=dtype, device=\"cuda\")\n    v = torch.randn((N, K), dtype=dtype, device=\"cuda\")\n\n    out = triton_gemm(q, k, v)\n\n    ref = q @ k.T @ v\n\n    torch.testing.assert_close(ref, out, atol=1e-2, rtol=1e-2)\n    print(\"pass\")\n\n```\nTraceback (most recent call last):\n  File \"dot_block_n_kv_fp32_clean.py\", line 70, in <module>\n    torch.testing.assert_close(ref, out, atol=1e-2, rtol=1e-2)\n  File \"/.local/lib/python3.10/site-packages/torch/testing/_comparison.py\", line 1519, in assert_close\n    raise error_metas[0].to_error(msg)\nAssertionError: Tensor-likes are not close!\n\nMismatched elements: 32 / 2048 (1.6%)\nGreatest absolute difference: 0.063812255859375 at index (24, 26) (up to 0.01 allowed)\nGreatest relative difference: 9.192355155944824 at index (15, 2) (up to 0.01 allowed)\n\n### Environment details\n\nTriton: 3.4, 3.3 \nGPU: NVIDIA A100",
+  "closed_at": "2025-10-09T15:17:21Z",
+  "comments": 4,
+  "created_at": "2025-10-09T07:16:24Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/8407",
+  "labels": [
+    "bug"
+  ],
+  "number": 8407,
+  "pull_request": null,
+  "state": "closed",
+  "title": "Unexpected FP32 inaccuracy in simple consecutive dot (q @ k.T @ v)",
+  "updated_at": "2025-11-06T15:03:10Z"
+}

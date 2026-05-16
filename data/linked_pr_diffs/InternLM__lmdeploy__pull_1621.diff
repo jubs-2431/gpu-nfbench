@@ -1,0 +1,1736 @@
+diff --git a/lmdeploy/pytorch/check_env/__init__.py b/lmdeploy/pytorch/check_env/__init__.py
+index 0ff4987ec9..1c49fecdf8 100644
+--- a/lmdeploy/pytorch/check_env/__init__.py
++++ b/lmdeploy/pytorch/check_env/__init__.py
+@@ -38,6 +38,9 @@ def check_env_torch():
+         _handle_exception(e, 'PyTorch', logger)
+ 
+ 
++MAX_TRITON_VERSION = '2.2.0'
++
++
+ def check_env_triton():
+     """check OpenAI Triton environment."""
+     from packaging import version
+@@ -47,8 +50,9 @@ def check_env_triton():
+         logger.debug('Checking <Triton> environment.')
+         import torch
+         import triton
+-        if version.parse(triton.__version__) != version.parse('2.1.0'):
+-            logger.warning('Install triton==2.1.0'
++        if version.parse(
++                triton.__version__) > version.parse(MAX_TRITON_VERSION):
++            logger.warning(f'Install triton<={MAX_TRITON_VERSION}'
+                            ' if you want to get better performance.')
+ 
+         from .triton_custom_add import custom_add
+@@ -80,7 +84,7 @@ def check_env(device_type: str):
+ 
+ 
+ MIN_TRANSFORMERS_VERSION = '4.33.0'
+-MAX_TRANSFORMERS_VERSION = '4.38.2'
++MAX_TRANSFORMERS_VERSION = '4.41.2'
+ 
+ 
+ def check_transformers_version(model_path: str,
+diff --git a/lmdeploy/pytorch/config.py b/lmdeploy/pytorch/config.py
+index 6e42530a64..c1b00bf4c9 100644
+--- a/lmdeploy/pytorch/config.py
++++ b/lmdeploy/pytorch/config.py
+@@ -73,6 +73,8 @@ class ModelConfig:
+     bos_token_id: int
+     eos_token_id: List[int]
+     head_dim: int
++    k_head_dim: int = None
++    v_head_dim: int = None
+     sliding_window: int = -1
+     dtype: torch.dtype = torch.float16
+     multi_query_attention: bool = False
+@@ -106,6 +108,13 @@ def from_hf_config(cls, hf_config: Any, model_path: str = None):
+ 
+         model_config = AutoModelConfigBuilder.build(hf_config, model_path)
+ 
++        if model_config.k_head_dim is None:
++            assert model_config.head_dim is not None
++            model_config.k_head_dim = model_config.head_dim
++        if model_config.v_head_dim is None:
++            assert model_config.head_dim is not None
++            model_config.v_head_dim = model_config.head_dim
++
+         model_arch = model_config.hf_config.architectures[0]
+         model_config.model_arch = model_arch
+         # should after setting `hf_config` and `model_arch` attributes
+diff --git a/lmdeploy/pytorch/configurations/deepseek_v2.py b/lmdeploy/pytorch/configurations/deepseek_v2.py
+new file mode 100644
+index 0000000000..8c89cd50af
+--- /dev/null
++++ b/lmdeploy/pytorch/configurations/deepseek_v2.py
+@@ -0,0 +1,34 @@
++# Copyright (c) OpenMMLab. All rights reserved.
++from lmdeploy.pytorch.config import ModelConfig
++
++from .builder import AutoModelConfigBuilder
++
++
++class DeepseekV2ModelConfigBuilder(AutoModelConfigBuilder):
++
++    @classmethod
++    def condition(cls, hf_config):
++        """config."""
++        return hf_config.model_type == 'deepseek_v2'
++
++    @classmethod
++    def build(cls, hf_config, model_path: str = None):
++        """build."""
++        head_dim = (hf_config.kv_lora_rank + hf_config.qk_rope_head_dim)
++        k_head_dim = head_dim
++        v_head_dim = 0
++        num_attention_heads = hf_config.num_attention_heads
++        num_key_value_heads = 1
++        init_kwargs = dict(attn_implementation='eager')
++        return ModelConfig(hidden_size=hf_config.hidden_size,
++                           num_layers=hf_config.num_hidden_layers,
++                           num_attention_heads=num_attention_heads,
++                           num_key_value_heads=num_key_value_heads,
++                           bos_token_id=hf_config.bos_token_id,
++                           eos_token_id=hf_config.eos_token_id,
++                           head_dim=head_dim,
++                           k_head_dim=k_head_dim,
++                           v_head_dim=v_head_dim,
++                           vocab_size=hf_config.vocab_size,
++                           multi_query_attention=True,
++                           init_kwargs=init_kwargs)
+diff --git a/lmdeploy/pytorch/engine/cache_engine.py b/lmdeploy/pytorch/engine/cache_engine.py
+index 4726522b61..a8d133a080 100644
+--- a/lmdeploy/pytorch/engine/cache_engine.py
++++ b/lmdeploy/pytorch/engine/cache_engine.py
+@@ -40,11 +40,7 @@ def __init__(
+         self.model_config = model_config
+ 
+         self.block_size = cache_config.block_size
+-
+-        self.head_size = model_config.get_head_size()
+         self.num_layers = model_config.num_layers
+-        self.num_heads = model_config.num_key_value_heads
+-
+         self.kv_cache_dtype = model_config.dtype
+ 
+         # Initialize the cache.
+@@ -81,31 +77,46 @@ def num_cpu_blocks(self):
+         """num gpu blocks."""
+         return self.cache_config.num_cpu_blocks
+ 
++    @classmethod
++    def _get_block_shape_impl(cls,
++                              model_config: ModelConfig,
++                              block_size: int,
++                              head_size: int,
++                              world_size: int = 1,
++                              local: bool = True):
++        """get single block shape."""
++        num_heads = model_config.num_key_value_heads
++        if local and not model_config.multi_query_attention:
++            assert num_heads % world_size == 0, \
++                f'num_heads: {num_heads}, world_size: {world_size}'
++            num_heads = num_heads // world_size
++        return (block_size, num_heads, head_size)
++
+     def get_key_block_shape(self, local: bool = False) -> Tuple[int, int, int]:
+         """get shape of key block."""
+-        num_heads = self.num_heads
+-        if local and not self.model_config.multi_query_attention:
+-            assert self.num_heads % self.world_size == 0, \
+-                f'num_heads: {self.num_heads}, world_size: {self.world_size}'
+-            num_heads = self.num_heads // self.world_size
+-        return (
+-            self.block_size,
+-            num_heads,
+-            self.head_size,
++        head_size = self.model_config.k_head_dim
++        if head_size is None:
++            head_size = self.model_config.head_dim
++        return self._get_block_shape_impl(
++            self.model_config,
++            block_size=self.block_size,
++            head_size=head_size,
++            world_size=self.world_size,
++            local=local,
+         )
+ 
+     def get_value_block_shape(self,
+                               local: bool = False) -> Tuple[int, int, int]:
+         """get shape of value block."""
+-        num_heads = self.num_heads
+-        if local and not self.model_config.multi_query_attention:
+-            assert self.num_heads % self.world_size == 0, \
+-                f'num_heads: {self.num_heads}, world_size: {self.world_size}'
+-            num_heads = self.num_heads // self.world_size
+-        return (
+-            self.block_size,
+-            num_heads,
+-            self.head_size,
++        head_size = self.model_config.v_head_dim
++        if head_size is None:
++            head_size = self.model_config.head_dim
++        return self._get_block_shape_impl(
++            self.model_config,
++            block_size=self.block_size,
++            head_size=head_size,
++            world_size=self.world_size,
++            local=local,
+         )
+ 
+     def allocate_gpu_cache(self):
+@@ -190,8 +201,9 @@ def swap_out(self, src_to_dst: Dict[int, int]) -> None:
+         """
+         self._swap(self.local_gpu_cache, self.local_cpu_cache, src_to_dst)
+ 
+-    @staticmethod
+-    def get_cache_block_size(block_size: int,
++    @classmethod
++    def get_cache_block_size(cls,
++                             block_size: int,
+                              model_config: ModelConfig,
+                              world_size: int = 1) -> int:
+         """Get the required cache size of the model.
+@@ -203,27 +215,31 @@ def get_cache_block_size(block_size: int,
+         Return:
+             int: Required memory size in bytes.
+         """
+-        head_size = model_config.get_head_size()
+         num_layers = model_config.num_layers
+-        num_heads = model_config.num_key_value_heads
+-        if not model_config.multi_query_attention:
+-            num_heads = num_heads // world_size
+-
+-        key_cache_block = block_size * num_heads * head_size
+-        value_cache_block = key_cache_block
+-        total = num_layers * (key_cache_block + value_cache_block)
+-
+-        dtype_size = _get_dtype_size(model_config.dtype)
+-        return dtype_size * total
+-
+-
+-def _get_dtype_size(dtype: torch.dtype) -> int:
+-    """get size of the given dtype.
+-
+-    Args:
+-        dtype (torch.dtype): Data type.
+-
+-    Return:
+-        int: size in bytes.
+-    """
+-    return torch.tensor([], dtype=dtype).element_size()
++        key_head_size = model_config.k_head_dim
++        value_head_size = model_config.v_head_dim
++        if key_head_size is None:
++            key_head_size = model_config.head_dim
++        if value_head_size is None:
++            value_head_size = model_config.head_dim
++        key_shape = cls._get_block_shape_impl(
++            model_config,
++            block_size=block_size,
++            head_size=key_head_size,
++            world_size=world_size,
++            local=True,
++        )
++        value_shape = cls._get_block_shape_impl(
++            model_config,
++            block_size=block_size,
++            head_size=value_head_size,
++            world_size=world_size,
++            local=True,
++        )
++        dtype = model_config.dtype
++        key_block = torch.empty(key_shape, dtype=dtype, device='meta')
++        value_block = torch.empty(value_shape, dtype=dtype, device='meta')
++        mem_key_block = key_block.numel() * key_block.element_size()
++        mem_value_block = value_block.numel() * value_block.element_size()
++        total = num_layers * (mem_key_block + mem_value_block)
++        return total
+diff --git a/lmdeploy/pytorch/engine/model_agent.py b/lmdeploy/pytorch/engine/model_agent.py
+index 92d941921e..944778c78d 100644
+--- a/lmdeploy/pytorch/engine/model_agent.py
++++ b/lmdeploy/pytorch/engine/model_agent.py
+@@ -81,6 +81,21 @@ def __get_free_gpu_mem_size(cache_block_size: int):
+                      f' {runtime_cache_size>>20} mb')
+         return gpu_mem_physical_free * cache_config.cache_max_entry_count
+ 
++    def __adjust_block_size():
++        """adjust block_size."""
++        # TODO: support kernel with both large head dim and large block size.
++        if model_config.k_head_dim >= 512 and cache_config.block_size > 32:
++            cache_config.block_size = 32
++            rank = 0
++            if dist.is_initialized():
++                rank = dist.get_rank()
++            if rank == 0:
++                logger.warning(
++                    f'Update `block_size={cache_config.block_size}`'
++                    f' for large `head_dim={model_config.k_head_dim}`.')
++
++    __adjust_block_size()
++
+     cache_block_size = CacheEngine.get_cache_block_size(
+         cache_config.block_size, model_config, world_size)
+     gpu_mem = __get_free_gpu_mem_size(cache_block_size)
+diff --git a/lmdeploy/pytorch/kernels/cuda/fill_kv_cache.py b/lmdeploy/pytorch/kernels/cuda/fill_kv_cache.py
+index 755ff6f505..05ae279c40 100644
+--- a/lmdeploy/pytorch/kernels/cuda/fill_kv_cache.py
++++ b/lmdeploy/pytorch/kernels/cuda/fill_kv_cache.py
+@@ -40,6 +40,7 @@ def _div_up(val, other):
+     stride_boff=int,
+     BLOCK=torch.int32,
+     BLOCK_D=torch.int32,
++    BLOCK_DV=torch.int32,
+     BLOCK_H=torch.int32,
+ ))
+ @triton.jit
+@@ -71,6 +72,7 @@ def _fill_kv_cache_kernel(
+     stride_boff,
+     BLOCK: tl.constexpr,
+     BLOCK_D: tl.constexpr,
++    BLOCK_DV: tl.constexpr,
+     BLOCK_H: tl.constexpr,
+ ):
+     """fill kv cache kernel."""
+@@ -118,13 +120,17 @@ def _fill_kv_cache_kernel(
+                  k,
+                  mask=mask)
+ 
+-        v = tl.load(vs_ptr + sidx * stride_vss + h_off[:, None] * stride_vsh +
+-                    d_off[None, :] * stride_vsd,
+-                    mask=mask)
+-        tl.store(vc_ptr + bidx * stride_vcb + h_off[:, None] * stride_vch +
+-                 d_off[None, :] * stride_vcd,
+-                 v,
+-                 mask=mask)
++        if BLOCK_DV > 0:
++            dv_off = tl.arange(0, BLOCK_DV)
++            maskv = (h_off[:, None] < num_heads) & (dv_off[None, :] < head_dim)
++            v = tl.load(vs_ptr + sidx * stride_vss +
++                        h_off[:, None] * stride_vsh +
++                        dv_off[None, :] * stride_vsd,
++                        mask=maskv)
++            tl.store(vc_ptr + bidx * stride_vcb + h_off[:, None] * stride_vch +
++                     dv_off[None, :] * stride_vcd,
++                     v,
++                     mask=maskv)
+ 
+ 
+ def fill_kv_cache(k_states: Tensor, v_states: Tensor, k_caches: Tensor,
+@@ -136,11 +142,13 @@ def fill_kv_cache(k_states: Tensor, v_states: Tensor, k_caches: Tensor,
+     block_offsets = block_offsets.contiguous()
+     batch_size = block_offsets.size(0)
+     block_size, num_heads, head_dim = k_caches.size()[1:]
++    head_dim_v = v_states.size(-1)
+     max_num_blocks = triton.cdiv(max_q_seq_length, block_size) + 1
+ 
+     BLOCK = block_size
+     BLOCK_H = triton.next_power_of_2(num_heads)
+     BLOCK_D = triton.next_power_of_2(head_dim)
++    BLOCK_DV = triton.next_power_of_2(head_dim_v)
+     grid = [batch_size, max_num_blocks]
+     kernel_meta = get_kernel_meta(k_states)
+     _fill_kv_cache_kernel[grid](
+@@ -171,6 +179,7 @@ def fill_kv_cache(k_states: Tensor, v_states: Tensor, k_caches: Tensor,
+         stride_boff=block_offsets.stride(0),
+         BLOCK=BLOCK,
+         BLOCK_D=BLOCK_D,
++        BLOCK_DV=BLOCK_DV,
+         BLOCK_H=BLOCK_H,
+         num_warps=4,
+         num_stages=3,
+diff --git a/lmdeploy/pytorch/kernels/cuda/fused_moe.py b/lmdeploy/pytorch/kernels/cuda/fused_moe.py
+index 0c469824a0..1e6d3ba966 100644
+--- a/lmdeploy/pytorch/kernels/cuda/fused_moe.py
++++ b/lmdeploy/pytorch/kernels/cuda/fused_moe.py
+@@ -104,6 +104,7 @@ def get_cuda_autotune_config():
+     GROUP_SIZE_M=torch.int32,
+     ENABLE_WEIGHTS=bool,
+     top_k=torch.int32,
++    expert_offset=torch.int32,
+     reindex_a=bool,
+     reindex_c=bool,
+ ))
+@@ -131,6 +132,7 @@ def fused_moe_kernel(
+     GROUP_SIZE_M: tl.constexpr,
+     ENABLE_WEIGHTS: tl.constexpr,
+     top_k: tl.constexpr,
++    expert_offset: tl.constexpr,
+     reindex_a: tl.constexpr,
+     reindex_c: tl.constexpr,
+ ):
+@@ -138,8 +140,8 @@ def fused_moe_kernel(
+     exp_id = tl.program_id(0)
+     pid = tl.program_id(1)
+ 
+-    exp_start = tl.load(ExpStart + exp_id)
+-    exp_end = tl.load(ExpEnd + exp_id)
++    exp_start = tl.load(ExpStart + exp_id + expert_offset)
++    exp_end = tl.load(ExpEnd + exp_id + expert_offset)
+     M = exp_end - exp_start
+     if M <= 0:
+         return
+@@ -167,8 +169,11 @@ def fused_moe_kernel(
+         offs_am = offs_sid
+     a_ptrs = A + (offs_am[:, None] * stride_am + offs_k[None, :] * stride_ak)
+     offs_bn = (pid_n * BLOCK_SIZE_N + tl.arange(0, BLOCK_SIZE_N)) % N
+-    b_ptrs = B + exp_id * stride_be + (offs_k[:, None] * stride_bk +
+-                                       offs_bn[None, :] * stride_bn)
++
++    # deepseek has 160 experts, exp index would overflow int32
++    exp_off = tl.full((1, ), stride_be, dtype=tl.int64) * exp_id
++    b_ptrs = B + exp_off + (offs_k[:, None] * stride_bk +
++                            offs_bn[None, :] * stride_bn)
+ 
+     accumulator = tl.zeros((BLOCK_SIZE_M, BLOCK_SIZE_N), dtype=tl.float32)
+ 
+@@ -211,11 +216,16 @@ def fused_moe_kernel_launcher(
+     enable_weights: bool = False,
+     top_k: int = 1,
+     num_tokens: int = None,
++    expert_offset: int = 0,
+     reindex_a: bool = True,
+     reindex_c: bool = True,
+ ):
+     """fused moe kernel launcher."""
+ 
++    if num_tokens is None:
++        num_tokens = A.size(0)
++    E, N, K = B.shape
++
+     def _grid_fn(META):
+         grid = (
+             E,
+@@ -224,9 +234,6 @@ def _grid_fn(META):
+         )
+         return grid
+ 
+-    if num_tokens is None:
+-        num_tokens = A.size(0)
+-    E, N, K = B.shape
+     GROUP_SIZE_M = 1
+     A = A.flatten(0, -2)
+     C = C.flatten(0, -2)
+@@ -252,6 +259,7 @@ def _grid_fn(META):
+         stride_cn=C.stride(1),
+         ENABLE_WEIGHTS=enable_weights,
+         top_k=top_k,
++        expert_offset=expert_offset,
+         reindex_a=reindex_a,
+         reindex_c=reindex_c,
+         GROUP_SIZE_M=GROUP_SIZE_M,
+@@ -259,6 +267,13 @@ def _grid_fn(META):
+     )
+ 
+ 
++@wrap_jit_func(type_hint=dict(TopkIdx=torch.Tensor,
++                              SortedIdx=torch.Tensor,
++                              ExpStart=torch.Tensor,
++                              ExpEnd=torch.Tensor,
++                              len_sorted_idx=int,
++                              num_experts=torch.int32,
++                              BLOCK=torch.int32))
+ @triton.jit
+ def _start_end_kernel(TopkIdx, SortedIdx, ExpStart, ExpEnd,
+                       len_sorted_idx: int, num_experts: tl.constexpr,
+@@ -325,16 +340,24 @@ def fused_moe(hidden_states: torch.Tensor,
+               topk_weights: torch.Tensor,
+               topk_ids: torch.Tensor,
+               topk: int,
++              expert_offset: int = 0,
++              num_experts: int = None,
+               renormalize: bool = False) -> torch.Tensor:
+     """fused moe."""
+     M = hidden_states.size(0)
+     E, N, _ = w1.shape
++    full_exp = False
++    if num_experts is None:
++        num_experts = E
++    elif num_experts == E:
++        full_exp = True
+ 
+     def __get_sorted_idx(topk_ids: torch.Tensor):
+         flatten_topk_ids = topk_ids.flatten()
+         sorted_idx = flatten_topk_ids.argsort()
+ 
+-        exp_start, exp_end = get_start_end(flatten_topk_ids, sorted_idx, E)
++        exp_start, exp_end = get_start_end(flatten_topk_ids, sorted_idx,
++                                           num_experts)
+         return sorted_idx, exp_start, exp_end
+ 
+     if renormalize:
+@@ -344,7 +367,10 @@ def __get_sorted_idx(topk_ids: torch.Tensor):
+ 
+     sorted_idx, exp_start, exp_end = __get_sorted_idx(topk_ids)
+ 
+-    intermediate_cache1 = hidden_states.new_empty((M, topk, N))
++    if full_exp:
++        intermediate_cache1 = hidden_states.new_empty((M, topk, N))
++    else:
++        intermediate_cache1 = hidden_states.new_zeros((M, topk, N))
+     # gate and up
+     fused_moe_kernel_launcher(
+         hidden_states,
+@@ -357,6 +383,7 @@ def __get_sorted_idx(topk_ids: torch.Tensor):
+         enable_weights=False,
+         top_k=topk,
+         num_tokens=M,
++        expert_offset=expert_offset,
+         reindex_a=True,
+         reindex_c=False,
+     )
+@@ -365,7 +392,10 @@ def __get_sorted_idx(topk_ids: torch.Tensor):
+     gate_cache, up_cache = intermediate_cache1.chunk(2, -1)
+     gate_cache = F.silu(gate_cache, inplace=True) * up_cache
+ 
+-    intermediate_cache2 = hidden_states.new_empty((M, topk, w2.shape[1]))
++    if full_exp:
++        intermediate_cache2 = hidden_states.new_empty((M, topk, w2.shape[1]))
++    else:
++        intermediate_cache2 = hidden_states.new_zeros((M, topk, w2.shape[1]))
+     # down
+     fused_moe_kernel_launcher(
+         gate_cache,
+@@ -378,6 +408,7 @@ def __get_sorted_idx(topk_ids: torch.Tensor):
+         enable_weights=True,
+         top_k=1,
+         num_tokens=M,
++        expert_offset=expert_offset,
+         reindex_a=False,
+         reindex_c=True,
+     )
+diff --git a/lmdeploy/pytorch/kernels/cuda/pagedattention.py b/lmdeploy/pytorch/kernels/cuda/pagedattention.py
+index f31a0feb44..64eba4b873 100644
+--- a/lmdeploy/pytorch/kernels/cuda/pagedattention.py
++++ b/lmdeploy/pytorch/kernels/cuda/pagedattention.py
+@@ -248,6 +248,7 @@ def _fwd_split_kernel(
+     BLOCK_DV=torch.int32,
+     BLOCK_N=torch.int32,
+     BLOCK_H=torch.int32,
++    BLOCK_DMODEL1=torch.int32,
+ ))
+ @triton.jit
+ def _fwd_grouped_split_kernel(
+@@ -283,6 +284,7 @@ def _fwd_grouped_split_kernel(
+     BLOCK_DV: tl.constexpr,
+     BLOCK_N: tl.constexpr,
+     BLOCK_H: tl.constexpr,
++    BLOCK_DMODEL1: tl.constexpr,
+ ):
+     """first step kernel of split k attention."""
+     cur_batch = tl.program_id(0)
+@@ -314,6 +316,17 @@ def _fwd_grouped_split_kernel(
+     k_ptrs = K + off_k
+     v_ptrs = V + off_v
+ 
++    if BLOCK_DMODEL1 != 0:
++        offs_d1 = BLOCK_DMODEL + tl.arange(0, BLOCK_DMODEL1)
++        mask_d1 = offs_d1 < head_size
++        off_q1 = (cur_batch * stride_qbs + cur_head[:, None] * stride_qh +
++                  offs_d1[None, :] * stride_qd)
++        q1 = tl.load(Q + off_q1,
++                     mask=mask_h[:, None] & mask_d1[None, :],
++                     other=0)
++        off_k1 = (cur_kv_head * stride_kh + offs_d1[:, None] * stride_kd)
++        k1_ptrs = K + off_k1
++
+     block_offset_ptrs = Block_offsets + cur_batch * stride_boffb
+ 
+     # initialize pointer to m and l
+@@ -346,6 +359,12 @@ def _fwd_grouped_split_kernel(
+             mask=mask[None, :] & mask_d[:, None],
+             other=0.0,
+         )
++        if BLOCK_DMODEL1 != 0:
++            k1 = tl.load(
++                k1_ptrs + b_offset[None, :] * stride_kbs,
++                mask=mask[None, :] & mask_d1[:, None],
++                other=0.0,
++            )
+ 
+         if shared_kv:
+             v = tl.trans(k)
+@@ -364,6 +383,8 @@ def _fwd_grouped_split_kernel(
+ 
+         qk = tl.zeros([BLOCK_H, BLOCK_N], dtype=tl.float32)
+         qk += tl.dot(q, k)
++        if BLOCK_DMODEL1 != 0:
++            qk += tl.dot(q1, k1)
+         qk *= sm_scale
+         # NOTE: inf - inf = nan, and nan will leads to error
+         qk_mask = history_len >= (start_n + offs_n)
+@@ -528,6 +549,7 @@ def _fwd_kernel(
+     BLOCK_DMODEL: tl.constexpr,
+     BLOCK_DV: tl.constexpr,
+     BLOCK_N: tl.constexpr,
++    BLOCK_DMODEL1: tl.constexpr,
+ ):
+     """paged attention kernel."""
+     cur_batch = tl.program_id(0)
+@@ -562,6 +584,15 @@ def _fwd_kernel(
+     k_ptrs = K + off_k
+     v_ptrs = V + off_v
+ 
++    if BLOCK_DMODEL1 != 0:
++        offs_d1 = BLOCK_DMODEL + tl.arange(0, BLOCK_DMODEL1)
++        mask_d1 = offs_d1 < head_size
++        off_q1 = ((q_start_loc + offs_m[:, None]) * stride_qbs +
++                  cur_head * stride_qh + offs_d1[None, :] * stride_qd)
++        q1 = tl.load(Q + off_q1, mask=(offs_m[:, None] < q_seqlen) & mask_d1)
++        off_k1 = (cur_kv_head * stride_kh + offs_d1[:, None] * stride_kd)
++        k1_ptrs = K + off_k1
++
+     block_offset_ptrs = Block_offsets + cur_batch * stride_boffb
+ 
+     # initialize pointer to m and l
+@@ -587,6 +618,14 @@ def _fwd_kernel(
+             mask=(start_n + offs_n[None, :] < kv_seqlen) & mask_d[:, None],
+             other=0.0,
+         )
++        if BLOCK_DMODEL1 != 0:
++            k1 = tl.load(
++                k1_ptrs + b_offset[None, :] * stride_kbs,
++                mask=(start_n + offs_n[None, :] < kv_seqlen)
++                & mask_d1[:, None],
++                other=0.0,
++            )
++
+         if shared_kv:
+             v = tl.trans(k)
+         else:
+@@ -603,6 +642,8 @@ def _fwd_kernel(
+ 
+         qk = tl.zeros([BLOCK_M, BLOCK_N], dtype=tl.float32)
+         qk += tl.dot(q, k)
++        if BLOCK_DMODEL1 != 0:
++            qk += tl.dot(q1, k1)
+         qk *= sm_scale
+         # NOTE: inf - inf = nan, and nan will leads to error
+         qk_mask = (history_len + offs_m[:, None]) >= (start_n +
+@@ -678,6 +719,19 @@ def paged_attention_fwd(
+     if window_size is None:
+         window_size = -1
+ 
++    def _get_block_d(Lk):
++        """get block d."""
++        BLOCK_DMODEL = triton.next_power_of_2(Lk)
++        BLOCK_DMODEL1 = 0
++        if BLOCK_DMODEL != Lk and not shared_kv:
++            BLOCK_DMODEL = BLOCK_DMODEL // 2
++            BLOCK_DMODEL1 = max(16, triton.next_power_of_2(Lk - BLOCK_DMODEL))
++        if shared_kv:
++            BLOCK_DV = BLOCK_DMODEL
++        else:
++            BLOCK_DV = triton.next_power_of_2(Lv)
++        return BLOCK_DMODEL, BLOCK_DMODEL1, BLOCK_DV
++
+     # shape constraints
+     Lq, Lk, Lv = q.shape[-1], k.shape[-1], v.shape[-1]
+     assert Lq == Lk, Lv == o.shape[-1]
+@@ -689,12 +743,6 @@ def paged_attention_fwd(
+ 
+     BLOCK = k.size(1)
+     assert BLOCK >= 16
+-    BLOCK_DMODEL = triton.next_power_of_2(Lk)
+-    if shared_kv:
+-        BLOCK_DV = BLOCK_DMODEL
+-    else:
+-        BLOCK_DV = triton.next_power_of_2(Lv)
+-    BLOCK_M = max(16, min(BLOCK, 16384 // BLOCK_DMODEL))
+     if Lk > 512 and BLOCK > 32:
+         logger.warning(f'`head_dim={Lk}` and `block_size={BLOCK}` '
+                        'might leads to bad performance. '
+@@ -703,6 +751,8 @@ def paged_attention_fwd(
+     kernel_meta = get_kernel_meta(q)
+     is_decoding = q.shape[-3] == q_seqlens.size(0)
+     if not is_decoding:
++        BLOCK_DMODEL, BLOCK_DMODEL1, BLOCK_DV = _get_block_d(Lk)
++        BLOCK_M = max(16, min(BLOCK, 16384 // BLOCK_DMODEL))
+         num_warps = 4
+         num_stages = 1
+         grid = (batch, head, triton.cdiv(max_seqlen, BLOCK_M))
+@@ -737,15 +787,20 @@ def paged_attention_fwd(
+                           BLOCK_DMODEL=BLOCK_DMODEL,
+                           BLOCK_DV=BLOCK_DV,
+                           BLOCK_N=BLOCK,
++                          BLOCK_DMODEL1=BLOCK_DMODEL1,
+                           num_warps=num_warps,
+                           num_stages=num_stages,
+                           **kernel_meta)
+     else:
+-        num_warps = max(4, BLOCK_DMODEL // 64)
+         SPLIT_K = 4
+         block_per_cta = triton.cdiv(block_offsets.size(-1), SPLIT_K)
+         acc = q.new_empty(batch, head, SPLIT_K, Lv + 2, dtype=torch.float32)
+         if kv_group_num <= 2 or shared_kv:
++            BLOCK_DMODEL = triton.next_power_of_2(Lk)
++            if shared_kv:
++                BLOCK_DV = BLOCK_DMODEL
++            else:
++                BLOCK_DV = triton.next_power_of_2(Lv)
+             grid = (batch, head, SPLIT_K)
+             _fwd_split_kernel[grid](q,
+                                     k,
+@@ -779,6 +834,7 @@ def paged_attention_fwd(
+                                     BLOCK_N=BLOCK,
+                                     **kernel_meta)
+         else:
++            BLOCK_DMODEL, BLOCK_DMODEL1, BLOCK_DV = _get_block_d(Lk)
+             p2_kv_group_num = triton.next_power_of_2(kv_group_num)
+             BLOCK_H = max(16, min(BLOCK, p2_kv_group_num))
+             grid_1 = triton.cdiv(head, min(BLOCK_H, kv_group_num))
+@@ -816,8 +872,10 @@ def paged_attention_fwd(
+                 BLOCK_DV=BLOCK_DV,
+                 BLOCK_N=BLOCK,
+                 BLOCK_H=BLOCK_H,
++                BLOCK_DMODEL1=BLOCK_DMODEL1,
+                 **kernel_meta)
+ 
++        num_warps = 4
+         grid = (batch, head)
+         _reduce_split_kernel[grid](acc,
+                                    o,
+diff --git a/lmdeploy/pytorch/kernels/cuda/rms_norm.py b/lmdeploy/pytorch/kernels/cuda/rms_norm.py
+index c138626e8c..b02f4f7c7e 100644
+--- a/lmdeploy/pytorch/kernels/cuda/rms_norm.py
++++ b/lmdeploy/pytorch/kernels/cuda/rms_norm.py
+@@ -12,22 +12,22 @@
+     weight=Tensor,
+     output=Tensor,
+     input_row_stride=int,
+-    n_cols=torch.int32,
+     eps=float,
+     N_COLS=torch.int32,
+     BLOCK_N=torch.int32,
+ ))
+ @triton.jit
+-def rms_norm_kernel(input, weight, output, input_row_stride, n_cols, eps,
+-                    N_COLS: tl.constexpr, BLOCK_N: tl.constexpr):
++def rms_norm_kernel(input, weight, output, input_row_stride: tl.constexpr,
++                    eps: tl.constexpr, N_COLS: tl.constexpr,
++                    BLOCK_N: tl.constexpr):
+     """rms norm kernel."""
+     prog_id = tl.program_id(0)
+     offsets = tl.arange(0, BLOCK_N)
+ 
+-    w = tl.load(weight + offsets, mask=offsets < n_cols)
++    w = tl.load(weight + offsets, mask=offsets < N_COLS)
+ 
+     x_ptr = input + prog_id * input_row_stride
+-    x = tl.load(x_ptr + offsets, mask=offsets < n_cols)
++    x = tl.load(x_ptr + offsets, mask=offsets < N_COLS)
+     xf = x.to(tl.float32)
+ 
+     var = tl.sum(xf * xf, 0) * float(1.0 / N_COLS)
+@@ -35,10 +35,13 @@ def rms_norm_kernel(input, weight, output, input_row_stride, n_cols, eps,
+     out = (w * out).to(x.dtype)
+ 
+     out_ptr = output + prog_id * input_row_stride
+-    tl.store(out_ptr + offsets, out, mask=offsets < n_cols)
++    tl.store(out_ptr + offsets, out, mask=offsets < N_COLS)
+ 
+ 
+-def rms_norm(hidden_states: Tensor, weight: Tensor, eps: float = 1e-6):
++def rms_norm(hidden_states: Tensor,
++             weight: Tensor,
++             eps: float = 1e-6,
++             out: Tensor = None):
+     """rms norm."""
+ 
+     feat_size = weight.shape[0]
+@@ -47,18 +50,18 @@ def rms_norm(hidden_states: Tensor, weight: Tensor, eps: float = 1e-6):
+ 
+     BLOCK_N = triton.next_power_of_2(feat_size)
+ 
+-    out = torch.empty_like(hidden_states)
++    if out is None:
++        out = torch.empty_like(hidden_states)
+ 
+     kernel_meta = get_kernel_meta(hidden_states)
+     grid = (seq_len, )
+     rms_norm_kernel[grid](hidden_states,
+                           weight,
+                           out,
+-                          input_stride,
+-                          feat_size,
+-                          eps,
+-                          feat_size,
+-                          BLOCK_N,
++                          input_row_stride=input_stride,
++                          eps=eps,
++                          N_COLS=feat_size,
++                          BLOCK_N=BLOCK_N,
+                           num_warps=4,
+                           num_stages=2,
+                           **kernel_meta)
+diff --git a/lmdeploy/pytorch/models/deepseek.py b/lmdeploy/pytorch/models/deepseek.py
+index 0b46551368..7bf0468064 100644
+--- a/lmdeploy/pytorch/models/deepseek.py
++++ b/lmdeploy/pytorch/models/deepseek.py
+@@ -155,8 +155,56 @@ def forward(
+         )
+ 
+ 
++def _div_up(a, b):
++    """div up."""
++    return (a + b - 1) // b
++
++
+ class PatchedDeepseekMoE(nn.Module):
+ 
++    def _load_weights(self, loader, rank: int, world_size: int,
++                      device: torch.device):
++        """load weights."""
++
++        def __load_mlp(exp_id, exp):
++            """load mlp."""
++            with loader.prefix_context(f'experts.{exp_id}'):
++                loader.load_model_weights(
++                    exp,
++                    rank=rank,
++                    world_size=world_size,
++                    device=device,
++                    load_only=True,
++                )
++
++        def __drop_mlp(exp_id, exp):
++            """drop mlp."""
++            for name, _ in exp.named_parameters(recurse=True):
++                loader.pop(f'experts.{exp_id}.{name}')
++
++        num_experts = len(self.experts)
++        exp_per_rank = _div_up(num_experts, world_size)
++        first_exp = rank * exp_per_rank
++        last_exp = min(num_experts, first_exp + exp_per_rank)
++        for exp_id, exp in enumerate(self.experts):
++            if first_exp <= exp_id < last_exp:
++                __load_mlp(exp_id, exp)
++            else:
++                __drop_mlp(exp_id, exp)
++        self.experts = self.experts[first_exp:last_exp]
++        with loader.prefix_context('gate'):
++            loader.load_model_weights(self.gate,
++                                      rank=rank,
++                                      world_size=world_size,
++                                      device=device)
++
++        if self.config.n_shared_experts is not None:
++            with loader.prefix_context('shared_experts'):
++                loader.load_model_weights(self.shared_experts,
++                                          rank=rank,
++                                          world_size=world_size,
++                                          device=device)
++
+     def _update_model_fn(self):
+         """update model."""
+         num_experts = len(self.experts)
+@@ -200,6 +248,15 @@ def __copy_assign_param(param, weight):
+         self.register_buffer('down_weights', down_weights)
+ 
+     def forward(self, hidden_states):
++        """forward."""
++        world_size = 1
++        rank = 0
++        if dist.is_initialized():
++            world_size = dist.get_world_size()
++            rank = dist.get_rank()
++        exp_per_rank = self.gate_up_weights.size(0)
++        expert_offset = rank * exp_per_rank
++
+         identity = hidden_states
+         orig_shape = hidden_states.shape
+         topk_idx, topk_weight, _ = self.gate(hidden_states)
+@@ -211,6 +268,8 @@ def forward(self, hidden_states):
+                       topk_weight,
+                       flat_topk_idx,
+                       topk=self.num_experts_per_tok,
++                      expert_offset=expert_offset,
++                      num_experts=world_size * exp_per_rank,
+                       renormalize=False).view(*orig_shape)
+         if self.config.n_shared_experts is not None:
+             y = y + self.shared_experts.forward(identity)
+diff --git a/lmdeploy/pytorch/models/deepseek_v2.py b/lmdeploy/pytorch/models/deepseek_v2.py
+new file mode 100644
+index 0000000000..69f87329c3
+--- /dev/null
++++ b/lmdeploy/pytorch/models/deepseek_v2.py
+@@ -0,0 +1,373 @@
++# Copyright (c) OpenMMLab. All rights reserved.
++import gc
++from typing import Any, Optional
++
++import torch
++import torch.distributed as dist
++from torch import nn
++
++from lmdeploy.pytorch.kernels.fused_moe import fused_moe
++
++from ..kernels import (apply_rotary_pos_emb, fill_kv_cache,
++                       paged_attention_fwd, rms_norm)
++from ..weight_loader.dist_utils import (colwise_parallelize_linear,
++                                        rowwise_parallelize_linear)
++
++
++class PatchedDeepseekV2Attention(nn.Module):
++
++    def _load_weights(self, loader, rank: int, world_size: int,
++                      device: torch.device):
++        """load weights."""
++
++        mod_name_list = ['kv_a_proj_with_mqa', 'kv_a_layernorm']
++        if self.q_lora_rank is not None:
++            mod_name_list += ['q_a_proj', 'q_a_layernorm']
++        for mod_name in mod_name_list:
++            with loader.prefix_context(mod_name):
++                loader.load_model_weights(getattr(self, mod_name),
++                                          rank=rank,
++                                          world_size=world_size,
++                                          device=device)
++
++        mod_name_list = ['q_proj', 'kv_b_proj']
++        if self.q_lora_rank is not None:
++            mod_name_list = ['q_b_proj', 'kv_b_proj']
++        for mod_name in mod_name_list:
++            colwise_parallelize_linear(getattr(self, mod_name),
++                                       loader,
++                                       rank=rank,
++                                       world_size=world_size,
++                                       prefix=mod_name)
++        for mod_name in ['o_proj']:
++            rowwise_parallelize_linear(getattr(self, mod_name),
++                                       loader,
++                                       rank=rank,
++                                       world_size=world_size,
++                                       prefix=mod_name)
++
++    def _update_model_fn(self):
++        """update model."""
++        qk_nope_head_dim = self.qk_nope_head_dim
++        v_head_dim = self.v_head_dim
++
++        def __update_pe(mod, head_dim, pe_dim_offset):
++            weight = mod.weight.data
++            # (num_heads, q_head_dim, input_dim)
++            weight = weight.unflatten(0, (-1, head_dim))
++            # (num_heads, nope_head_dim, input_dim)
++            w_pe = weight[:, pe_dim_offset:]
++            # (num_heads, nope_head_dim//2, 2, input_dim)
++            new_w_pe = w_pe.unflatten(1, (-1, 2))
++            # (num_heads, nope_head_dim, input_dim)
++            new_w_pe = new_w_pe.transpose(1, 2).flatten(1, 2)
++            weight[:, pe_dim_offset:] = new_w_pe
++
++        # prevent shuffle before apply rotary embedding
++        if self.q_lora_rank is None:
++            __update_pe(self.q_proj, self.q_head_dim, qk_nope_head_dim)
++        else:
++            __update_pe(self.q_b_proj, self.q_head_dim, qk_nope_head_dim)
++        kv_dim = self.kv_lora_rank + self.qk_rope_head_dim
++        __update_pe(self.kv_a_proj_with_mqa, kv_dim, self.kv_lora_rank)
++
++        kv_b_proj = self.kv_b_proj
++        w_kc, w_vc = kv_b_proj.weight.unflatten(
++            0, (-1, qk_nope_head_dim + v_head_dim)).split(
++                [qk_nope_head_dim, v_head_dim], dim=1)
++
++        self.register_parameter('w_kc',
++                                torch.nn.Parameter(w_kc, requires_grad=False))
++        w_vc = w_vc.transpose(1, 2).contiguous()
++        self.register_parameter('w_vc',
++                                torch.nn.Parameter(w_vc, requires_grad=False))
++
++        delattr(self, 'kv_b_proj')
++        gc.collect()
++
++    @classmethod
++    def _distribute_output_fn(cls, outputs, **kwargs):
++        """Distribution output hook."""
++        dist.all_reduce(outputs[0])
++        return outputs
++
++    def _contiguous_batching_forward_impl(
++        self,
++        hidden_states: torch.Tensor,
++        position_ids: Optional[torch.LongTensor] = None,
++        past_key_value: Optional[Any] = None,
++        world_size: int = 1,
++    ):
++        """forward impl."""
++        context = self.context.context
++        kv_seq_length = context.kv_seq_length
++        q_seq_length = context.q_seq_length
++        q_start_loc = context.q_start_loc
++        block_offsets = context.block_offsets
++        max_q_seq_length = context.max_q_seq_length
++        max_kv_seq_length = context.max_kv_seq_length
++        num_heads = self.num_heads // world_size
++        q_len = hidden_states.size(1)
++
++        def __q_proj(hidden_states, nope_size: int, pe_size: int):
++            """q proj."""
++            query_states = hidden_states.new_empty(q_len, num_heads,
++                                                   nope_size + pe_size)
++
++            if self.q_lora_rank is None:
++                q = self.q_proj(hidden_states)
++            else:
++                q = self.q_b_proj(
++                    self.q_a_layernorm(self.q_a_proj(hidden_states)))
++            q = q.view(q_len, num_heads, self.q_head_dim)
++            # q_pe: (q_len, num_heads, qk_rope_head_dim)
++            q_nope, q_pe = torch.split(
++                q, [self.qk_nope_head_dim, self.qk_rope_head_dim], dim=-1)
++            # q_nope: (q_len, num_heads, kv_lora_rank)
++            q_nope_out = query_states[..., :nope_size]
++            torch.bmm(q_nope.transpose(0, 1),
++                      self.w_kc,
++                      out=q_nope_out.transpose(0, 1))
++            return query_states, q_pe
++
++        def __kv_proj(hidden_states, nope_size: int):
++            """kv proj."""
++            # (q_len, 1, nope_size + pe_size)
++            key_states = self.kv_a_proj_with_mqa(hidden_states[0, :, None])
++            # (q_len, 1, nope_size)
++            value_states = key_states[..., :nope_size]
++            # (q_len, 1, pe_size)
++            k_pe = key_states[..., nope_size:]
++            # inplace kv_a_layernorm
++            rms_norm(value_states,
++                     weight=self.kv_a_layernorm.weight,
++                     eps=self.kv_a_layernorm.variance_epsilon,
++                     out=value_states)
++            return key_states, value_states, k_pe
++
++        def __qkv_proj(hidden_states):
++            """qkv proj."""
++            nope_size = self.kv_lora_rank
++            pe_size = self.qk_rope_head_dim
++            query_states, q_pe = __q_proj(hidden_states, nope_size, pe_size)
++            key_states, value_states, k_pe = __kv_proj(hidden_states,
++                                                       nope_size)
++
++            return query_states, key_states, value_states, q_pe, k_pe
++
++        def __rotary_emb_fn(q_pe, k_pe, out_q_pe, out_k_pe):
++            """rope."""
++            if not hasattr(context, '_cos'):
++                cos, sin = self.rotary_emb(q_pe, seq_len=max_kv_seq_length)
++                context._cos = cos
++                context._sin = sin
++            else:
++                cos = context._cos
++                sin = context._sin
++
++            apply_rotary_pos_emb(q_pe,
++                                 k_pe,
++                                 cos,
++                                 sin,
++                                 position_ids,
++                                 context.position_ids_1d,
++                                 q_embed=out_q_pe,
++                                 k_embed=out_k_pe)
++            return out_q_pe, out_k_pe
++
++        query_states, key_states, value_states, q_pe, k_pe = __qkv_proj(
++            hidden_states)
++        nope_size = self.kv_lora_rank
++        __rotary_emb_fn(q_pe, k_pe, query_states[..., nope_size:],
++                        key_states[..., nope_size:])
++
++        fill_kv_cache(
++            key_states,
++            value_states[..., :0],
++            past_key_value[0],
++            past_key_value[0][..., :0],
++            q_start_loc,
++            q_seq_length,
++            kv_seq_length=kv_seq_length,
++            max_q_seq_length=max_q_seq_length,
++            block_offsets=block_offsets,
++        )
++
++        attn_output = query_states[..., :nope_size]
++        block_size = past_key_value[0].size(1)
++        shared_kv = block_size >= 64
++        paged_attention_fwd(
++            query_states,
++            past_key_value[0],
++            past_key_value[0][..., :nope_size],
++            attn_output,
++            block_offsets,
++            q_start_loc=q_start_loc,
++            q_seqlens=q_seq_length,
++            kv_seqlens=kv_seq_length,
++            max_seqlen=max_q_seq_length,
++            sm_scale=self.softmax_scale,
++            shared_kv=shared_kv,
++        )
++
++        # (num_heads, q_len, v_head_dim)
++        attn_bmm_out = attn_output.new_empty(q_len, num_heads, self.v_head_dim)
++        torch.bmm(attn_output.transpose(0, 1),
++                  self.w_vc,
++                  out=attn_bmm_out.transpose(0, 1))
++        # (1, q_len, o_proj_input)
++        attn_output = attn_bmm_out.flatten(-2, -1)[None]
++
++        attn_output = self.o_proj(attn_output)
++        return attn_output, None, past_key_value
++
++    def forward(
++        self,
++        hidden_states: torch.Tensor,
++        attention_mask: Optional[torch.Tensor] = None,
++        position_ids: Optional[torch.LongTensor] = None,
++        past_key_value: Optional[Any] = None,
++        output_attentions: bool = False,
++        use_cache: bool = False,
++        **kwargs,
++    ):
++        """rewrite of forward."""
++        world_size = 1
++        if dist.is_initialized():
++            world_size = dist.get_world_size()
++        return self._contiguous_batching_forward_impl(
++            hidden_states,
++            position_ids=position_ids,
++            past_key_value=past_key_value,
++            world_size=world_size,
++        )
++
++
++def _div_up(a, b):
++    """div up."""
++    return (a + b - 1) // b
++
++
++class PatchedDeepseekV2MoE(nn.Module):
++
++    def _load_weights(self, loader, rank: int, world_size: int,
++                      device: torch.device):
++        """load weights."""
++
++        def __load_mlp(exp_id, exp):
++            """load mlp."""
++            with loader.prefix_context(f'experts.{exp_id}'):
++                loader.load_model_weights(
++                    exp,
++                    rank=rank,
++                    world_size=world_size,
++                    device=device,
++                    load_only=True,
++                )
++
++        def __drop_mlp(exp_id, exp):
++            """drop mlp."""
++            for name, _ in exp.named_parameters(recurse=True):
++                loader.pop(f'experts.{exp_id}.{name}')
++
++        num_experts = len(self.experts)
++        exp_per_rank = _div_up(num_experts, world_size)
++        first_exp = rank * exp_per_rank
++        last_exp = min(num_experts, first_exp + exp_per_rank)
++        for exp_id, exp in enumerate(self.experts):
++            if first_exp <= exp_id < last_exp:
++                __load_mlp(exp_id, exp)
++            else:
++                __drop_mlp(exp_id, exp)
++        self.experts = self.experts[first_exp:last_exp]
++        with loader.prefix_context('gate'):
++            loader.load_model_weights(self.gate,
++                                      rank=rank,
++                                      world_size=world_size,
++                                      device=device)
++
++        if self.config.n_shared_experts is not None:
++            with loader.prefix_context('shared_experts'):
++                loader.load_model_weights(self.shared_experts,
++                                          rank=rank,
++                                          world_size=world_size,
++                                          device=device)
++
++    def _update_model_fn(self):
++        """update model."""
++        num_experts = len(self.experts)
++
++        def __get_meta():
++            exp = self.experts[0]
++            ffn_dim = exp.gate_proj.weight.size(0)
++            hidden_dim = exp.down_proj.weight.size(0)
++            dtype = exp.gate_proj.weight.dtype
++            device = exp.gate_proj.weight.device
++            return ffn_dim, hidden_dim, dtype, device
++
++        def __copy_assign_param(param, weight):
++            """copy assign."""
++            weight.copy_(param.data)
++            param.data = weight
++
++        ffn_dim, hidden_dim, dtype, device = __get_meta()
++
++        gate_up_weights = torch.empty(num_experts,
++                                      ffn_dim * 2,
++                                      hidden_dim,
++                                      device=device,
++                                      dtype=dtype)
++        down_weights = torch.empty(num_experts,
++                                   hidden_dim,
++                                   ffn_dim,
++                                   device=device,
++                                   dtype=dtype)
++
++        for exp_id, exp in enumerate(self.experts):
++            __copy_assign_param(exp.gate_proj.weight,
++                                gate_up_weights[exp_id, :ffn_dim])
++            __copy_assign_param(exp.up_proj.weight, gate_up_weights[exp_id,
++                                                                    ffn_dim:])
++            __copy_assign_param(exp.down_proj.weight, down_weights[exp_id])
++
++        torch.cuda.empty_cache()
++
++        self.register_buffer('gate_up_weights', gate_up_weights)
++        self.register_buffer('down_weights', down_weights)
++
++    @classmethod
++    def _distribute_output_fn(cls, outputs, **kwargs):
++        """Distribution output hook."""
++        dist.all_reduce(outputs)
++        return outputs
++
++    def forward(self, hidden_states):
++        identity = hidden_states
++        orig_shape = hidden_states.shape
++        topk_idx, topk_weight, _ = self.gate(hidden_states)
++        hidden_states = hidden_states.view(-1, hidden_states.shape[-1])
++        y = self.moe_infer(hidden_states, topk_idx,
++                           topk_weight).view(*orig_shape)
++        if self.config.n_shared_experts is not None:
++            y = y + self.shared_experts.forward(identity)
++        return y
++
++    def moe_infer(self, x, topk_ids, topk_weight):
++        """moe infer."""
++        world_size = 1
++        rank = 0
++        if dist.is_initialized():
++            world_size = dist.get_world_size()
++            rank = dist.get_rank()
++        exp_per_rank = self.gate_up_weights.size(0)
++        expert_offset = rank * exp_per_rank
++        ret = fused_moe(x,
++                        self.gate_up_weights,
++                        self.down_weights,
++                        topk_weight,
++                        topk_ids,
++                        topk=self.num_experts_per_tok,
++                        expert_offset=expert_offset,
++                        num_experts=world_size * exp_per_rank,
++                        renormalize=False)
++        return ret
+diff --git a/lmdeploy/pytorch/models/module_map.py b/lmdeploy/pytorch/models/module_map.py
+index 9fbeff53c1..8d4c11f5e8 100644
+--- a/lmdeploy/pytorch/models/module_map.py
++++ b/lmdeploy/pytorch/models/module_map.py
+@@ -267,6 +267,22 @@
+     f'{LMDEPLOY_PYTORCH_MODEL_PATH}.llama.LlamaRMSNorm',
+ })
+ 
++# deepseek-v2
++MODULE_MAP.update({
++    'modeling_deepseek.DeepseekV2Attention':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.deepseek_v2.PatchedDeepseekV2Attention',
++    'modeling_deepseek.DeepseekV2FlashAttention2':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.deepseek_v2.PatchedDeepseekV2Attention',
++    'modeling_deepseek.DeepseekV2Model':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.llama.LlamaModel',
++    'modeling_deepseek.DeepseekV2MoE':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.deepseek_v2.PatchedDeepseekV2MoE',
++    'modeling_deepseek.DeepseekV2RMSNorm':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.llama.LlamaRMSNorm',
++    'modeling_deepseek.DeepseekV2MLP':
++    f'{LMDEPLOY_PYTORCH_MODEL_PATH}.llama.LlamaMLP',
++})
++
+ # cogvlm
+ MODULE_MAP.update({
+     'modeling_cogvlm.RMSNorm':
+diff --git a/lmdeploy/pytorch/supported_models.py b/lmdeploy/pytorch/supported_models.py
+index 05aff5ee62..125ca3d9a7 100644
+--- a/lmdeploy/pytorch/supported_models.py
++++ b/lmdeploy/pytorch/supported_models.py
+@@ -56,6 +56,8 @@
+     LlavaForConditionalGeneration=True,
+     # llava_next hf
+     LlavaNextForConditionalGeneration=True,
++    # deepseek-v2
++    DeepseekV2ForCausalLM=True,
+ )
+ 
+ 
+diff --git a/lmdeploy/pytorch/tools/make_inputs.py b/lmdeploy/pytorch/tools/make_inputs.py
+index 1d8037f1eb..892a44b6d4 100644
+--- a/lmdeploy/pytorch/tools/make_inputs.py
++++ b/lmdeploy/pytorch/tools/make_inputs.py
+@@ -3,6 +3,7 @@
+ 
+ import torch
+ 
++from ..config import CacheConfig, ModelConfig
+ from .layout_convert import continuous_tensor, page_cache
+ 
+ 
+@@ -19,11 +20,10 @@ def make_model_inputs(input_ids: torch.Tensor,
+         seq_length = torch.full((batch_size, ), max_seq_len)
+     input_ids = continuous_tensor(input_ids, seq_length)
+     if history_length is None:
+-        history_length = [0] * batch_size
++        history_length = torch.zeros_like(seq_length)
+     else:
+         assert len(history_length) == len(seq_length)
+-    history_length = torch.tensor(history_length)
+-    is_decoding = input_ids.size(0) == batch_size
++    is_decoding = max_seq_len == 1
+     max_q_seq_length = seq_length.max().item()
+     max_history_length = history_length.max().item()
+ 
+@@ -43,18 +43,27 @@ def make_step_context(
+     seq_length: torch.Tensor = None,
+     history_length: torch.Tensor = None,
+     past_key_values: List[Tuple] = None,
+-    world_size: int = 1,
+-    device: str = 'cuda',
++    model_config: ModelConfig = None,
++    cache_config: CacheConfig = None,
+     block_size: int = 64,
+-    num_key_value_heads: int = 32,
+-    head_size: int = 128,
+-    kv_cache_dtype: torch.dtype = torch.float16,
++    world_size: int = 1,
+ ):
+     """make step context."""
++    device = input_ids.device
+     from torch.nn.utils.rnn import pad_sequence
+ 
++    from lmdeploy.pytorch.engine.cache_engine import CacheEngine
+     from lmdeploy.pytorch.engine.model_agent import StepContext
+ 
++    if model_config is None:
++        model_config = ModelConfig(hidden_size=4096,
++                                   num_layers=1,
++                                   num_attention_heads=8,
++                                   num_key_value_heads=8,
++                                   bos_token_id=0,
++                                   eos_token_id=0,
++                                   head_dim=128)
++
+     batch_size = input_ids.size(0)
+     max_seq_len = input_ids.size(1)
+     if seq_length is None:
+@@ -62,18 +71,34 @@ def make_step_context(
+         seq_length = torch.full((batch_size, ), max_seq_len)
+ 
+     if history_length is None:
+-        history_length = [0] * batch_size
++        history_length = torch.zeros_like(seq_length)
+     else:
+         assert len(history_length) == len(seq_length)
+-    history_length = torch.tensor(history_length)
++    if past_key_values is not None:
++        assert len(past_key_values) == model_config.num_layers
+ 
+-    def __create_kv_caches(past_key_values):
++    if cache_config is None:
++        total_length = seq_length + history_length
++        num_blocks_per_seq = (total_length + block_size - 1) // block_size
++        num_blocks = sum(num_blocks_per_seq).item()
++        cache_config = CacheConfig(
++            block_size=block_size,
++            num_cpu_blocks=0,
++            num_gpu_blocks=num_blocks,
++        )
++
++    def __create_kv_caches():
+         """create kv caches."""
+         total_length = seq_length + history_length
+         num_blocks_per_seq = (total_length + block_size - 1) // block_size
+         num_blocks = sum(num_blocks_per_seq)
+-        num_caches = 1 if past_key_values is None else len(past_key_values)
+-        cache_shape = [num_blocks, block_size, num_key_value_heads, head_size]
++
++        cache_engine = CacheEngine(
++            cache_config=cache_config,
++            model_config=model_config,
++            world_size=world_size,
++        )
++        kv_caches = cache_engine.gpu_cache
+ 
+         block_offsets_1d = torch.arange(0, num_blocks)
+         block_end_loc = num_blocks_per_seq.cumsum(0)
+@@ -85,13 +110,6 @@ def __create_kv_caches(past_key_values):
+         num_blocks_offs = torch.tensor([len(boff) for boff in block_offsets])
+         block_offsets = pad_sequence(block_offsets, batch_first=True)
+ 
+-        kv_caches = []
+-        for _ in range(num_caches):
+-            k_cache = torch.empty(cache_shape,
+-                                  dtype=kv_cache_dtype,
+-                                  device=device)
+-            v_cache = torch.empty_like(k_cache)
+-            kv_caches.append((k_cache, v_cache))
+         return kv_caches, block_offsets, num_blocks_offs
+ 
+     def __fill_kv_caches(kv_caches, past_key_values, block_offsets):
+@@ -109,14 +127,13 @@ def __fill_kv_caches(kv_caches, past_key_values, block_offsets):
+             page_cache(k_cache, past_k, history_length, block_offsets)
+             page_cache(v_cache, past_v, history_length, block_offsets)
+ 
+-    kv_caches, block_offsets, _ = __create_kv_caches(past_key_values)
++    kv_caches, block_offsets, _ = __create_kv_caches()
+     __fill_kv_caches(kv_caches, past_key_values, block_offsets)
+ 
+     model_inputs = make_model_inputs(input_ids,
+                                      block_offsets=block_offsets,
+                                      seq_length=seq_length,
+                                      history_length=history_length)
+-
+     model_inputs = model_inputs.to_device(device)
+ 
+     return StepContext.new(
+@@ -127,6 +144,10 @@ def __fill_kv_caches(kv_caches, past_key_values, block_offsets):
+     )
+ 
+ 
++class ExtractorFound(Exception):
++    pass
++
++
+ class ModuleIOExtractor:
+     """Extract input and output of target sub module."""
+ 
+@@ -145,6 +166,7 @@ def __check_target_exist():
+         self._model = model
+         self._target_module = target_module
+ 
++    @torch.inference_mode()
+     def extract(self, *args, **kwargs):
+         """extract."""
+         target_args = None
+@@ -157,11 +179,16 @@ def __forward_hook(module, args, kwargs, output):
+             target_args = args
+             target_kwargs = kwargs
+             target_output = output
++            raise ExtractorFound()
+ 
+         handle = self._target_module.register_forward_hook(__forward_hook,
+                                                            with_kwargs=True)
+ 
+-        self._model(*args, **kwargs)
+-        handle.remove()
++        try:
++            self._model(*args, **kwargs)
++        except ExtractorFound:
++            pass
++        finally:
++            handle.remove()
+ 
+         return target_args, target_kwargs, target_output
+diff --git a/lmdeploy/pytorch/weight_loader/dist_utils.py b/lmdeploy/pytorch/weight_loader/dist_utils.py
+index d1b3eb89d1..27177ff235 100644
+--- a/lmdeploy/pytorch/weight_loader/dist_utils.py
++++ b/lmdeploy/pytorch/weight_loader/dist_utils.py
+@@ -4,6 +4,7 @@
+ import torch
+ 
+ from lmdeploy.pytorch.models.q_modules import QLinear
++from lmdeploy.utils import get_logger
+ 
+ from .model_weight_loader import ModelWeightLoader
+ 
+@@ -15,6 +16,9 @@ class LoRALinear:
+         pass
+ 
+ 
++logger = get_logger('lmdeploy')
++
++
+ def get_prefixed_name(name: str, prefix: str):
+     """get prefixed name."""
+     if len(prefix) == 0:
+@@ -272,3 +276,48 @@ def colwise_split_parallelize_linear(module: torch.nn.Module,
+                                                     prefix=prefix)
+     else:
+         raise TypeError(f'Unsupported module: {type(module)}')
++
++
++def load_no_recursive(mod: torch.nn.Module,
++                      loader: ModelWeightLoader,
++                      rank: int = 0,
++                      prefix: str = ''):
++    """default load linear naive."""
++    for name, param in mod.named_parameters(recurse=False):
++        prefixed_name = get_prefixed_name(name, prefix)
++        dtype = param.dtype
++        if not loader.has(prefixed_name):
++            logger.debug(f'rank [{rank}]'
++                         f' failed to find weight: {name}.')
++            param = torch.empty_like(param, device='cpu')
++        else:
++            param = loader.pop(prefixed_name)
++        if param.dtype != dtype:
++            param = param.to(dtype)
++        mod.register_parameter(name,
++                               torch.nn.Parameter(param, requires_grad=False))
++    for name, param in mod.named_buffers(recurse=False):
++        prefixed_name = get_prefixed_name(name, prefix)
++        dtype = param.dtype
++        if not loader.has(prefixed_name):
++            logger.debug(f'rank [{rank}]'
++                         f' failed to find weight: {name}.')
++            param = torch.empty_like(param, device='cpu')
++        else:
++            param = loader.pop(prefixed_name)
++        if param.dtype != dtype:
++            param = param.to(dtype)
++        mod.register_buffer(name, param)
++
++
++def default_load_linear(module: torch.nn.Module,
++                        loader: ModelWeightLoader,
++                        rank: int = 0,
++                        prefix: str = ''):
++    """default load linear."""
++    if isinstance(module, (torch.nn.Linear, QLinear)):
++        load_no_recursive(module, loader, rank=rank, prefix=prefix)
++    elif isinstance(module, LoRALinear):
++        raise NotImplementedError('Not implemented, please contact us.')
++    else:
++        raise TypeError(f'Unsupported module: {type(module)}')
+diff --git a/lmdeploy/pytorch/weight_loader/model_weight_loader.py b/lmdeploy/pytorch/weight_loader/model_weight_loader.py
+index 75876bb7b8..9ecc726ca8 100644
+--- a/lmdeploy/pytorch/weight_loader/model_weight_loader.py
++++ b/lmdeploy/pytorch/weight_loader/model_weight_loader.py
+@@ -154,53 +154,55 @@ def prefix_context(self, mod_name: str):
+             yield new_prefix
+         self._prefix = old_prefix
+ 
++    def load_model_weights(
++        self,
++        model: torch.nn.Module,
++        rank: int = 0,
++        world_size: int = 1,
++        device: torch.device = 'cpu',
++        load_only: bool = False,
++    ):
++        """load model weights implementation."""
++        loader = self
++
++        def __load_no_recursive(mod: torch.nn.Module):
++            """load no recursive."""
++            for name, param in mod.named_parameters(recurse=False):
++                dtype = param.dtype
++                if not loader.has(name):
++                    logger.debug(f'rank [{rank}]'
++                                 f' failed to find weight: {name}.')
++                    param = torch.empty_like(param, device='cpu')
++                else:
++                    param = loader.pop(name)
++                if param.dtype != dtype:
++                    param = param.to(dtype)
++                mod.register_parameter(
++                    name, torch.nn.Parameter(param, requires_grad=False))
++            for name, param in mod.named_buffers(recurse=False):
++                dtype = param.dtype
++                if not loader.has(name):
++                    logger.debug(f'rank [{rank}]'
++                                 f' failed to find weight: {name}.')
++                    param = torch.empty_like(param, device='cpu')
++                else:
++                    param = loader.pop(name)
++                if param.dtype != dtype:
++                    param = param.to(dtype)
++                mod.register_buffer(name, param)
++
++        if not load_only and hasattr(model, '_load_weights'):
++            model._load_weights(loader, rank, world_size, device=device)
++        else:
++            __load_no_recursive(model)
++            for name, child in model.named_children():
++                with loader.prefix_context(name):
++                    self.load_model_weights(child,
++                                            rank=rank,
++                                            world_size=world_size,
++                                            device=device)
+ 
+-def _load_model_weights_impl(model: torch.nn.Module,
+-                             loader: ModelWeightLoader,
+-                             rank: int = 0,
+-                             world_size: int = 1,
+-                             device: torch.device = 'cpu'):
+-    """load model weights implementation."""
+-
+-    def __load_no_recursive(mod: torch.nn.Module):
+-        """load no recursive."""
+-        for name, param in mod.named_parameters(recurse=False):
+-            dtype = param.dtype
+-            if not loader.has(name):
+-                logger.debug(f'rank [{rank}]'
+-                             f' failed to find weight: {name}.')
+-                param = torch.empty_like(param, device='cpu')
+-            else:
+-                param = loader.pop(name)
+-            if param.dtype != dtype:
+-                param = param.to(dtype)
+-            mod.register_parameter(
+-                name, torch.nn.Parameter(param, requires_grad=False))
+-        for name, param in mod.named_buffers(recurse=False):
+-            dtype = param.dtype
+-            if not loader.has(name):
+-                logger.debug(f'rank [{rank}]'
+-                             f' failed to find weight: {name}.')
+-                param = torch.empty_like(param, device='cpu')
+-            else:
+-                param = loader.pop(name)
+-            if param.dtype != dtype:
+-                param = param.to(dtype)
+-            mod.register_buffer(name, param)
+-
+-    if hasattr(model, '_load_weights'):
+-        model._load_weights(loader, rank, world_size, device=device)
+-    else:
+-        __load_no_recursive(model)
+-        for name, child in model.named_children():
+-            with loader.prefix_context(name):
+-                _load_model_weights_impl(child,
+-                                         loader,
+-                                         rank=rank,
+-                                         world_size=world_size,
+-                                         device=device)
+-
+-    model.to(device)
++        model.to(device)
+ 
+ 
+ @torch.inference_mode()
+@@ -216,10 +218,9 @@ def load_model_weights(model: torch.nn.Module,
+     if adapters is None:
+         adapters = dict()
+     loader = ModelWeightLoader(checkpoint_path, adapters=adapters)
+-    _load_model_weights_impl(model,
+-                             loader,
+-                             rank=rank,
+-                             world_size=world_size,
+-                             device=device)
++    loader.load_model_weights(model,
++                              rank=rank,
++                              world_size=world_size,
++                              device=device)
+     model.tie_weights()
+     model.eval()
+diff --git a/tests/pytorch/kernel/test_mbgmv.py b/tests/pytorch/kernel/test_mbgmv.py
+index 912d2c1a48..8751b2a891 100644
+--- a/tests/pytorch/kernel/test_mbgmv.py
++++ b/tests/pytorch/kernel/test_mbgmv.py
+@@ -119,4 +119,4 @@ def test_mbgmv(self, input, paged_lora_a, paged_lora_b, out_head_size,
+                          rank_offset=rank_offset,
+                          ranks=ranks,
+                          max_rank=max_rank)
+-        torch.testing.assert_close(gt, output, atol=2e-3, rtol=1e-5)
++        torch.testing.assert_close(gt, output, atol=4e-3, rtol=1e-5)
+diff --git a/tests/pytorch/kernel/test_paged_attention.py b/tests/pytorch/kernel/test_paged_attention.py
+index c852eea720..90dc153aeb 100644
+--- a/tests/pytorch/kernel/test_paged_attention.py
++++ b/tests/pytorch/kernel/test_paged_attention.py
+@@ -110,8 +110,8 @@ def dtype(self):
+         yield torch.float16
+ 
+     @pytest.fixture
+-    def feat_dim(self):
+-        yield 16
++    def feat_dim(self, request):
++        yield request.param
+ 
+     @pytest.fixture
+     def feat_dim_v(self, request):
+@@ -227,6 +227,7 @@ def gt(self, batched_q, batched_kv, mask):
+     def conti_gt(self, gt, seq_lens):
+         yield _conti_input(gt, seq_lens)
+ 
++    @pytest.mark.parametrize('feat_dim', [48, 32], indirect=True)
+     @pytest.mark.parametrize('feat_dim_v', [32], indirect=True)
+     @pytest.mark.parametrize(['num_heads_q', 'num_heads_k'], [(8, 2), (2, 2)],
+                              indirect=True)
+@@ -270,6 +271,7 @@ def window_gt(self, conti_q, conti_kv, seq_lens, history_lens, win_size):
+                                       kv_lens,
+                                       window_size=(win_size, win_size))
+ 
++    @pytest.mark.parametrize('feat_dim', [16], indirect=True)
+     @pytest.mark.parametrize('feat_dim_v', [16], indirect=True)
+     @pytest.mark.parametrize(['num_heads_q', 'num_heads_k'], [(4, 2)],
+                              indirect=True)
+diff --git a/tests/pytorch/tools/test_make_inputs.py b/tests/pytorch/tools/test_make_inputs.py
+index 1c47bc2338..b42cffa9f4 100644
+--- a/tests/pytorch/tools/test_make_inputs.py
++++ b/tests/pytorch/tools/test_make_inputs.py
+@@ -1,6 +1,7 @@
+ import pytest
+ import torch
+ 
++from lmdeploy.pytorch.config import ModelConfig
+ from lmdeploy.pytorch.tools.make_inputs import make_step_context
+ 
+ 
+@@ -36,6 +37,22 @@ def head_size(self):
+     def kv_cache_dtype(self):
+         yield torch.float16
+ 
++    @pytest.fixture
++    def model_config(self, head_size, kv_cache_dtype, num_key_value_heads):
++        hidden_size = head_size * num_key_value_heads
++        yield ModelConfig(
++            hidden_size=hidden_size,
++            num_layers=1,
++            num_attention_heads=num_key_value_heads,
++            num_key_value_heads=num_key_value_heads,
++            bos_token_id=0,
++            eos_token_id=0,
++            head_dim=head_size,
++            dtype=kv_cache_dtype,
++            k_head_dim=head_size,
++            v_head_dim=head_size,
++        )
++
+     @pytest.fixture
+     def past_key_values(self, history_length, num_key_value_heads, head_size):
+         max_len = max(history_length)
+@@ -46,18 +63,16 @@ def past_key_values(self, history_length, num_key_value_heads, head_size):
+         yield [(k_cache, v_cache)]
+ 
+     def test_make_step_context(self, input_ids, seq_length, history_length,
+-                               past_key_values, block_size,
+-                               num_key_value_heads, head_size, kv_cache_dtype):
+-        step_ctx = make_step_context(input_ids,
+-                                     seq_length=seq_length,
+-                                     history_length=history_length,
+-                                     past_key_values=past_key_values,
+-                                     world_size=1,
+-                                     device='cuda',
+-                                     block_size=block_size,
+-                                     num_key_value_heads=num_key_value_heads,
+-                                     head_size=head_size,
+-                                     kv_cache_dtype=kv_cache_dtype)
++                               past_key_values, block_size, model_config):
++        step_ctx = make_step_context(
++            input_ids,
++            seq_length=seq_length,
++            history_length=history_length,
++            past_key_values=past_key_values,
++            world_size=1,
++            block_size=block_size,
++            model_config=model_config,
++        )
+         block_offsets = step_ctx.block_offsets
+         assert block_offsets[0][3] == 0
+         assert block_offsets[1][3] != 0

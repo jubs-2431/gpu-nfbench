@@ -1,0 +1,113 @@
+diff --git a/cupyx/scipy/sparse/linalg/_solve.py b/cupyx/scipy/sparse/linalg/_solve.py
+index 462c5b05aa1..bbf9edc46f5 100644
+--- a/cupyx/scipy/sparse/linalg/_solve.py
++++ b/cupyx/scipy/sparse/linalg/_solve.py
+@@ -170,12 +170,17 @@ def lsmr(A, b, x0=None, damp=0.0, atol=1e-6, btol=1e-6, conlim=1e8,
+     if maxiter is None:
+         maxiter = minDim * 5
+ 
++    if x0 is None:
++        dtype = cupy.result_type(A, b, float)
++    else:
++        dtype = cupy.result_type(A, b, x0, float)
++
+     u = b.copy()
+     normb = cublas.nrm2(b)
+     beta = normb.copy()
+     normb = normb.get().item()
+     if x0 is None:
+-        x = cupy.zeros((n,), dtype=A.dtype)
++        x = cupy.zeros((n,), dtype=dtype)
+     else:
+         if not (x0.shape == (n,) or x0.shape == (n, 1)):
+             raise ValueError('x0 has incompatible dimensions')
+@@ -185,7 +190,7 @@ def lsmr(A, b, x0=None, damp=0.0, atol=1e-6, btol=1e-6, conlim=1e8,
+ 
+     beta_cpu = beta.get().item()
+ 
+-    v = cupy.zeros(n)
++    v = cupy.zeros(n, dtype)
+     alpha = cupy.zeros((), dtype=beta.dtype)
+     alpha_cpu = 0
+ 
+@@ -209,7 +214,7 @@ def lsmr(A, b, x0=None, damp=0.0, atol=1e-6, btol=1e-6, conlim=1e8,
+     sbar = 0
+ 
+     h = v.copy()
+-    hbar = cupy.zeros(n)
++    hbar = cupy.zeros(n, dtype)
+     # x = cupy.zeros(n)
+ 
+     # Initialize variables for estimation of ||r||.
+diff --git a/tests/cupyx_tests/scipy_tests/sparse_tests/test_linalg.py b/tests/cupyx_tests/scipy_tests/sparse_tests/test_linalg.py
+index f98d73f8e9f..7f7cb390037 100644
+--- a/tests/cupyx_tests/scipy_tests/sparse_tests/test_linalg.py
++++ b/tests/cupyx_tests/scipy_tests/sparse_tests/test_linalg.py
+@@ -1389,52 +1389,55 @@ class TestLsmr:
+ 
+     density = 0.01
+ 
+-    def _make_matrix(self, xp):
++    def _make_matrix(self, xp, dtype):
+         shape = (self.m, self.n)
+-        a = testing.shaped_random(shape, xp, scale=1)
++        a = testing.shaped_random(shape, xp, dtype, scale=1)
+         mask = testing.shaped_random(shape, xp, scale=1)
+         a[mask > self.density] = 0
+         return a
+ 
+-    def _make_normalized_vector(self, xp):
+-        b = testing.shaped_random((self.m,), xp, scale=1)
++    def _make_normalized_vector(self, xp, dtype):
++        b = testing.shaped_random((self.m,), xp, dtype, scale=1)
+         return b / xp.linalg.norm(b)
+ 
+     def _test_lsmr(self, xp, sp, a):
+-        b = self._make_normalized_vector(xp)
++        b = self._make_normalized_vector(xp, a.dtype)
+         x0 = None
+         if self.x0 == 'ones':
+             x0 = xp.ones((self.n,))
+         return sp.linalg.lsmr(a, b, x0=x0, damp=self.damp)
+ 
++    @testing.for_float_dtypes(no_float16=True)
+     @testing.numpy_cupy_allclose(rtol=1e-1, atol=1e-1, sp_name='sp')
+-    def test_sparse(self, xp, sp):
++    def test_sparse(self, xp, sp, dtype):
+         if runtime.is_hip and self.format in ('csr', 'csc'):
+             pytest.xfail('may be buggy')  # trans=True
+ 
+         if (self.damp == 0 and self.x0 == 'ones' and self.n != 20):
+             pytest.skip()
+-        a = self._make_matrix(xp)
++        a = self._make_matrix(xp, dtype)
+         a = sp.coo_matrix(a).asformat(self.format)
+         if self.use_linear_operator:
+             a = sp.linalg.aslinearoperator(a)
+         return self._test_lsmr(xp, sp, a)[0]
+ 
++    @testing.for_float_dtypes(no_float16=True)
+     @testing.numpy_cupy_allclose(rtol=1e-1, atol=1e-1, sp_name='sp')
+-    def test_dense(self, xp, sp):
++    def test_dense(self, xp, sp, dtype):
+         if (self.damp == 0 and self.x0 == 'ones' and self.n != 20):
+             pytest.skip()
+-        a = self._make_matrix(xp)
++        a = self._make_matrix(xp, dtype)
+         if self.use_linear_operator:
+             a = sp.linalg.aslinearoperator(a)
+         return self._test_lsmr(xp, sp, a)[0]
+ 
+-    def test_invalid(self):
++    @testing.for_float_dtypes(no_float16=True)
++    def test_invalid(self, dtype):
+         if not (self.x0 is None and self.use_linear_operator is False):
+             pytest.skip()
+         for xp, sp in ((numpy, scipy.sparse), (cupy, sparse)):
+-            a = self._make_matrix(xp)
+-            b = self._make_normalized_vector(xp)
++            a = self._make_matrix(xp, dtype)
++            b = self._make_normalized_vector(xp, dtype)
+             ng_a = xp.ones((self.m, ))
+             with pytest.raises(ValueError):
+                 sp.linalg.lsmr(ng_a, b)

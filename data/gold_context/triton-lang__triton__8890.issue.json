@@ -1,0 +1,14 @@
+{
+  "body": "### Describe the bug\n\nTile-CBDetect (our Tile-language bug detection tool) detected a performance bottleneck in the `max` binary operator.\nFor input length 1024, Triton is **2.11\u00d7 slower** than PyTorch.\nThis may indicate issues in tile mapping or launch configuration.\n",
+  "closed_at": "2025-12-03T18:25:22Z",
+  "comments": 3,
+  "created_at": "2025-12-03T15:15:32Z",
+  "html_url": "https://github.com/triton-lang/triton/issues/8890",
+  "labels": [
+    "needs reproducer"
+  ],
+  "number": 8890,
+  "state": "closed",
+  "title": "Binary `max` slow by 2.11\u00d7 on size 1024",
+  "updated_at": "2025-12-04T22:22:03Z"
+}

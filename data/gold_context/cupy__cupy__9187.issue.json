@@ -1,0 +1,15 @@
+{
+  "body": "### Description\n\ncp.sum(X, axis=1) operation fails silently for a 2D array if the product of dimensions exceeds 2^32, suggesting that index arithmetic is being done with float32\n\n\n### To Reproduce\n\n```\nimport cupy as cp\nimport numpy as np\nX = np.random.random( (20000,50000) ) \nX_cp = cp.array(X, dtype=cp.float32)\nS = cp.sum(X_cp, axis=1)\nprint(S[0])\n>>> 25025.66\n\ndel X_cp\ncp._default_memory_pool.free_all_blocks()\n\nX = np.random.random( (50000,100000) )\nX_cp = cp.array( X, dtype=cp.float32)\nS = cp.sum(X_cp, axis=1)\nS.shape\n>>> (50000,)\nprint(S[0])\n```\n\n\n### Installation\n\n`pip install cupy-cuda12x`\n\n### Environment\n\n```\nLinux version 6.5.0-35-generic (buildd@lcy02-amd64-079) (x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #35~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May  7 09:00:52 UTC 2\n\nPython 3.10.12 (main, Jun 11 2023, 05:26:28) [GCC 11.4.0] on linux\n\n>>> numpy.__version__\n'1.26.4'\n\n>>> cupy.__version__\n'13.4.1'\n\n(pyenv) root@b38d165c67b9:/workspace# nvcc --version\nnvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2024 NVIDIA Corporation\nBuilt on Fri_Jun_14_16:34:21_PDT_2024\nCuda compilation tools, release 12.6, V12.6.20\nBuild cuda_12.6.r12.6/compiler.34431801_0\n\nA100-SXM with 80 GB VRAM \n\n```\n\n\n### Additional Information\n\n_No response_",
+  "closed_at": "2025-06-23T20:55:54Z",
+  "comments": 2,
+  "created_at": "2025-06-20T17:38:48Z",
+  "html_url": "https://github.com/cupy/cupy/issues/9187",
+  "labels": [
+    "cat:bug",
+    "st:awaiting-author"
+  ],
+  "number": 9187,
+  "state": "closed",
+  "title": "Indexing appears to overflow on cupy arrays when executing cupy.sum",
+  "updated_at": "2025-06-23T20:55:54Z"
+}

@@ -1,0 +1,17 @@
+{
+  "body": "**Is your feature request related to a problem? Please describe.**\r\nApache Spark internally tracks timestamps relative to the epoch in the JVM's default timezone.  cudf uses timestamps relative to the epoch in the UTC timezone (at least in the ORC loader).  When Spark tries to interpret timestamp data created/loaded by cudf the values are incorrect (from Spark's viewpoint) unless the JVM's default timezone is UTC.\r\n\r\n**Describe the solution you'd like**\r\nA timezone conversion utility function for timestamps in libcudf would help, as the timestamp column could be converted from UTC to the JVM's timezone.  The utility function would take an input timestamp column, a source timezone and a destination timezone, and would return a new timestamp column with the timestamp values adjusted by the time delta difference between the two timezones at the source timestamp's time.  Note that due to effects like daylight savings, the delta between timezones is not necessarily constant and therefore this utility method can't be obviated by a simple scalar addition on the timestamp column data.\r\n\r\n**Describe alternatives you've considered**\r\nAdding an optional, target timezone parameter to the various cudf data loaders (like the ORC reader) could work as well and potentially be more efficient if it avoids the separate CUDA kernel to do the conversion from UTC.  However the utility method approach seems like a more flexible approach to cover cases where the timestamp data source didn't originate from a cudf data loader.",
+  "closed_at": null,
+  "comments": 9,
+  "created_at": "2019-08-06T20:39:48Z",
+  "html_url": "https://github.com/rapidsai/cudf/issues/2477",
+  "labels": [
+    "feature request",
+    "libcudf",
+    "cuIO",
+    "Spark"
+  ],
+  "number": 2477,
+  "state": "open",
+  "title": "[FEA] Timezone conversions for timestamps",
+  "updated_at": "2022-09-21T16:17:00Z"
+}

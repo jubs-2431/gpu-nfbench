@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "CONTRIBUTOR",
+    "body": "Fix in #37457",
+    "created_at": "2026-05-07T11:06:44Z",
+    "html_url": "https://github.com/jax-ml/jax/issues/37422#issuecomment-4396553266",
+    "id": 4396553266,
+    "issue_url": "https://api.github.com/repos/jax-ml/jax/issues/37422",
+    "node_id": "IC_kwDOCTkjjc8AAAABBg4UMg",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/jax-ml/jax/issues/comments/4396553266/reactions"
+    },
+    "updated_at": "2026-05-07T11:06:44Z",
+    "url": "https://api.github.com/repos/jax-ml/jax/issues/comments/4396553266",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/81299919?v=4",
+      "events_url": "https://api.github.com/users/ShresthSamyak/events{/privacy}",
+      "followers_url": "https://api.github.com/users/ShresthSamyak/followers",
+      "following_url": "https://api.github.com/users/ShresthSamyak/following{/other_user}",
+      "gists_url": "https://api.github.com/users/ShresthSamyak/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/ShresthSamyak",
+      "id": 81299919,
+      "login": "ShresthSamyak",
+      "node_id": "MDQ6VXNlcjgxMjk5OTE5",
+      "organizations_url": "https://api.github.com/users/ShresthSamyak/orgs",
+      "received_events_url": "https://api.github.com/users/ShresthSamyak/received_events",
+      "repos_url": "https://api.github.com/users/ShresthSamyak/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/ShresthSamyak/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/ShresthSamyak/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/ShresthSamyak",
+      "user_view_type": "public"
+    }
+  }
+]

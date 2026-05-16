@@ -1,0 +1,48 @@
+[
+  {
+    "author_association": "COLLABORATOR",
+    "body": "This is platform dependent and even in the same platform, it may vary between inputs depending on whether we can vectorise the operation or not. This is documented here: https://pytorch.org/docs/stable/notes/numerical_accuracy.html#extremal-values\r\n\r\nDoes this behaviour affect any specific program of yours?",
+    "created_at": "2024-03-11T16:17:58Z",
+    "html_url": "https://github.com/pytorch/pytorch/issues/121588#issuecomment-1988834563",
+    "id": 1988834563,
+    "issue_url": "https://api.github.com/repos/pytorch/pytorch/issues/121588",
+    "node_id": "IC_kwDOA-j9z852izUD",
+    "performed_via_github_app": null,
+    "pin": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/1988834563/reactions"
+    },
+    "updated_at": "2024-03-11T16:17:58Z",
+    "url": "https://api.github.com/repos/pytorch/pytorch/issues/comments/1988834563",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/3291265?v=4",
+      "events_url": "https://api.github.com/users/lezcano/events{/privacy}",
+      "followers_url": "https://api.github.com/users/lezcano/followers",
+      "following_url": "https://api.github.com/users/lezcano/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lezcano/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/lezcano",
+      "id": 3291265,
+      "login": "lezcano",
+      "node_id": "MDQ6VXNlcjMyOTEyNjU=",
+      "organizations_url": "https://api.github.com/users/lezcano/orgs",
+      "received_events_url": "https://api.github.com/users/lezcano/received_events",
+      "repos_url": "https://api.github.com/users/lezcano/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/lezcano/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lezcano/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/lezcano",
+      "user_view_type": "public"
+    }
+  }
+]

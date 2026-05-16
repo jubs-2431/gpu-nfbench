@@ -1,0 +1,148 @@
+diff --git a/docs/source/user/installing.rst b/docs/source/user/installing.rst
+index 563717a5d45..e8bd805aee6 100644
+--- a/docs/source/user/installing.rst
++++ b/docs/source/user/installing.rst
+@@ -185,18 +185,28 @@ vary with target operating system and hardware. The following lists them all
+   * ``numpy``
+   * ``llvmlite``
+   * Compiler toolchain mentioned above
+-  * OpenMP C headers and runtime libraries compatible with the compiler
+-    toolchain mentioned above and accessible to the compiler via standard flags
+-    (Linux, Windows).
+ 
+-* Optional build time:
+-
+-  * ``llvm-openmp`` (OSX) - provides headers for compiling OpenMP support into
++* Build time environment variables:
++  * ``NUMBA_NO_OPENMP``
++    Set this environment variable to ``1`` when building
++    to disable compilation of the OpenMP threading backend.
++    If enabled you need OpenMP C headers and runtime libraries compatible
++    with the compiler toolchain mentioned above and accessible to the
++    compiler via standard flags (Linux, Windows)
++    * ``llvm-openmp`` (OSX) - provides headers for compiling OpenMP support into
+     Numba's threading backend
+-  * ``intel-openmp`` (OSX) - provides OpenMP library support for Numba's
++    * ``intel-openmp`` (OSX) - provides OpenMP library support for Numba's
+     threading backend.
+-  * ``tbb-devel`` - provides TBB headers/libraries for compiling TBB support
+-    into Numba's threading backend
++  * ``NUMBA_NO_TBB``
++    Set this environment variable to ``1`` when building
++    to disable the compilation of the TBB threading backend.
++    If not setting it to ``1`` you can also add the location where the
++    TBB headers are going to be searched for, which is generally in ``/usr``,
++    as they are installed in ``/usr/include/tbb/tbb.h`` for linux, by setting 
++    ``TBBROOT=/usr`` or as required based on your platform: `Intel documentation
++    <https://software.intel.com/content/www/us/en/develop/documentation/advisor-user-guide/top/appendix/adding-parallelism-to-your-program/adding-the-parallel-framework-to-your-build-environment/defining-the-tbbroot-environment-variable.html>`_  
++    If enabled ``tbb-devel`` is a requirement. It provides TBB headers/libraries
++    for compiling TBB support into Numba's threading backend
+ 
+ * Required run time:
+ 
+@@ -297,4 +307,3 @@ further information.
+                                   pci bus id: 1
+ 
+ (output truncated due to length)
+-
+diff --git a/setup.py b/setup.py
+index ee81e50da46..3e339964029 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1,10 +1,11 @@
+-from setuptools import setup, Extension, find_packages
+-from distutils.command import build
+-from distutils.spawn import spawn
+-from distutils import sysconfig
+-import sys
+ import os
+ import platform
++import sys
++from distutils import sysconfig
++from distutils.command import build
++from distutils.spawn import spawn
++
++from setuptools import Extension, find_packages, setup
+ 
+ import versioneer
+ 
+@@ -182,11 +183,6 @@ def check_file_at_path(path2file):
+                     found = p  # the latest is used
+         return found
+ 
+-    # Search for Intel TBB, first check env var TBBROOT then conda locations
+-    tbb_root = os.getenv('TBBROOT')
+-    if not tbb_root:
+-        tbb_root = check_file_at_path(['include', 'tbb', 'tbb.h'])
+-
+     # Set various flags for use in TBB and openmp. On OSX, also find OpenMP!
+     have_openmp = True
+     if sys.platform.startswith('win'):
+@@ -213,34 +209,43 @@ def check_file_at_path(path2file):
+         else:
+             omplinkflags = ['-fopenmp']
+ 
+-    if tbb_root:
+-        print("Using Intel TBB from:", tbb_root)
+-        ext_np_ufunc_tbb_backend = Extension(
+-            name='numba.np.ufunc.tbbpool',
+-            sources=[
+-                'numba/np/ufunc/tbbpool.cpp',
+-                'numba/np/ufunc/gufunc_scheduler.cpp',
+-            ],
+-            depends=['numba/np/ufunc/workqueue.h'],
+-            include_dirs=[os.path.join(tbb_root, 'include')],
+-            extra_compile_args=cpp11flags,
+-            libraries=['tbb'],  # TODO: if --debug or -g, use 'tbb_debug'
+-            library_dirs=[
+-                # for Linux
+-                os.path.join(tbb_root, 'lib', 'intel64', 'gcc4.4'),
+-                # for MacOS
+-                os.path.join(tbb_root, 'lib'),
+-                # for Windows
+-                os.path.join(tbb_root, 'lib', 'intel64', 'vc_mt'),
+-            ],
+-        )
+-        ext_np_ufunc_backends.append(ext_np_ufunc_tbb_backend)
++    # Disable tbb if forced by user with NUMBA_NO_TBB=1
++    if os.getenv("NUMBA_NO_TBB") == "1":
++        print("TBB disabled")
+     else:
+-        print("TBB not found")
++        # Search for Intel TBB, first check env var TBBROOT then conda locations
++        tbb_root = os.getenv('TBBROOT')
++        if not tbb_root:
++            tbb_root = check_file_at_path(['include', 'tbb', 'tbb.h'])
++
++        if tbb_root:
++            print("Using Intel TBB from:", tbb_root)
++            ext_np_ufunc_tbb_backend = Extension(
++                name='numba.np.ufunc.tbbpool',
++                sources=[
++                    'numba/np/ufunc/tbbpool.cpp',
++                    'numba/np/ufunc/gufunc_scheduler.cpp',
++                ],
++                depends=['numba/np/ufunc/workqueue.h'],
++                include_dirs=[os.path.join(tbb_root, 'include')],
++                extra_compile_args=cpp11flags,
++                libraries=['tbb'],  # TODO: if --debug or -g, use 'tbb_debug'
++                library_dirs=[
++                    # for Linux
++                    os.path.join(tbb_root, 'lib', 'intel64', 'gcc4.4'),
++                    # for MacOS
++                    os.path.join(tbb_root, 'lib'),
++                    # for Windows
++                    os.path.join(tbb_root, 'lib', 'intel64', 'vc_mt'),
++                ],
++            )
++            ext_np_ufunc_backends.append(ext_np_ufunc_tbb_backend)
++        else:
++            print("TBB not found")
+ 
+     # Disable OpenMP if we are building a wheel or
+     # forced by user with NUMBA_NO_OPENMP=1
+-    if is_building_wheel() or os.getenv('NUMBA_NO_OPENMP'):
++    if is_building_wheel() or os.getenv('NUMBA_NO_OPENMP') == "1":
+         print("OpenMP disabled")
+     elif have_openmp:
+         print("Using OpenMP from:", have_openmp)

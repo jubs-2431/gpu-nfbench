@@ -1,0 +1,8 @@
+model,evaluation,accuracy,macro_f1
+majority_baseline,stratified_5fold,0.382,0.079
+candidate_weak_label,stratified_5fold,0.414,0.306
+bm25_knn,stratified_5fold,0.356,0.185
+naive_bayes,stratified_5fold,0.403,0.231
+tfidf_logistic,stratified_5fold,0.487,0.243
+tfidf_linear_svm,stratified_5fold,0.503,0.270
+bigram_tfidf_logistic,stratified_5fold,0.471,0.228

@@ -1,0 +1,14 @@
+{
+  "body": "### Description\n\nI found that `jax.numpy.linalg.tensorinv` brings different results with `numpy.linalg.tensorinv` in following case.\nI suppose this may be a bug in `JAX`.\n\n```py\nimport numpy as np\nimport jax.numpy as jnp\n\nprint(np.linalg.tensorinv(np.full((2, 2), np.nan), 1))\nprint(jnp.linalg.tensorinv(jnp.full((2, 2), jnp.nan), 1))\n```\nOutput:\n```bash\n[[nan nan]\n [nan nan]]\n[[nan nan]\n [nan inf]]\n```\n\n\n### System info (python version, jaxlib version, accelerator, etc.)\n\n```\njax:    0.6.0\njaxlib: 0.6.0\nnumpy:  2.2.3\npython: 3.10.12 (main, Feb  4 2025, 14:57:36) [GCC 11.4.0]\ndevice info: NVIDIA GeForce RTX 4090-1, 1 local devices\"\nprocess_count: 1\nplatform: uname_result(system='Linux', node='4db45dc420f8', release='6.11.0-25-generic', version='#25~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Apr 15 17:20:50 UTC 2', machine='x86_64')\n\n\n$ nvidia-smi\nWed May  7 16:26:08 2025       \n+---------------------------------------------------------------------------------------+\n| NVIDIA-SMI 535.230.02             Driver Version: 535.230.02   CUDA Version: 12.2     |\n|-----------------------------------------+----------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\n|                                         |                      |               MIG M. |\n|=========================================+======================+======================|\n|   0  NVIDIA GeForce RTX 4090        Off | 00000000:01:00.0 Off |                  Off |\n| 36%   32C    P2              36W / 450W |    407MiB / 24564MiB |      1%      Default |\n|                                         |                      |                  N/A |\n+-----------------------------------------+----------------------+----------------------+\n                                                                                         \n+---------------------------------------------------------------------------------------+\n| Processes:                                                                            |\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\n|        ID   ID                                                             Usage      |\n|=======================================================================================|\n+---------------------------------------------------------------------------------------+\n```",
+  "closed_at": "2025-05-09T17:14:33Z",
+  "comments": 3,
+  "created_at": "2025-05-09T10:15:50Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/28637",
+  "labels": [
+    "bug"
+  ],
+  "number": 28637,
+  "state": "closed",
+  "title": "`jax.numpy.linalg.tensorinv` brings different results with `numpy.linalg.tensorinv`",
+  "updated_at": "2025-05-09T17:14:49Z"
+}

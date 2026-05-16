@@ -1,0 +1,14 @@
+{
+  "body": "I was trying different python parallelization/jit frameworks like jax and taichi, but I am always coming back to Numba due to it being beginner friendly and one can gradually increase the efficiency with further understanding.\nWith that being said, I was a bit sad to see that only CUDA was supported as a GPU backend (now it is managed with a [plugin by nvidia](https://github.com/NVIDIA/numba-cuda) themselves) while the support for AMD (ROCm) was first added and then removed.\nSupporting all of the platforms would be a huge endeavor for a project like Numba, so a simpler alternative would be great to have.\nWhile exploring taichi I discovered that they support multiple \"backends\", and one of them were OpenGL/Vulkan. While the multiple backends enabled to write one kernel, which could be executed onto multiple platforms, I was more surprised to see OpenGL/Vulkan support, which meant I was kinda platform agnostic, as long as the target platform could setup/run OpenGL/Vulkan.\nSince OpenGL is a bit older, I was wondering how hard it would be to support Vulkan as a backend for Numba.\nWhile the performance would not be on par as using native APIs/frameworks, it would still be a huge benefit and make using different hardware much easier!\nThere has been a comment regarding using the Vulkan LLVM as an intermediate step for Apples Metal API: https://github.com/numba/numba/issues/5706#issuecomment-985233765\n\nI have no experience in such matters, but if someone could give me some hints where to lookup stuff, I could maybe start with a proof of concept!\n",
+  "closed_at": "2025-06-17T15:02:16Z",
+  "comments": 5,
+  "created_at": "2025-06-13T09:38:10Z",
+  "html_url": "https://github.com/numba/numba/issues/10116",
+  "labels": [
+    "feature_request"
+  ],
+  "number": 10116,
+  "state": "closed",
+  "title": "[Feature request] Vulkan Target",
+  "updated_at": "2025-06-17T15:02:16Z"
+}

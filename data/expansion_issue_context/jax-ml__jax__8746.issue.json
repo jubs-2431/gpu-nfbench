@@ -1,0 +1,19 @@
+{
+  "body": "RTX3080 / cuda11.1/cudnn 8.2.1/ubuntu16.04\r\n\r\nThis problem occurs in jaxlib-0.1.72+cuda111. When I update to 0.1.74, it will disappear. However, in 0.1.74, Jax cannot detect the existence of GPU, and tensorflow can\r\n\r\nTherefore, whether I use 0.1.72 or 0.1.74, there is always a problem with me\r\n\r\n`RuntimeError: UNKNOWN: Failed to determine best cudnn convolution algorithm: INTERNAL: All algorithms tried for %custom-call.1 = (f32[1,112,112,64]{2,1,3,0}, u8[0]{0}) custom-call(f32[1,229,229,3]{2,1,3,0} %pad, f32[7,7,3,64]{1,0,2,3} %copy.4), window={size=7x7 stride=2x2}, dim_labels=b01f_01io->b01f, custom_call_target=\"__cudnn$convForward\", metadata={op_type=\"conv_general_dilated\" op_name=\"jit(conv_general_dilated)/conv_general_dilated[\\n  batch_group_count=1\\n  dimension_numbers=ConvDimensionNumbers(lhs_spec=(0, 3, 1, 2), rhs_spec=(3, 2, 0, 1), out_spec=(0, 3, 1, 2))\\n  feature_group_count=1\\n  lhs_dilation=(1, 1)\\n  lhs_shape=(1, 224, 224, 3)\\n  padding=((2, 3), (2, 3))\\n  precision=None\\n  preferred_element_type=None\\n  rhs_dilation=(1, 1)\\n  rhs_shape=(7, 7, 3, 64)\\n  window_strides=(2, 2)\\n]\" source_file=\"/media/node/Materials/anaconda3/envs/xmcgan/lib/python3.9/site-packages/flax/linen/linear.py\" source_line=282}, backend_config=\"{\\\"algorithm\\\":\\\"0\\\",\\\"tensor_ops_enabled\\\":false,\\\"conv_result_scale\\\":1,\\\"activation_mode\\\":\\\"0\\\",\\\"side_input_scale\\\":0}\" failed. Falling back to default algorithm. \r\n\r\nConvolution performance may be suboptimal.  To ignore this failure and try to use a fallback algorithm, use XLA_FLAGS=--xla_gpu_strict_conv_algorithm_picker=false.  Please also file a bug for the root cause of failing autotuning.\r\n`\r\n",
+  "closed_at": null,
+  "comments": 13,
+  "created_at": "2021-12-01T05:14:26Z",
+  "html_url": "https://github.com/jax-ml/jax/issues/8746",
+  "labels": [
+    "bug",
+    "better_errors",
+    "P1 (soon)",
+    "needs info",
+    "NVIDIA GPU"
+  ],
+  "number": 8746,
+  "pull_request": null,
+  "state": "open",
+  "title": "Failed to determine best cudnn convolution algorithm/No GPU/TPU found",
+  "updated_at": "2024-01-10T11:18:14Z"
+}

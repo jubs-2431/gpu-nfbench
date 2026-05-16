@@ -1,0 +1,3 @@
+split,rows,accuracy,macro_f1
+validation,121,0.744,0.721
+test,121,0.686,0.640

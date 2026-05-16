@@ -1,0 +1,60 @@
+diff --git a/test/inductor/test_deterministic.py b/test/inductor/test_deterministic.py
+index c75e3f9961790..621f3d51abe93 100644
+--- a/test/inductor/test_deterministic.py
++++ b/test/inductor/test_deterministic.py
+@@ -115,6 +115,25 @@ def foo(x):
+             else:
+                 self.assertTrue(counters["inductor"]["coordesc_tuning_bench"] > 0)
+ 
++    def test_reorder_for_locality_preserves_randint_order(self):
++        with inductor_config.patch(fallback_random=True):
++
++            def fn():
++                torch.manual_seed(0)
++                out = torch.randint(0, 100, (4, 1), dtype=torch.int64)
++                _ = torch.randint(0, 100, (2, 1), dtype=torch.int64)
++                return out
++
++            compiled = torch.compile(fn, backend="inductor")
++
++            torch.manual_seed(0)
++            eager = fn()
++
++            torch.manual_seed(0)
++            compiled_out = compiled()
++
++            torch.testing.assert_close(eager, compiled_out)
++
+     @unittest.skipIf(IS_FBCODE, "Skipping run2run determinism test in fbcode")
+     @parametrize("model_name", ["GoogleFnet", "BertForMaskedLM", "DistillGPT2"])
+     @parametrize("training_or_inference", ["training", "inference"])
+diff --git a/torch/_inductor/fx_passes/post_grad.py b/torch/_inductor/fx_passes/post_grad.py
+index 7b947937646e6..89410ee598792 100644
+--- a/torch/_inductor/fx_passes/post_grad.py
++++ b/torch/_inductor/fx_passes/post_grad.py
+@@ -777,6 +777,13 @@ def check():
+         def check():
+             return True
+ 
++    def consumes_rng_state(node: torch.fx.Node) -> bool:
++        return (
++            node.op == "call_function"
++            and isinstance(node.target, torch._ops.OpOverload)
++            and torch.Tag.nondeterministic_seeded in node.target.tags
++        )
++
+     def visit(other_node):
+         if (
+             other_node.op == "call_function"
+@@ -786,6 +793,11 @@ def visit(other_node):
+             == get_mutation_region_id(graph, other_node)
+             and check()
+         ):
++            # Ops that consume RNG state are order-sensitive and must not be
++            # reordered during locality optimization.
++            if consumes_rng_state(other_node):
++                return
++
+             # move node's producers right before it
+             node.prepend(other_node)
+ 

@@ -1,0 +1,3 @@
+mode,train_rows,test_rows,answered_rows,coverage,accuracy,macro_f1
+standalone_llm_holdout_full_coverage,951,25,25,1.000,0.520,0.395
+standalone_llm_holdout_excluding_needs_review,951,25,25,1.000,0.520,0.395

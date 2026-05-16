@@ -1,0 +1,15 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\n```python\nimport torch\n\na = torch.rand(4, requires_grad=True)\n\nb = a.view(4)\nassert b.requires_grad and b._is_view()\n\nwith torch.no_grad():\n    c = b.view(4)\n\nassert c.requires_grad\n\nclass View(torch.autograd.Function):\n    @staticmethod\n    def forward(ctx, x):\n        # return x.data.view(x.shape)\n        return x.detach().view(x.shape)\n\n    @staticmethod\n    def backward(ctx, grad):\n        return grad\n\nd = View.apply(a)\nassert d.requires_grad and d._is_view()\n\nwith torch.no_grad():\n    e = d.view(4)\n\nassert e.requires_grad # AssertionError\n```\n\nThe variable `d` in the `forward` method of other `autograd.Function` implementations may behave differently compared to `b`. But I don\u2019t have any method to distinguish between them.\n\n### Versions\n\nVersions of relevant libraries:\n[pip3] numpy==2.3.4\n[pip3] nvidia-cublas-cu12==12.6.4.1\n[pip3] nvidia-cuda-cupti-cu12==12.6.80\n[pip3] nvidia-cuda-nvrtc-cu12==12.6.77\n[pip3] nvidia-cuda-runtime-cu12==12.6.77\n[pip3] nvidia-cudnn-cu12==9.10.2.21\n[pip3] nvidia-cufft-cu12==11.3.0.4\n[pip3] nvidia-curand-cu12==10.3.7.77\n[pip3] nvidia-cusolver-cu12==11.7.1.2\n[pip3] nvidia-cusparse-cu12==12.5.4.2\n[pip3] nvidia-cusparselt-cu12==0.7.1\n[pip3] nvidia-nccl-cu12==2.27.5\n[pip3] nvidia-nvjitlink-cu12==12.6.85\n[pip3] nvidia-nvtx-cu12==12.6.77\n[pip3] pytorch-triton==3.5.0+git7416ffcb\n[pip3] torch==2.10.0.dev20251023+cu126\n[pip3] torchvision==0.25.0.dev20251023+cu126\n\ncc @ezyang @albanD @gqchen @nikitaved @soulitzer @Varal7 @xmfan",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2025-10-23T15:07:17Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/166131",
+  "labels": [
+    "module: autograd",
+    "triaged"
+  ],
+  "number": 166131,
+  "state": "open",
+  "title": "Return a view from tensor(requires_grad=False) in autograd function may cause incorrect requires_grad attribute.",
+  "updated_at": "2025-11-27T09:06:44Z"
+}

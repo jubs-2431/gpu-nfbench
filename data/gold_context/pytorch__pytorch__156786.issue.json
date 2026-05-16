@@ -1,0 +1,15 @@
+{
+  "body": "### \ud83d\udc1b Describe the bug\n\n**symptom**: `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor. Note that graph break can eliminate errors. I guess some optimization between `Embedding` and `index_copy` is processed incorrectly on CPP backend\n**codegen backend**: only CPP\n```python\nimport torch\nimport torch.nn as nn\nimport torch.nn.functional as F\nfrom torch._inductor import config\n\nconfig.fallback_random = True\ntorch.set_grad_enabled(False)\ntorch.manual_seed(0)\n\n\nclass Model(torch.nn.Module):\n\n    def __init__(self):\n        super().__init__()\n        self.embedding = torch.nn.Embedding(num_embeddings=10, embedding_dim=4)\n\n    def forward(self, x, indices):\n        x_embed = self.embedding(x)\n        # torch._dynamo.graph_break()  # graph break can eliminate errors\n        out = torch.index_copy(x_embed, dim=1, index=indices, source=x_embed)\n        return out\n\n\nmodel = Model()\n\n\nx = torch.randint(0, 10, (4,))\nindices = torch.tensor([3, 1, 0, 2])\n\ninputs = [x, indices]\n\n\ndef run_test(model, inputs, device, backend):\n    torch.manual_seed(0)\n    model = model.to(device)\n    inputs = [x.to(device) for x in inputs]\n    if backend != \"eager\":\n        model = torch.compile(model, backend=backend)\n    torch.manual_seed(0)\n    output = model(*inputs)\n    return output\n\n\ndevice = 'cpu'\noutput = run_test(model, inputs, device, 'eager')\nc_output = run_test(model, inputs, device, 'inductor')\nprint(torch.allclose(output, c_output, rtol=1e-3, atol=1e-3))\nprint(torch.max(torch.abs(c_output - output)))\n```\n\n### Error logs\n\nCPP\n```\nFalse\ntensor(0.6628)\n```\ntriton\n```\nTrue\ntensor(0., device='cuda:0')\n```\n\n### Versions\n\n2.8.0.dev20250623+cu126\n\ncc @chauhang @penguinwu",
+  "closed_at": null,
+  "comments": 2,
+  "created_at": "2025-06-25T02:16:56Z",
+  "html_url": "https://github.com/pytorch/pytorch/issues/156786",
+  "labels": [
+    "oncall: pt2",
+    "oncall: cpu inductor"
+  ],
+  "number": 156786,
+  "state": "open",
+  "title": "[inductor] [cpu] `torch.nn.Embedding-torch.index_copy` outputs inconsistent results on cpu inductor",
+  "updated_at": "2025-08-12T02:56:15Z"
+}

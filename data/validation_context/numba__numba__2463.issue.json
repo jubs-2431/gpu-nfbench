@@ -1,0 +1,15 @@
+{
+  "body": "Right now you can pass an integer argument  to specify 1D dynamic shared memory. Allowing for a tuple argument to allow for 2D+ dynamic shared memory allocation would be a great addition.",
+  "closed_at": null,
+  "comments": 4,
+  "created_at": "2017-07-14T18:27:44Z",
+  "html_url": "https://github.com/numba/numba/issues/2463",
+  "labels": [
+    "feature_request",
+    "CUDA"
+  ],
+  "number": 2463,
+  "state": "open",
+  "title": "2D+ Dynamic Shared Memory support",
+  "updated_at": "2023-02-17T15:17:23Z"
+}
