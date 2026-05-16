@@ -89,6 +89,13 @@ The contributions are:
     identifying cross-project transfer as the main remaining barrier.
 \end{itemize}
 
+We organize the evaluation around four systems questions:
+\textbf{RQ1}: Are weak labels from issue search usable as ground truth?
+\textbf{RQ2}: Does a task-specific LLM improve report triage over transparent
+text baselines? \textbf{RQ3}: Can the system trade coverage for higher
+precision when reports are ambiguous? \textbf{RQ4}: Does triage transfer across
+GPU software ecosystems, or does repository-specific language dominate?
+
 \section{Problem and Dataset}
 
 \subsection{Task}
@@ -217,6 +224,24 @@ an auditable taxonomy and can be compared directly with retrieval and linear
 baselines. The deterministic ensemble remains useful because it provides a
 transparent fallback and a disagreement signal for selective prediction.
 
+\subsection{Implementation and Artifact}
+
+The implementation is intentionally simple enough to be reproducible. The data
+pipeline stores mined issue records, canonical labels, audit files, and
+taxonomy-repair logs as CSV and JSONL files. Deterministic baselines use
+standard sparse text features and are rerunnable from the released scripts. The
+LLM training packet is emitted as sequence-to-sequence examples whose targets
+are exactly the seven taxonomy labels. Evaluation scripts regenerate the
+reported tables, per-class summaries, abstention metrics, chronological split,
+and leave-one-repository-out split.
+
+The artifact is part of the contribution rather than only a supplement. It
+contains the benchmark, completed blind-audit files, adjudication outputs,
+model predictions, error appendix, and root-cause evidence extension. During
+review, public repository and archival links are removed from the paper to
+preserve anonymity; the camera-ready version can restore those links after
+acceptance.
+
 \section{Evaluation}
 
 \subsection{Protocol}
@@ -255,6 +280,15 @@ FLAN-T5-base LLM & \textbf{0.805} & \textbf{0.778} \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+The weak-label result answers RQ1: keyword retrieval is useful for candidate
+collection but not for supervision. The 50.5\% weak-label accuracy is only
+better than the majority baseline because issue-search terms are correlated
+with failure language; it still mislabels many reports whose text contains
+generic stack traces, dtype names, or numerical terms without a numerical
+failure. The LLM result answers RQ2: the task-specific model improves over
+transparent deterministic baselines, but the deterministic models remain useful
+for debugging and confidence estimation.
 
 \subsection{Generalization and Selective Triage}
 
@@ -308,16 +342,39 @@ confident label.
 
 \begin{table}[t]
 \centering
+\caption{Deterministic ensemble ablation.}
+\label{tab:ablation}
+\begin{tabular}{lcc}
+\toprule
+Mode & Accuracy & Macro F1 \\
+\midrule
+Full deterministic ensemble & 0.768 & 0.753 \\
+No weak candidate label & 0.761 & 0.748 \\
+Linear-model vote only & 0.757 & 0.745 \\
+Candidate label + SVM & 0.765 & 0.751 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ablation} shows that the weak candidate label is helpful as a
+feature-like signal but not as truth. Removing it lowers the deterministic
+ensemble only slightly, while using it alone is far worse. This supports the
+design choice to preserve weak labels for analysis but base the benchmark on
+human annotation.
+
+\begin{table}[t]
+\centering
 \caption{Selective prediction with abstention.}
 \label{tab:abstain}
-\begin{tabular}{lccc}
+\small
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Agreement rule & Coverage & Accuracy & Macro F1 \\
+Rule & Cov. & Acc. & F1 \\
 \midrule
 Vote $\geq$ 3 & 0.926 & 0.769 & 0.744 \\
 Vote $\geq$ 4 & 0.735 & 0.842 & 0.803 \\
 Vote $\geq$ 5 & 0.301 & 0.939 & 0.733 \\
-LLM/ensemble agreement & 0.683 & 0.893 & 0.844 \\
+LLM/ensemble agree & 0.683 & 0.893 & 0.844 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -332,6 +389,12 @@ mismatches. \texttt{nan\_inf} reports are often predicted as
 checks. \texttt{crash\_compile} reports are confused with numerical labels when
 the exception occurs inside a failed computation. These patterns motivate
 multi-label secondary-cause prediction and deeper root-cause linking to fixes.
+
+The qualitative appendix contains concrete issue snippets for these boundary
+cases. These examples are important for ATC because they show that the benchmark
+is not an artificial label-matching exercise. Reports often contain enough
+evidence to route the issue but not enough evidence to prove root cause, and the
+hard cases are exactly where maintainers would want a tool to defer.
 
 \section{Artifact and Threats}
 
@@ -348,6 +411,25 @@ evidence-coded extension that records linked-fix signals, file categories, and
 evidence provenance. We include it because the extension supports the next
 systems question after triage: whether report symptoms can be connected to
 fixes in compiler, runtime, dtype, test, documentation, or kernel code.
+
+\begin{table}[t]
+\centering
+\caption{Root-cause extension label counts.}
+\label{tab:rootcause}
+\begin{tabular}{lr}
+\toprule
+Evidence label & Rows \\
+\midrule
+Numerical algorithm / tolerance & 74 \\
+Non-bug, feature, docs, or support & 69 \\
+Dtype or type semantics & 50 \\
+Compiler backend or runtime & 30 \\
+Performance or resource behavior & 27 \\
+\midrule
+Total & 250 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Threats to validity remain. The benchmark is public-issue based and may not
 represent private industrial failures. The full 1,191-row benchmark is not

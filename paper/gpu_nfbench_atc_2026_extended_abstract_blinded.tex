@@ -80,9 +80,8 @@ This design targets an operational systems workflow rather than a generic text
 classification benchmark. A maintainer-facing assistant should identify which
 reports are likely numerical failures, route them into the right queue, and
 abstain when the evidence is ambiguous. For that reason, we evaluate both
-full-coverage prediction and selective prediction. The latter is important
-because wrong labels are costly: a dtype report routed as a compiler crash or a
-non-numerical API question routed as a correctness bug wastes maintainer time.
+full-coverage prediction and selective prediction, where wrong labels can waste
+maintainer time.
 
 The system evaluates both deterministic models and a fine-tuned LLM. Weak
 retrieval labels reach only 50.5\% accuracy, demonstrating that raw
@@ -102,20 +101,16 @@ analyzing, and troubleshooting. Its main result is not only that an LLM can
 classify issue text; it is that reliable triage requires curated systems data,
 auditable label repair, cross-repository evaluation, and selective confidence
 mechanisms. The benchmark makes previously unavailable GPU numerical-failure
-traces available for future systems reliability work. The full paper discusses
-the system design, data construction, model evaluation, cross-repository
-weaknesses, and limitations needed to judge whether the results support the
-claim.
+traces available for future systems reliability work.
 
 The expected ATC contribution is therefore an artifact-backed systems result:
 public GPU issue reports can be turned into a reusable triage benchmark, but
 only after weak labels are repaired and cross-repository transfer is measured
 explicitly. The paper does not claim definitive root-cause diagnosis from issue
-text alone. Instead, it establishes report-level triage as a measurable systems
-task and provides the data needed for future root-cause and debugging research.
+text alone; it establishes report-level triage as a measurable systems task.
 
 \bibliographystyle{ACM-Reference-Format}
-\begin{thebibliography}{4}
+\begin{thebibliography}{3}
 
 \bibitem{triton2019}
 Tillet, P., Kung, H., and Cox, D. 2019. Triton: An intermediate language and
@@ -124,10 +119,6 @@ compiler for tiled neural network computations. In \emph{MAPL}.
 \bibitem{pytorch2019}
 Paszke, A. et al. 2019. PyTorch: An imperative style, high-performance deep
 learning library. In \emph{NeurIPS}.
-
-\bibitem{tvm2018}
-Chen, T. et al. 2018. TVM: An automated end-to-end optimizing compiler for deep
-learning. In \emph{OSDI}.
 
 \bibitem{t5}
 Raffel, C. et al. 2020. Exploring the limits of transfer learning with a

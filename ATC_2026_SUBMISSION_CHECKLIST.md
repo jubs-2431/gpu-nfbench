@@ -12,7 +12,7 @@ Venue alignment:
 
 - Format: ACM `acmart` with `sigplan,10pt`, page numbers enabled, copyright
   footnote removed, and references hyperlinked by the ACM template.
-- Full paper: prepared as a short ATC submission; current compiled PDF is 4
+- Full paper: prepared as a short ATC submission; current compiled PDF is 5
   pages, within the 6-page short-paper limit excluding references and
   appendices.
 - Extended abstract: prepared as a standalone 2-page abstract with title block;
