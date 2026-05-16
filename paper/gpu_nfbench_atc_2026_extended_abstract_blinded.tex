@@ -1,0 +1,138 @@
+\documentclass[sigplan,10pt]{acmart}
+
+\setcopyright{none}
+\acmYear{2026}
+\acmConference[ATC '26]{2026 ACM Annual Technical Conference}{2026}{}
+\acmBooktitle{2026 ACM Annual Technical Conference}
+\acmDOI{}
+\acmISBN{}
+\settopmatter{printfolios=true,printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+
+\usepackage{booktabs}
+
+\newcommand{\system}{GPUTriage}
+
+\begin{document}
+\sloppy
+
+\title{LLM-Based Triage of GPU Numerical Failures from Public Issue Reports}
+
+\author{Paper \#XXX}
+\affiliation{\institution{Anonymous Submission}\country{Anonymous}}
+
+\maketitle
+
+\section{Motivation}
+
+GPU software stacks now combine tensor libraries, generated kernels, compiler
+passes, mixed-precision execution, and hardware-specific runtime behavior.
+When these systems fail, the first useful evidence often appears in public
+issue trackers as noisy natural-language reports: NaNs, Inf values, overflow,
+wrong answers, dtype conversion failures, compiler crashes, and performance
+regressions are frequently mixed in the same thread. This creates a practical
+systems problem. Maintainers need to route reports to the right experts, and
+researchers need reusable traces of reliability failures, but weak labels from
+keyword search are not trustworthy enough to support either goal.
+
+\section{Contribution}
+
+We present \system{}, a human-labeled benchmark and LLM-based triage system for
+GPU numerical-failure reports mined from public repositories. The benchmark
+contains 1,191 human-labeled issues from eight GPU-related projects spanning
+compiler, runtime, tensor, and data-processing software. Each issue receives one
+primary label from a seven-class taxonomy covering invalid values,
+overflow/underflow, precision or tolerance failures, dtype or casting failures,
+crash/compile failures, performance-only reports, and non-numerical reports.
+The artifact also includes annotation instructions, blind-audit files,
+adjudication logs, taxonomy repair logs, model outputs, evaluation tables, an
+error appendix, and root-cause evidence files.
+
+\begin{table}[t]
+\centering
+\caption{Key ATC submission results.}
+\label{tab:ea_results}
+\begin{tabular}{lcc}
+\toprule
+Setting & Accuracy & Macro F1 \\
+\midrule
+Weak retrieval labels & 0.505 & 0.426 \\
+Voting ensemble & 0.738 & 0.712 \\
+FLAN-T5-base LLM & 0.805 & 0.778 \\
+LLM/ensemble agreement & 0.893 & 0.844 \\
+Leave-one-repository-out & 0.668 & 0.648 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Method and Results}
+
+\system{} separates data mining from ground truth. Candidate issues are first
+retrieved with terms such as \texttt{nan}, \texttt{inf}, \texttt{overflow},
+\texttt{dtype}, \texttt{precision}, and \texttt{wrong result}. These candidate
+labels are treated only as weak supervision. Human annotation then repairs the
+label space and creates the canonical benchmark. A blind audit over 119 rows
+achieves 80.7\% agreement and Cohen's $\kappa=0.721$; subsequent adjudication
+passes apply 419 human updates and change 211 primary labels.
+
+This design targets an operational systems workflow rather than a generic text
+classification benchmark. A maintainer-facing assistant should identify which
+reports are likely numerical failures, route them into the right queue, and
+abstain when the evidence is ambiguous. For that reason, we evaluate both
+full-coverage prediction and selective prediction. The latter is important
+because wrong labels are costly: a dtype report routed as a compiler crash or a
+non-numerical API question routed as a correctness bug wastes maintainer time.
+
+The system evaluates both deterministic models and a fine-tuned LLM. Weak
+retrieval labels reach only 50.5\% accuracy, demonstrating that raw
+issue-search labels are not reliable ground truth. A deterministic voting
+ensemble reaches 73.8\% accuracy and 0.712 macro F1. A fine-tuned FLAN-T5-base
+classifier reaches 80.5\% held-out accuracy and 0.778 macro F1. For
+high-confidence triage, an LLM/deterministic agreement mode reaches 89.3\%
+accuracy and 0.844 macro F1 at 68.3\% coverage. Chronological evaluation
+reaches 76.6\% accuracy, while leave-one-repository-out evaluation reaches
+66.8\%, exposing cross-project transfer as the main remaining challenge.
+
+\section{Why This Fits ATC}
+
+The work is a systems paper because it studies practical failure reports from
+real GPU software ecosystems and produces an artifact for bug finding,
+analyzing, and troubleshooting. Its main result is not only that an LLM can
+classify issue text; it is that reliable triage requires curated systems data,
+auditable label repair, cross-repository evaluation, and selective confidence
+mechanisms. The benchmark makes previously unavailable GPU numerical-failure
+traces available for future systems reliability work. The full paper discusses
+the system design, data construction, model evaluation, cross-repository
+weaknesses, and limitations needed to judge whether the results support the
+claim.
+
+The expected ATC contribution is therefore an artifact-backed systems result:
+public GPU issue reports can be turned into a reusable triage benchmark, but
+only after weak labels are repaired and cross-repository transfer is measured
+explicitly. The paper does not claim definitive root-cause diagnosis from issue
+text alone. Instead, it establishes report-level triage as a measurable systems
+task and provides the data needed for future root-cause and debugging research.
+
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{4}
+
+\bibitem{triton2019}
+Tillet, P., Kung, H., and Cox, D. 2019. Triton: An intermediate language and
+compiler for tiled neural network computations. In \emph{MAPL}.
+
+\bibitem{pytorch2019}
+Paszke, A. et al. 2019. PyTorch: An imperative style, high-performance deep
+learning library. In \emph{NeurIPS}.
+
+\bibitem{tvm2018}
+Chen, T. et al. 2018. TVM: An automated end-to-end optimizing compiler for deep
+learning. In \emph{OSDI}.
+
+\bibitem{t5}
+Raffel, C. et al. 2020. Exploring the limits of transfer learning with a
+unified text-to-text transformer. \emph{JMLR} 21, 140, 1--67.
+
+\end{thebibliography}
+
+\end{document}

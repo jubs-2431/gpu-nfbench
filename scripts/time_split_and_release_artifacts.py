@@ -243,6 +243,8 @@ def release_bundle() -> None:
         "HPEC_2026_SUBMISSION_CHECKLIST.md",
         "BIGDATA_2026_SUBMISSION_ABSTRACT.txt",
         "BIGDATA_2026_SUBMISSION_CHECKLIST.md",
+        "ATC_2026_SUBMISSION_CHECKLIST.md",
+        "ATC_2026_GENERATIVE_AI_STATEMENT.txt",
         "CITATION.cff",
         ".zenodo.json",
         "RELEASE_NOTES_v1.0-conference.md",
@@ -326,9 +328,13 @@ def release_bundle() -> None:
         "paper/GPU-NFBench_IEEE_Manuscript.pdf",
         "paper/GPU-NFBench_HPEC2026_Manuscript.pdf",
         "paper/GPU-NFBench_BigData2026_Manuscript.pdf",
+        "paper/GPUTriage_ATC2026_Full_Blinded.pdf",
+        "paper/GPUTriage_ATC2026_Extended_Abstract_Blinded.pdf",
         "paper/gpu_numerical_failure_taxonomy_ieee.tex",
         "paper/gpu_nfbench_hpec_2026.tex",
         "paper/gpu_nfbench_bigdata_2026.tex",
+        "paper/gpu_nfbench_atc_2026_full_blinded.tex",
+        "paper/gpu_nfbench_atc_2026_extended_abstract_blinded.tex",
     ]:
         src = ROOT / rel
         dst = RELEASE_DIR / rel
