@@ -2,6 +2,9 @@
 
 This release packages the conference-ready GPU-NFBench artifact.
 
+Zenodo DOI: `10.5281/zenodo.20242157`
+Zenodo record: https://zenodo.org/records/20242157
+
 ## Included
 
 - 1,191-row canonical v2 GPU numerical-failure benchmark.
@@ -25,4 +28,4 @@ This release packages the conference-ready GPU-NFBench artifact.
 3. Push this folder, excluding local virtual environments and caches.
 4. Create tag `v1.0-conference`.
 5. Upload `release/gpu-nfbench-artifact.zip` as a GitHub release asset.
-6. Archive the GitHub release on Zenodo and copy the DOI into the paper artifact section.
+6. Zenodo archive completed: `10.5281/zenodo.20242157`.

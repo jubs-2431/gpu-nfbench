@@ -19,11 +19,17 @@
   "license": "mit-license",
   "version": "v1.0-conference",
   "language": "eng",
+  "doi": "10.5281/zenodo.20242157",
   "related_identifiers": [
     {
       "identifier": "https://github.com/jubs-2431/gpu-nfbench",
       "relation": "isSupplementTo",
       "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.20242157",
+      "relation": "isIdenticalTo",
+      "scheme": "doi"
     }
   ]
 }

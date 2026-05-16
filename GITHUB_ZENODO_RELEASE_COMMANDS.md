@@ -19,7 +19,7 @@ Zenodo:
 1. Log into Zenodo with GitHub.
 2. Enable the `jubs-2431/gpu-nfbench` repository in Zenodo GitHub integration.
 3. Create a new GitHub release if Zenodo did not auto-detect `v1.0-conference`.
-4. Copy the generated DOI into `paper/gpu_numerical_failure_taxonomy_ieee.tex`.
+4. Zenodo DOI minted: `10.5281/zenodo.20242157`.
 5. Recompile the manuscript and rebuild `release/gpu-nfbench-artifact.zip`.
 
 Do not archive `.llm_venv`, `tmp/`, local caches, or private API keys.

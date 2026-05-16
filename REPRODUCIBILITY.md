@@ -87,11 +87,10 @@ GitHub release:
 
 - `https://github.com/jubs-2431/gpu-nfbench/releases/tag/v1.0-conference`
 
-Zenodo DOI status:
+Zenodo DOI:
 
-- The artifact contains `.zenodo.json` and `CITATION.cff`.
-- A DOI must be minted from the tagged GitHub release through the repository owner's Zenodo account.
-- After Zenodo creates the DOI, update the paper's Artifact Availability paragraph and `CITATION.cff`.
+- `10.5281/zenodo.20242157`
+- `https://zenodo.org/records/20242157`
 
 ## Known Non-Reproducible or Account-Gated Steps
 

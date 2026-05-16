@@ -15,10 +15,10 @@
 
 ## Still account-gated
 
-- Zenodo DOI: the repository has `.zenodo.json` and `CITATION.cff`, but the DOI must be minted by connecting the GitHub release to the owner's Zenodo account.
+- Zenodo DOI: completed as `10.5281/zenodo.20242157` at `https://zenodo.org/records/20242157`.
 - Modern external API baseline: the shell has no `GEMINI_API_KEY`, `OPENAI_COMPAT_API_KEY`, `OPENROUTER_API_KEY`, or `GROQ_API_KEY`. The paper therefore uses the completed local Llama 3.2 3B baseline and treats prior partial Gemini overlap as supplementary rather than headline evidence.
 - Additional public GitHub issue collection: GitHub Search API returned a rate-limit error during the final pass, so the newly collected external rows are included as a candidate pool only.
 
 ## Submission recommendation
 
-The current paper is ready to submit once the Zenodo DOI is minted and inserted. Do not delay submission for a stronger external API baseline unless the venue specifically requires it; the core contribution is the benchmark, adjudication trail, reproducible artifact, and triage evaluation.
+The current paper is ready to submit. Do not delay submission for a stronger external API baseline unless the venue specifically requires it; the core contribution is the benchmark, adjudication trail, reproducible artifact, and triage evaluation.
