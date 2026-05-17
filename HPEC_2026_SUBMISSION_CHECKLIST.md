@@ -14,8 +14,9 @@ Submission page checked: https://ieee-hpec.org/submit/
 - Not anonymous; HPEC explicitly says papers should not be anonymous.
 - Full-paper length is 5 pages total, under the 6-page upload limit.
 - Includes author name, affiliation, city/state/country, and email.
-- Quantitative results are foregrounded: full-coverage, cross-repository, chronological, LLM, abstention, audit, and artifact results.
-- HPEC-fit framing is explicit: high-performance ML software, GPU kernels, graph compilers, low/mixed precision, benchmarking, reliability, and LLM-assisted triage.
+- Quantitative results are foregrounded: LLM-based triage, full-coverage deterministic baselines, cross-repository transfer, chronological transfer, high-confidence abstention, audit quality, and artifact results.
+- HPEC-fit framing is explicit: high-performance ML software, GPU kernels, graph compilers, low/mixed precision, reliability, and LLM-based triage.
+- Main claim is model/system-first: the paper presents an LLM-based triage system that detects and categorizes GPU numerical-failure reports; GPU-NFBench is the training/evaluation benchmark supporting that claim.
 - Artifact is public and citable:
   - GitHub release: https://github.com/jubs-2431/gpu-nfbench/releases/tag/v1.0-conference
   - Zenodo DOI: https://doi.org/10.5281/zenodo.20242157

@@ -11,7 +11,7 @@
 
 \begin{document}
 
-\title{\bench: Benchmarking LLM-Assisted Triage of GPU Numerical Failures in High-Performance ML Software}
+\title{An LLM-Based Triage System for GPU Numerical Failures in High-Performance ML Software}
 
 \author{
 \IEEEauthorblockN{Aryan Shah}
@@ -30,27 +30,27 @@ High-performance ML software increasingly depends on GPU kernels, graph
 compilers, low/mixed-precision arithmetic, and Python-facing accelerator
 libraries. When these stacks fail, issue reports about NaNs, overflow, dtype
 conversion, precision tolerance, incorrect outputs, compiler failures, and
-performance regressions often overlap. This paper presents \bench{}, a
-human-labeled benchmark and triage framework for GPU numerical-failure reports.
-We construct a 1,191-issue gold benchmark from public GitHub issues across
-eight GPU-related repositories using a seven-class taxonomy for invalid values,
-overflow/underflow, precision/tolerance, dtype/casting, crash/compile,
-performance-only, and non-numerical reports. Weak keyword-derived labels reach
-only 50.5\% accuracy, showing that retrieval labels are not sufficient ground
-truth. A deterministic voting ensemble reaches 73.8\% accuracy and 0.712 macro
-F1; a fine-tuned FLAN-T5-base classifier reaches 80.5\% held-out accuracy and
-0.778 macro F1; and an LLM/deterministic agreement mode reaches 89.3\%
-accuracy at 68.3\% coverage. Cross-repository transfer remains difficult:
-leave-one-repository-out evaluation reaches 66.8\% accuracy. A 119-row blind
-audit achieved 80.7\% annotator agreement and Cohen's $\kappa=0.721$, and
-follow-on adjudication applied 419 human updates. We release the benchmark,
-models, 250-row root-cause evidence-coded extension, error appendix, and
-reproducibility artifact with a Zenodo DOI.
+performance regressions often overlap. This paper presents an LLM-based triage
+system that detects and categorizes GPU numerical-failure reports. The system
+uses a fine-tuned FLAN-T5-base classifier for full-coverage triage and an
+LLM/deterministic agreement mode for high-confidence triage. To train and
+validate it, we construct \bench{}, a 1,191-issue human-labeled benchmark from
+public GitHub issues across eight GPU-related repositories using a seven-class
+taxonomy for invalid values, overflow/underflow, precision/tolerance,
+dtype/casting, crash/compile, performance-only, and non-numerical reports.
+Weak keyword-derived labels reach only 50.5\% accuracy, showing that retrieval
+labels are not sufficient ground truth. The fine-tuned LLM reaches 80.5\%
+held-out accuracy and 0.778 macro F1; a deterministic voting ensemble reaches
+73.8\% accuracy; and LLM/deterministic agreement reaches 89.3\% accuracy at
+68.3\% coverage. Cross-repository transfer remains difficult:
+leave-one-repository-out evaluation reaches 66.8\% accuracy. We release the
+model outputs, benchmark, 250-row root-cause evidence-coded extension, error
+appendix, and reproducibility artifact with a Zenodo DOI.
 \end{abstract}
 
 \begin{IEEEkeywords}
-GPU bugs, numerical bugs, benchmark construction, issue mining, LLM-assisted
-triage, software reliability, machine learning systems
+GPU bugs, numerical bugs, LLM-based triage, issue mining, software reliability,
+machine learning systems, benchmark construction
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -67,18 +67,21 @@ Public issue trackers record these failures at scale, but they are noisy. A
 search for ``NaN'' can return true invalid-value bugs, missing-data examples,
 or unrelated benchmark tables; a search for ``dtype'' can return casting
 failures, unsupported features, performance complaints, or compiler crashes.
-\bench{} addresses this by separating weak retrieval labels from human gold
-labels and by evaluating both full-coverage and abstaining triage systems.
+\bench{} addresses this by training and evaluating an LLM-based triage system
+on human gold labels rather than weak retrieval labels. The system predicts the
+dominant numerical-failure category from issue text and can abstain when model
+agreement is insufficient.
 
 The contributions are:
 \begin{itemize}
-    \item We construct a 1,191-row human-labeled benchmark of GPU numerical
-    failure reports across eight public GPU/HPC software projects.
-    \item We define a seven-class taxonomy and preserve normalization and
-    adjudication logs, including 419 human updates to the final benchmark.
-    \item We evaluate weak labels, lexical baselines, linear classifiers, a
-    fine-tuned FLAN-T5-base model, deterministic ensembles, cross-repository
-    transfer, chronological transfer, and abstention.
+    \item We present an LLM-based triage system for detecting and categorizing
+    GPU numerical-failure reports in high-performance ML software.
+    \item We train a fine-tuned FLAN-T5-base classifier that reaches 80.5\%
+    held-out accuracy, and we evaluate a high-confidence agreement mode that
+    reaches 89.3\% accuracy at 68.3\% coverage.
+    \item We construct \bench{}, a 1,191-row human-labeled training and
+    evaluation benchmark across eight public GPU/HPC software projects, with
+    seven-class labels and 419 human adjudication updates.
     \item We release the data card, benchmark, model outputs, error appendix,
     50-row human-adjudicated root-cause subset, 250-row evidence-coded
     root-cause extension, and reproducibility artifact.
@@ -96,7 +99,7 @@ triage a useful HPEC problem: it combines high-performance GPU software,
 low/mixed precision behavior, benchmarking, reliability, and LLM-assisted
 analysis.
 
-\section{Benchmark Construction}
+\section{Training and Evaluation Benchmark}
 
 The project began with a 930-issue silver seed collected from GPU-related
 repositories using terms such as \texttt{nan}, \texttt{inf},
@@ -219,13 +222,14 @@ labels.
 
 \section{Results}
 
-\subsection{Full-Coverage Classification}
+\subsection{Full-Coverage Triage}
 
-Table~\ref{tab:fullcoverage} reports full-coverage performance. Weak candidate
-labels reach only 50.5\% accuracy, confirming that keyword retrieval labels
-are not reliable gold labels. Linear text models perform substantially better
-with the expanded human-labeled set. The full-coverage voting ensemble reaches
-73.8\% accuracy and 0.712 macro F1.
+Table~\ref{tab:fullcoverage} reports full-coverage deterministic triage
+performance. Weak candidate labels reach only 50.5\% accuracy, confirming that
+keyword retrieval labels are not reliable gold labels. Linear text models
+perform substantially better with the expanded human-labeled set, and the
+full-coverage voting ensemble reaches 73.8\% accuracy and 0.712 macro F1. The
+fine-tuned LLM result is reported separately in Table~\ref{tab:llm}.
 
 \begin{table}[t]
 \centering
@@ -329,20 +333,16 @@ Voting ensemble & 0.745 & 0.722 \\
 \end{tabular}
 \end{table}
 
-\subsection{Standalone LLM Performance}
+\subsection{LLM-Based Triage Performance}
 
-Table~\ref{tab:llm} compares the standalone LLM with the best deterministic
-ensemble. The v2 standalone FLAN-T5-base model reaches 80.5\% held-out test
-accuracy and 0.778 macro F1, outperforming the deterministic ensemble on the
-same held-out LLM test split. This changes the practical conclusion from the
-earlier expanded-gold version: after adjudication repair, the standalone LLM is
-not only a simpler deployable artifact, but also the strongest full-coverage
-triage model in the final held-out evaluation. As an additional local
-zero-shot comparison, we evaluated Ollama \texttt{llama3.2:3b} on the same 123
-held-out rows. It reaches only 31.7\% accuracy and 0.322 macro F1, showing
-that task-specific fine-tuning is important. A cloud-backed modern model was
-not used for the final comparison because exporting held-out benchmark prompts
-to an external service was blocked in the local environment.
+Table~\ref{tab:llm} evaluates the primary LLM-based triage system. The
+fine-tuned FLAN-T5-base model reaches 80.5\% held-out accuracy and 0.778 macro
+F1, outperforming the deterministic ensemble on the same held-out split. This
+supports the paper's main claim: a task-specific LLM can detect and categorize
+GPU numerical-failure reports substantially better than weak retrieval labels
+or local zero-shot prompting. As a local zero-shot comparison, Ollama
+\texttt{llama3.2:3b} reaches only 31.7\% accuracy and 0.322 macro F1 on the
+same 123 held-out rows.
 
 \begin{table}[t]
 \centering
@@ -361,7 +361,7 @@ Binary numerical gate, 5-fold & 0.892 & 0.796 \\
 \end{tabular}
 \end{table}
 
-\subsection{Selective Triage}
+\subsection{High-Confidence Triage}
 
 Table~\ref{tab:abstain} shows the accuracy/coverage tradeoff when the ensemble
 abstains unless enough voters agree. With at least three agreeing voters, the
@@ -406,33 +406,27 @@ traces even when the report is not a numerical defect. This analysis supports
 two follow-up tasks: multi-label secondary-cause prediction and explicit
 separation of symptom labels from root-cause labels.
 
-The artifact includes a 12-case error appendix with issue snippets and
-boundary explanations. Examples include dtype reports predicted as
-precision/tolerance because the failure appears as a numerical mismatch,
-NaN/Inf reports embedded in broader tolerance failures, and non-bug support
-requests predicted as crash or dtype failures because they contain stack-trace
-or type-language cues.
-
 The artifact includes 12 concrete error cases with issue snippets and boundary
-explanations. It also contains linked-fix evidence for future root-cause work:
-105 pilot issues contain at least one fix or root-cause signal, including 39
+explanations. Examples include dtype reports predicted as precision/tolerance
+because the failure appears as a numerical mismatch, NaN/Inf reports embedded
+in broader tolerance failures, and non-bug support requests predicted as crash
+or dtype failures because they contain stack-trace or type-language cues. The
+artifact also contains linked-fix evidence for future root-cause work: 105
+pilot issues contain at least one fix or root-cause signal, including 39
 explicit pull-request URLs, and a public diff fetch retrieved 488 changed-file
 rows. We additionally provide a 50-row human-adjudicated root-cause subset and
-a 250-row evidence-coded extension. The extension contains the 50
-human-adjudicated rows, 55 linked-fix evidence-coded rows, and 145 issue-text
-evidence-coded rows; it is released as root-cause supervision for future work,
-not as 250 human-adjudicated labels.
+a 250-row evidence-coded extension, released as root-cause supervision for
+future work rather than as 250 human-adjudicated labels.
 
 \section{Discussion}
 
 The expanded gold set changes the practical conclusion. On the original
 191-issue pilot, full-coverage classification remained near 54\%, and the most
-useful mode was abstention. With 1,191 human-labeled examples, full-coverage
-triage becomes viable: the deterministic ensemble reaches 73.8\% accuracy, the
-standalone LLM reaches 80.5\% held-out accuracy, and chronological evaluation
-reaches 76.6\%. The standalone LLM is the simplest deployable full-coverage
-artifact, while the deterministic ensemble remains useful as a transparent
-baseline and confidence mechanism. For HPEC-style workflows, \bench{} can help
+useful mode was abstention. With 1,191 human-labeled examples, the fine-tuned
+LLM reaches 80.5\% held-out accuracy and becomes a deployable triage model for
+issue-report streams. The deterministic ensemble remains useful as a
+transparent baseline and confidence mechanism, especially when paired with the
+LLM in agreement mode. For HPEC-style workflows, the system can help
 maintainers prioritize numerical defects, help researchers sample failure
 clusters for root-cause analysis, and provide a supervised evaluation set for
 future debugging agents before patch localization or reproducer generation.
@@ -451,15 +445,16 @@ prediction remains future work.
 
 \section{Conclusion}
 
-This paper presents \bench{}, a 1,191-row human-labeled benchmark for GPU
-numerical failure reports in high-performance ML software. Replacing weak
-keyword labels with human gold labels makes reliable triage possible: a
-standalone FLAN-T5-base model reaches 80.5\% held-out accuracy, a deterministic
+This paper presents an LLM-based triage system for detecting and categorizing
+GPU numerical-failure reports in high-performance ML software. Replacing weak
+keyword labels with human gold labels makes reliable triage possible: the
+fine-tuned FLAN-T5-base model reaches 80.5\% held-out accuracy, a deterministic
 ensemble reaches 73.8\%, chronological evaluation reaches 76.6\%, and
 LLM/deterministic agreement reaches 89.3\% accuracy at 68.3\% coverage.
 Leave-one-repository-out accuracy is 66.8\%, showing that cross-project
-transfer remains difficult. The artifact provides a foundation for GPU
-reliability triage, benchmark construction, and root-cause prediction.
+transfer remains difficult. \bench{} provides the training, evaluation, and
+artifact foundation for GPU reliability triage and future root-cause
+prediction.
 
 \section*{Artifact Availability}
 
