@@ -28,3 +28,9 @@ Submission page checked: https://ieee-hpec.org/submit/
 - Notification: August 19, 2026.
 - Camera-ready deadline: September 4, 2026.
 - HPEC accepts full papers up to 6 pages; the site notes references and acknowledgments are not included, but the upload page also says paper file up to 6 pages, so this version is 5 pages total to avoid ambiguity.
+
+## Generative AI Disclosure
+
+HPEC links to a "Use of AI tools for authoring research papers" policy page, but the public submission pages do not require a disclosure paragraph inside the manuscript. If CMT asks for a generative-AI disclosure, use:
+
+> Generative AI tools were used only for editorial assistance and LaTeX compiling/formatting support. The author reviewed and is responsible for the final manuscript and submitted content.
